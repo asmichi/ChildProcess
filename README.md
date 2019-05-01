@@ -46,7 +46,7 @@ Runtimes:
 
 # Examples
 
-See [ChildProcess.Example](src/ChildProcess.Example/) (not yet) for more examples.
+See [ChildProcess.Example](src/ChildProcess.Example/) for more examples.
 
 ## Basic
 
