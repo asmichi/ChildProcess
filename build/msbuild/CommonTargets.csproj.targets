@@ -1,0 +1,15 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.2" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
+    <PackageReference Include="Roslynator.Analyzers" Version="2.0.0" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers"  />
+  </ItemGroup>
+
+  <!-- See https://docs.microsoft.com/en-us/visualstudio/code-quality/configure-fxcop-analyzers. -->
+  <ItemGroup>
+    <AdditionalFiles Include="$(WorkTreeRoot)\src\stylecop.json" Visible="false" />
+    <AdditionalFiles Include="$(WorkTreeRoot)\.editorconfig" />
+  </ItemGroup>
+
+</Project>

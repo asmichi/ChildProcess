@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Asmichi.ChildProcess</id>
+    <version>$version$</version>
+    <authors>asmichi</authors>
+    <owners>asmichi</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/asmichi/ChildProcess</projectUrl>
+    <description>A .NET library that provides functionality for creating child processes. Easier, less error-prone, more flexible than `System.Diagnostics.Process` at creating child processes.</description>
+    <releaseNotes/>
+    <copyright>Copyright (c) @asmichi (https://github.com/asmichi)</copyright>
+    <tags>win32 process</tags>
+    <repository type="git" url="https://github.com/asmichi/ChildProcess" commit="$commitHash$"/>
+    <dependencies>
+      <group targetFramework=".NETFramework4.7.1">
+        <dependency id="System.Memory" version="4.5.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="System.Memory" version="4.5.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETCoreApp2.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="net471\Asmichi.Utilities.ChildProcess.*" target="lib\net471\" />
+    <file src="net472\Asmichi.Utilities.ChildProcess.*" target="lib\net472\" />
+    <file src="netcoreapp2.1\Asmichi.Utilities.ChildProcess.*" target="lib\netcoreapp2.1\" />
+  </files>
+</package>

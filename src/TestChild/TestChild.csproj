@@ -1,0 +1,17 @@
+﻿<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <AssemblyName>TestChild</AssemblyName>
+    <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
+    <OutputType>Exe</OutputType>
+    <Platforms>AnyCPU</Platforms>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RootNamespace>Asmichi.Utilities</RootNamespace>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+  </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="ChildProcess.NET Ruleset" Description="Ruleset for ChildProcess.NET." ToolsVersion="12.0">
+  <Include Path="FxCopyRules.ruleset" Action="Default" />
+  <Rules AnalyzerId="Roslynator.CSharp.Analyzers" RuleNamespace="Roslynator.CSharp.Analyzers">
+    <Rule Id="RCS1085" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1101" Action="None" />
+    <Rule Id="SA1309" Action="None" />
+    <Rule Id="SX1309" Action="Warning" />
+    <Rule Id="SA1402" Action="None" />
+    <Rule Id="SA1405" Action="None" />
+    <Rule Id="SA1513" Action="None" />
+    <Rule Id="SA1515" Action="None" />
+    <Rule Id="SA1516" Action="None" />
+    <Rule Id="SA1601" Action="None" /> <!-- Conflicts with RCS1139. -->
+    <Rule Id="SA1623" Action="None" />
+    <Rule Id="SA1649" Action="None" />
+  </Rules>
+</RuleSet>
