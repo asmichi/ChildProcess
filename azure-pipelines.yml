@@ -71,14 +71,22 @@ jobs:
       arguments: 'pack -Verbosity quiet -ForceEnglishOutput -Version $(PackageVersion) -BasePath bin/ChildProcess/AnyCPU/Release -OutputDirectory bin/nupkg -Properties commitHash=$(Build.SourceVersion) build/nuspec/Asmichi.ChildProcess.nuspec'
 
   - task: CopyFiles@2
-    displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    displayName: 'Copy Files to: $(Build.artifactstagingdirectory)'
     inputs:
       SourceFolder: '$(system.defaultworkingdirectory)'
       Contents: 'bin/nupkg/*'
-      TargetFolder: '$(build.artifactstagingdirectory)'
+      TargetFolder: '$(Build.artifactstagingdirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: drop'
     inputs:
-      PathtoPublish: '$(build.artifactstagingdirectory)'
+      PathtoPublish: '$(Build.artifactstagingdirectory)'
 
+  - task: NuGetCommand@2
+    displayName: 'NuGet push'
+    inputs:
+      command: push
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'ChildProcessCI'
+      allowPackageConflicts: true
