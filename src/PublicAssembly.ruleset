@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="ChildProcess.NET Ruleset" Description="Ruleset for ChildProcess.NET." ToolsVersion="12.0">
-  <Include Path="FxCopyRules.ruleset" Action="Default" />
+  <Include Path="FxCopRules.ruleset" Action="Default" />
   <Rules AnalyzerId="Roslynator.CSharp.Analyzers" RuleNamespace="Roslynator.CSharp.Analyzers">
     <Rule Id="RCS1085" Action="None" />
   </Rules>

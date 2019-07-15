@@ -40,7 +40,7 @@ namespace Asmichi.Utilities.ProcessManagement
         // NOTE: This callback is called synchronously from CTS.Cancel().
         private static void WaitForExitCanceled(object state)
         {
-            // Ensure that all writes made by Register are visible.
+            // Ensure that all writes made by StartAsync are visible.
             lock (state)
             {
             }
@@ -54,7 +54,7 @@ namespace Asmichi.Utilities.ProcessManagement
         // NOTE: This callback is executed on a thread-pool thread.
         private static void WaitForExitCompleted(object state, bool timedOut)
         {
-            // Ensure that all writes made by Register are visible.
+            // Ensure that all writes made by StartAsync are visible.
             lock (state)
             {
             }

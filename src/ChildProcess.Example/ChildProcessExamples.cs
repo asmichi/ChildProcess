@@ -12,7 +12,7 @@ using Asmichi.Utilities.ProcessManagement;
 
 namespace Asmichi.Utilities
 {
-    public static class ProcessPipelineExamples
+    public static class ChildProcessExamples
     {
         public static async Task Main()
         {
