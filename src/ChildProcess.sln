@@ -8,9 +8,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildProcess.Example", "ChildProcess.Example\ChildProcess.Example.csproj", "{0070EB5F-91AC-41AA-972A-8C2075D329CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildProcess.Test", "ChildProcess.Test\ChildProcess.Test.csproj", "{901BCC9B-101A-41C4-9944-53EC7AD71B4E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F4613733-FC19-47E0-98CF-FAFE4FA7543C} = {F4613733-FC19-47E0-98CF-FAFE4FA7543C}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestChild", "TestChild\TestChild.csproj", "{F4613733-FC19-47E0-98CF-FAFE4FA7543C}"
 EndProject

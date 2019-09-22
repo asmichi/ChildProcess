@@ -21,7 +21,7 @@ variables:
 jobs:
 - job: build
 
-  # vs2017 because the job needs .NET Framework SDK 4.7.1.
+  # vs2017 because the job needs .NET Framework SDK 4.7.1 and 4.7.2.
   pool:
     vmImage: 'vs2017-win2016'
 

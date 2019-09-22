@@ -27,18 +27,14 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 
 # Supported Runtimes
 
-Frameworks:
+- .NET Framework 4.7.2 or later
+- .NET Core 2.1 or later
 
-- `net471` or later
-- `netcoreapp2.1` or later
-- (Will support frameworks that implement `netstandard2.1`)
+OS:
 
-Runtimes:
-
-- `win10-x86` or later (Desktop)
-- `win10-x64` or later (Desktop)
-
-`linux-x64` support is planned but not implemented.
+- `win10-x86` (1803 or later)
+- `win10-x64` (1803 or later)
+- `linux-x64` support is planned but not implemented.
 
 # Notes
 

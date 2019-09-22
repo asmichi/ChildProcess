@@ -2,10 +2,11 @@
 
 ## Author's Environments
 
-- Windows 10 1809
+- Windows 10 1903
     - .NET Core SDK 2.2.106
-    - .NET Framework SDKs and Targeting Packs: 4.7.1, 4.7.2
-    - nuget.exe 4.9.4 or later
+    - .NET Framework 4.8
+    - .NET Framework SDK 4.7.2
+    - nuget.exe 4.9.4
 
 - Ubuntu 18.04
     - `apt-get install make gcc`
