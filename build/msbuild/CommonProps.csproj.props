@@ -14,6 +14,8 @@
     <BaseIntermediateOutputPath>$(ObjDir)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <IntDir>$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(TargetFramework)' != ''">$(IntDir)$(TargetFramework)\</IntDir>
+    <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
+
     <!-- One central bin directory. -->
     <BinDir>$(WorkTreeRoot)bin\</BinDir>
     <OutDir>$(BinDir)\$(MSBuildProjectName)\$(Platform)\$(Configuration)\</OutDir>
