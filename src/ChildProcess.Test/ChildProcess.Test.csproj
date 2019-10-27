@@ -27,6 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.*" />
+    <Content Include="@(TestChildBin)">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
     <!-- Workaround for expressing BuildOderingOnly: https://github.com/microsoft/msbuild/issues/3843 -->
     <!-- NOTE: This workaround does not work in Visual Studio when the target project uses TargetFramework*s*. -->
@@ -34,12 +42,5 @@
   </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
-
-  <Target Name="AfterBuild">
-    <ItemGroup>
-      <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(TestChildBin)" DestinationFolder="$(TargetDir)" />
-  </Target>
 
 </Project>
