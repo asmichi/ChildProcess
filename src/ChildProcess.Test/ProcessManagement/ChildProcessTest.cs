@@ -20,17 +20,13 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdOutputRedirection = OutputRedirection.OutputPipe,
             };
 
-            using (var sut = ChildProcess.Start(si))
-            {
-                sut.WaitForExit();
-                Assert.Equal(0, sut.ExitCode);
+            using var sut = ChildProcess.Start(si);
+            sut.WaitForExit();
+            Assert.Equal(0, sut.ExitCode);
 
-                // This closes StandardOutput, which should be acceptable.
-                using (var sr = new StreamReader(sut.StandardOutput))
-                {
-                    Assert.Equal("TestChild", sr.ReadToEnd());
-                }
-            }
+            // This closes StandardOutput, which should be acceptable.
+            using var sr = new StreamReader(sut.StandardOutput);
+            Assert.Equal("TestChild", sr.ReadToEnd());
         }
 
         [Fact]
@@ -47,23 +43,19 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "ExitCode", "0");
 
-                using (var sut = ChildProcess.Start(si))
-                {
-                    sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
-                    Assert.Equal(0, sut.ExitCode);
-                }
+                using var sut = ChildProcess.Start(si);
+                sut.WaitForExit();
+                Assert.True(sut.IsSuccessful);
+                Assert.Equal(0, sut.ExitCode);
             }
 
             {
                 var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "ExitCode", "-1");
 
-                using (var sut = ChildProcess.Start(si))
-                {
-                    sut.WaitForExit();
-                    Assert.False(sut.IsSuccessful);
-                    Assert.Equal(-1, sut.ExitCode);
-                }
+                using var sut = ChildProcess.Start(si);
+                sut.WaitForExit();
+                Assert.False(sut.IsSuccessful);
+                Assert.Equal(-1, sut.ExitCode);
             }
         }
 
@@ -75,72 +67,64 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdInputRedirection = InputRedirection.InputPipe,
             };
 
-            using (var sut = ChildProcess.Start(si))
-            {
-                Assert.Throws<InvalidOperationException>(() => sut.IsSuccessful);
-                Assert.Throws<InvalidOperationException>(() => sut.ExitCode);
+            using var sut = ChildProcess.Start(si);
+            Assert.Throws<InvalidOperationException>(() => sut.IsSuccessful);
+            Assert.Throws<InvalidOperationException>(() => sut.ExitCode);
 
-                sut.StandardInput.Close();
-                sut.WaitForExit();
+            sut.StandardInput.Close();
+            sut.WaitForExit();
 
-                Assert.True(sut.IsSuccessful);
-                Assert.Equal(0, sut.ExitCode);
-            }
+            Assert.True(sut.IsSuccessful);
+            Assert.Equal(0, sut.ExitCode);
         }
 
         [Fact]
         public void WaitForExitTimesOut()
         {
-            using (var sut = CreateForWaitForExitTest())
-            {
-                Assert.False(sut.WaitForExit(0));
-                Assert.False(sut.WaitForExit(1));
+            using var sut = CreateForWaitForExitTest();
+            Assert.False(sut.WaitForExit(0));
+            Assert.False(sut.WaitForExit(1));
 
-                sut.StandardInput.Close();
-                sut.WaitHandle.WaitOne();
+            sut.StandardInput.Close();
+            sut.WaitHandle.WaitOne();
 
-                Assert.True(sut.WaitForExit(0));
-            }
+            Assert.True(sut.WaitForExit(0));
         }
 
         [Fact]
         public async Task WaitForExitAsyncTimesOut()
         {
-            using (var sut = CreateForWaitForExitTest())
-            {
-                Assert.False(await sut.WaitForExitAsync(0));
-                Assert.False(await sut.WaitForExitAsync(1));
+            using var sut = CreateForWaitForExitTest();
+            Assert.False(await sut.WaitForExitAsync(0));
+            Assert.False(await sut.WaitForExitAsync(1));
 
-                sut.StandardInput.Close();
-                sut.WaitHandle.WaitOne();
+            sut.StandardInput.Close();
+            sut.WaitHandle.WaitOne();
 
-                Assert.True(await sut.WaitForExitAsync(0));
-            }
+            Assert.True(await sut.WaitForExitAsync(0));
         }
 
         [Fact]
         public async Task CanCancelWaitForExitAsync()
         {
-            using (var sut = CreateForWaitForExitTest())
+            using var sut = CreateForWaitForExitTest();
+            Assert.False(await sut.WaitForExitAsync(0));
+
+            using (var cts = new CancellationTokenSource())
             {
-                Assert.False(await sut.WaitForExitAsync(0));
+                var t = sut.WaitForExitAsync(1000, cts.Token);
+                cts.Cancel();
+                Assert.Throws<TaskCanceledException>(() => t.GetAwaiter().GetResult());
+            }
 
-                using (var cts = new CancellationTokenSource())
-                {
-                    var t = sut.WaitForExitAsync(1000, cts.Token);
-                    cts.Cancel();
-                    Assert.Throws<TaskCanceledException>(() => t.GetAwaiter().GetResult());
-                }
+            sut.StandardInput.Close();
+            sut.WaitHandle.WaitOne();
 
-                sut.StandardInput.Close();
-                sut.WaitHandle.WaitOne();
-
-                // If the process has already exited, returns true instead of returning CanceledTask.
-                using (var cts = new CancellationTokenSource())
-                {
-                    cts.Cancel();
-                    Assert.True(await sut.WaitForExitAsync(0, cts.Token));
-                }
+            // If the process has already exited, returns true instead of returning CanceledTask.
+            using (var cts = new CancellationTokenSource())
+            {
+                cts.Cancel();
+                Assert.True(await sut.WaitForExitAsync(0, cts.Token));
             }
         }
 
@@ -164,10 +148,8 @@ namespace Asmichi.Utilities.ProcessManagement
                     StdErrorRedirection = OutputRedirection.ErrorPipe,
                 };
 
-                using (var sut = ChildProcess.Start(si))
-                {
-                    await CorrectlyConnectsPipesAsync(sut, "TestChild.Out", "TestChild.Error");
-                }
+                using var sut = ChildProcess.Start(si);
+                await CorrectlyConnectsPipesAsync(sut, "TestChild.Out", "TestChild.Error");
             }
 
             {
@@ -178,25 +160,21 @@ namespace Asmichi.Utilities.ProcessManagement
                     StdErrorRedirection = OutputRedirection.OutputPipe,
                 };
 
-                using (var sut = ChildProcess.Start(si))
-                {
-                    await CorrectlyConnectsPipesAsync(sut, "TestChild.Error", "TestChild.Out");
-                }
+                using var sut = ChildProcess.Start(si);
+                await CorrectlyConnectsPipesAsync(sut, "TestChild.Error", "TestChild.Out");
             }
         }
 
         private static async Task CorrectlyConnectsPipesAsync(IChildProcess sut, string expectedStdout, string expectedStderr)
         {
-            using (var srOut = new StreamReader(sut.StandardOutput))
-            using (var srErr = new StreamReader(sut.StandardError))
-            {
-                var stdoutTask = srOut.ReadToEndAsync();
-                var stderrTask = srErr.ReadToEndAsync();
-                sut.WaitForExit();
+            using var srOut = new StreamReader(sut.StandardOutput);
+            using var srErr = new StreamReader(sut.StandardError);
+            var stdoutTask = srOut.ReadToEndAsync();
+            var stderrTask = srErr.ReadToEndAsync();
+            sut.WaitForExit();
 
-                Assert.Equal(expectedStdout, await stdoutTask);
-                Assert.Equal(expectedStderr, await stderrTask);
-            }
+            Assert.Equal(expectedStdout, await stdoutTask);
+            Assert.Equal(expectedStderr, await stderrTask);
         }
 
         [Fact]
@@ -209,204 +187,192 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdErrorRedirection = OutputRedirection.ErrorPipe,
             };
 
-            using (var sut = ChildProcess.Start(si))
+            using var sut = ChildProcess.Start(si);
+            Assert.True(((FileStream)sut.StandardInput).IsAsync);
+            Assert.True(((FileStream)sut.StandardOutput).IsAsync);
+            Assert.True(((FileStream)sut.StandardError).IsAsync);
+
+            using (var sr = new StreamReader(sut.StandardOutput))
             {
-                Assert.True(((FileStream)sut.StandardInput).IsAsync);
-                Assert.True(((FileStream)sut.StandardOutput).IsAsync);
-                Assert.True(((FileStream)sut.StandardError).IsAsync);
-
-                using (var sr = new StreamReader(sut.StandardOutput))
+                const string text = "foobar";
+                var stdoutTask = sr.ReadToEndAsync();
+                using (var sw = new StreamWriter(sut.StandardInput))
                 {
-                    const string text = "foobar";
-                    var stdoutTask = sr.ReadToEndAsync();
-                    using (var sw = new StreamWriter(sut.StandardInput))
-                    {
-                        await sw.WriteAsync(text);
-                    }
-                    Assert.Equal(text, await stdoutTask);
+                    await sw.WriteAsync(text);
                 }
-
-                sut.WaitForExit();
-                Assert.Equal(0, sut.ExitCode);
+                Assert.Equal(text, await stdoutTask);
             }
+
+            sut.WaitForExit();
+            Assert.Equal(0, sut.ExitCode);
         }
 
         [Fact]
         public void RedirectionToFile()
         {
-            using (var tmp = new TemporaryDirectory())
+            using var tmp = new TemporaryDirectory();
+            var inFile = Path.Combine(tmp.Location, "in");
+            var outFile = Path.Combine(tmp.Location, "out");
+            var errFile = Path.Combine(tmp.Location, "err");
+
+            // StdOutputFile StdErrorFile
             {
-                var inFile = Path.Combine(tmp.Location, "in");
-                var outFile = Path.Combine(tmp.Location, "out");
-                var errFile = Path.Combine(tmp.Location, "err");
-
-                // StdOutputFile StdErrorFile
+                // File
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
                 {
-                    // File
-                    var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
-                    {
-                        StdOutputRedirection = OutputRedirection.File,
-                        StdOutputFile = outFile,
-                        StdErrorRedirection = OutputRedirection.File,
-                        StdErrorFile = errFile,
-                    };
+                    StdOutputRedirection = OutputRedirection.File,
+                    StdOutputFile = outFile,
+                    StdErrorRedirection = OutputRedirection.File,
+                    StdErrorFile = errFile,
+                };
 
-                    using (var sut = ChildProcess.Start(si))
-                    {
-                        sut.WaitForExit();
-                        Assert.True(sut.IsSuccessful);
-                    }
-
-                    Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
-                    Assert.Equal("TestChild.Error", File.ReadAllText(errFile));
-
-                    // AppendToFile
-                    si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
-                    {
-                        StdOutputRedirection = OutputRedirection.AppendToFile,
-                        StdOutputFile = errFile,
-                        StdErrorRedirection = OutputRedirection.AppendToFile,
-                        StdErrorFile = outFile,
-                    };
-
-                    using (var sut = ChildProcess.Start(si))
-                    {
-                        sut.WaitForExit();
-                        Assert.True(sut.IsSuccessful);
-                    }
-
-                    Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
-                    Assert.Equal("TestChild.ErrorTestChild.Out", File.ReadAllText(errFile));
+                using (var sut = ChildProcess.Start(si))
+                {
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
                 }
 
-                // StdInputFile
+                Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
+                Assert.Equal("TestChild.Error", File.ReadAllText(errFile));
+
+                // AppendToFile
+                si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
                 {
-                    const string text = "foobar";
-                    File.WriteAllText(inFile, text);
+                    StdOutputRedirection = OutputRedirection.AppendToFile,
+                    StdOutputFile = errFile,
+                    StdErrorRedirection = OutputRedirection.AppendToFile,
+                    StdErrorFile = outFile,
+                };
 
-                    var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoBack")
-                    {
-                        StdInputRedirection = InputRedirection.File,
-                        StdInputFile = inFile,
-                        StdOutputRedirection = OutputRedirection.File,
-                        StdOutputFile = outFile,
-                    };
-
-                    using (var sut = ChildProcess.Start(si))
-                    {
-                        sut.WaitForExit();
-                        Assert.True(sut.IsSuccessful);
-                    }
-
-                    Assert.Equal(text, File.ReadAllText(outFile));
+                using (var sut = ChildProcess.Start(si))
+                {
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
                 }
+
+                Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
+                Assert.Equal("TestChild.ErrorTestChild.Out", File.ReadAllText(errFile));
+            }
+
+            // StdInputFile
+            {
+                const string text = "foobar";
+                File.WriteAllText(inFile, text);
+
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoBack")
+                {
+                    StdInputRedirection = InputRedirection.File,
+                    StdInputFile = inFile,
+                    StdOutputRedirection = OutputRedirection.File,
+                    StdOutputFile = outFile,
+                };
+
+                using (var sut = ChildProcess.Start(si))
+                {
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
+                }
+
+                Assert.Equal(text, File.ReadAllText(outFile));
             }
         }
 
         [Fact]
         public void CanRedirectToSameFile()
         {
-            using (var tmp = new TemporaryDirectory())
+            using var tmp = new TemporaryDirectory();
+            var outFile = Path.Combine(tmp.Location, "out");
+
+            // StdOutputFile StdErrorFile
             {
-                var outFile = Path.Combine(tmp.Location, "out");
-
-                // StdOutputFile StdErrorFile
+                // File
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
                 {
-                    // File
-                    var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
-                    {
-                        StdOutputRedirection = OutputRedirection.File,
-                        StdOutputFile = outFile,
-                        StdErrorRedirection = OutputRedirection.File,
-                        StdErrorFile = outFile,
-                    };
+                    StdOutputRedirection = OutputRedirection.File,
+                    StdOutputFile = outFile,
+                    StdErrorRedirection = OutputRedirection.File,
+                    StdErrorFile = outFile,
+                };
 
-                    using (var sut = ChildProcess.Start(si))
-                    {
-                        sut.WaitForExit();
-                        Assert.True(sut.IsSuccessful);
-                    }
-
-                    Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
-
-                    // AppendToFile
-                    si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
-                    {
-                        StdOutputRedirection = OutputRedirection.AppendToFile,
-                        StdOutputFile = outFile,
-                        StdErrorRedirection = OutputRedirection.AppendToFile,
-                        StdErrorFile = outFile,
-                    };
-
-                    using (var sut = ChildProcess.Start(si))
-                    {
-                        sut.WaitForExit();
-                        Assert.True(sut.IsSuccessful);
-                    }
-
-                    Assert.Equal("TestChild.OutTestChild.ErrorTestChild.OutTestChild.Error", File.ReadAllText(outFile));
+                using (var sut = ChildProcess.Start(si))
+                {
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
                 }
+
+                Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
+
+                // AppendToFile
+                si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
+                {
+                    StdOutputRedirection = OutputRedirection.AppendToFile,
+                    StdOutputFile = outFile,
+                    StdErrorRedirection = OutputRedirection.AppendToFile,
+                    StdErrorFile = outFile,
+                };
+
+                using (var sut = ChildProcess.Start(si))
+                {
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
+                }
+
+                Assert.Equal("TestChild.OutTestChild.ErrorTestChild.OutTestChild.Error", File.ReadAllText(outFile));
             }
         }
 
         [Fact]
         public void RedirectionToHandle()
         {
-            using (var tmp = new TemporaryDirectory())
+            using var tmp = new TemporaryDirectory();
+            var inFile = Path.Combine(tmp.Location, "in");
+            var outFile = Path.Combine(tmp.Location, "out");
+            var errFile = Path.Combine(tmp.Location, "err");
+
+            // StdOutputHandle StdErrorHandle
             {
-                var inFile = Path.Combine(tmp.Location, "in");
-                var outFile = Path.Combine(tmp.Location, "out");
-                var errFile = Path.Combine(tmp.Location, "err");
-
-                // StdOutputHandle StdErrorHandle
+                using (var fsOut = File.Create(outFile))
+                using (var fsErr = File.Create(errFile))
                 {
-                    using (var fsOut = File.Create(outFile))
-                    using (var fsErr = File.Create(errFile))
+                    // File
+                    var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
                     {
-                        // File
-                        var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoOutAndError")
-                        {
-                            StdOutputRedirection = OutputRedirection.Handle,
-                            StdOutputHandle = fsOut.SafeFileHandle,
-                            StdErrorRedirection = OutputRedirection.Handle,
-                            StdErrorHandle = fsErr.SafeFileHandle,
-                        };
+                        StdOutputRedirection = OutputRedirection.Handle,
+                        StdOutputHandle = fsOut.SafeFileHandle,
+                        StdErrorRedirection = OutputRedirection.Handle,
+                        StdErrorHandle = fsErr.SafeFileHandle,
+                    };
 
-                        using (var sut = ChildProcess.Start(si))
-                        {
-                            sut.WaitForExit();
-                            Assert.True(sut.IsSuccessful);
-                        }
-                    }
-
-                    Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
-                    Assert.Equal("TestChild.Error", File.ReadAllText(errFile));
+                    using var sut = ChildProcess.Start(si);
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
                 }
 
-                // StdInputHandle
+                Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
+                Assert.Equal("TestChild.Error", File.ReadAllText(errFile));
+            }
+
+            // StdInputHandle
+            {
+                const string text = "foobar";
+                File.WriteAllText(inFile, text);
+
+                using (var fsIn = File.OpenRead(inFile))
                 {
-                    const string text = "foobar";
-                    File.WriteAllText(inFile, text);
-
-                    using (var fsIn = File.OpenRead(inFile))
+                    var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoBack")
                     {
-                        var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoBack")
-                        {
-                            StdInputRedirection = InputRedirection.Handle,
-                            StdInputHandle = fsIn.SafeFileHandle,
-                            StdOutputRedirection = OutputRedirection.File,
-                            StdOutputFile = outFile,
-                        };
+                        StdInputRedirection = InputRedirection.Handle,
+                        StdInputHandle = fsIn.SafeFileHandle,
+                        StdOutputRedirection = OutputRedirection.File,
+                        StdOutputFile = outFile,
+                    };
 
-                        using (var sut = ChildProcess.Start(si))
-                        {
-                            sut.WaitForExit();
-                            Assert.True(sut.IsSuccessful);
-                        }
-                    }
-
-                    Assert.Equal(text, File.ReadAllText(outFile));
+                    using var sut = ChildProcess.Start(si);
+                    sut.WaitForExit();
+                    Assert.True(sut.IsSuccessful);
                 }
+
+                Assert.Equal(text, File.ReadAllText(outFile));
             }
         }
 
@@ -419,34 +385,28 @@ namespace Asmichi.Utilities.ProcessManagement
                 EnvironmentVariables = new[] { ("A", "a"), ("BB", "bb") },
             };
 
-            using (var sut = ChildProcess.Start(si))
-            using (var sr = new StreamReader(sut.StandardOutput))
-            {
-                var output = sr.ReadToEnd();
-                sut.WaitForExit();
-                Assert.Equal(new[] { "A=a", "BB=bb" }, output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries));
-            }
+            using var sut = ChildProcess.Start(si);
+            using var sr = new StreamReader(sut.StandardOutput);
+            var output = sr.ReadToEnd();
+            sut.WaitForExit();
+            Assert.Equal(new[] { "A=a", "BB=bb" }, output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries));
         }
 
         [Fact]
         public void CanSetWorkingDirectory()
         {
-            using (var tmp = new TemporaryDirectory())
+            using var tmp = new TemporaryDirectory();
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoWorkingDirectory")
             {
-                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "EchoWorkingDirectory")
-                {
-                    StdOutputRedirection = OutputRedirection.OutputPipe,
-                    WorkingDirectory = tmp.Location,
-                };
+                StdOutputRedirection = OutputRedirection.OutputPipe,
+                WorkingDirectory = tmp.Location,
+            };
 
-                using (var sut = ChildProcess.Start(si))
-                using (var sr = new StreamReader(sut.StandardOutput))
-                {
-                    var output = sr.ReadToEnd();
-                    sut.WaitForExit();
-                    Assert.Equal(tmp.Location, output);
-                }
-            }
+            using var sut = ChildProcess.Start(si);
+            using var sr = new StreamReader(sut.StandardOutput);
+            var output = sr.ReadToEnd();
+            sut.WaitForExit();
+            Assert.Equal(tmp.Location, output);
         }
     }
 }

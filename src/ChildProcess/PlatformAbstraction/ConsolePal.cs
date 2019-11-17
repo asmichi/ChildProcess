@@ -12,16 +12,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.ConsolePalWindows.GetStdInputHandleForChild();
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.ConsolePalWindows.GetStdInputHandleForChild();
-                case PlatformKind.Linux:
-                    return Linux.ConsolePalLinux.GetStdInputHandleForChild();
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdInputHandleForChild(),
+                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdInputHandleForChild(),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
 
@@ -30,16 +27,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.ConsolePalWindows.GetStdOutputHandleForChild();
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.ConsolePalWindows.GetStdOutputHandleForChild();
-                case PlatformKind.Linux:
-                    return Linux.ConsolePalLinux.GetStdOutputHandleForChild();
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdOutputHandleForChild(),
+                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdOutputHandleForChild(),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
 
@@ -48,16 +42,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.ConsolePalWindows.GetStdErrorHandleForChild();
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.ConsolePalWindows.GetStdErrorHandleForChild();
-                case PlatformKind.Linux:
-                    return Linux.ConsolePalLinux.GetStdErrorHandleForChild();
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdErrorHandleForChild(),
+                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdErrorHandleForChild(),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
 
@@ -66,16 +57,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.ConsolePalWindows.HasConsoleWindow();
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.ConsolePalWindows.HasConsoleWindow();
-                case PlatformKind.Linux:
-                    return Linux.ConsolePalLinux.HasConsoleWindow();
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.ConsolePalWindows.HasConsoleWindow(),
+                PlatformKind.Linux => Linux.ConsolePalLinux.HasConsoleWindow(),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
     }

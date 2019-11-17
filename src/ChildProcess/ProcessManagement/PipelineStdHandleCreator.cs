@@ -186,21 +186,15 @@ namespace Asmichi.Utilities.ProcessManagement
             SafeFileHandle handle,
             SafeFileHandle inputPipe)
         {
-            switch (redirection)
+            return redirection switch
             {
-                case InputRedirection.ParentInput:
-                    return ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read);
-                case InputRedirection.InputPipe:
-                    return inputPipe;
-                case InputRedirection.File:
-                    return OpenFile(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                case InputRedirection.Handle:
-                    return handle;
-                case InputRedirection.NullDevice:
-                    return OpenNullDevice(FileAccess.Read);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(InputRedirection) + ".");
-            }
+                InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read),
+                InputRedirection.InputPipe => inputPipe,
+                InputRedirection.File => OpenFile(fileName, FileMode.Open, FileAccess.Read, FileShare.Read),
+                InputRedirection.Handle => handle,
+                InputRedirection.NullDevice => OpenNullDevice(FileAccess.Read),
+                _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(InputRedirection) + "."),
+            };
         }
 
         private SafeFileHandle ChooseOutput(
@@ -210,27 +204,18 @@ namespace Asmichi.Utilities.ProcessManagement
             SafeFileHandle outputPipe,
             SafeFileHandle errorPipe)
         {
-            switch (redirection)
+            return redirection switch
             {
-                case OutputRedirection.ParentOutput:
-                    return ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write);
-                case OutputRedirection.ParentError:
-                    return ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write);
-                case OutputRedirection.OutputPipe:
-                    return outputPipe;
-                case OutputRedirection.ErrorPipe:
-                    return errorPipe;
-                case OutputRedirection.File:
-                    return OpenFile(fileName, FileMode.Create, FileAccess.Write, FileShare.Read);
-                case OutputRedirection.AppendToFile:
-                    return OpenFile(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-                case OutputRedirection.Handle:
-                    return handle;
-                case OutputRedirection.NullDevice:
-                    return FilePal.OpenNullDevice(FileAccess.Write);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(OutputRedirection) + ".");
-            }
+                OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write),
+                OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write),
+                OutputRedirection.OutputPipe => outputPipe,
+                OutputRedirection.ErrorPipe => errorPipe,
+                OutputRedirection.File => OpenFile(fileName, FileMode.Create, FileAccess.Write, FileShare.Read),
+                OutputRedirection.AppendToFile => OpenFile(fileName, FileMode.Append, FileAccess.Write, FileShare.Read),
+                OutputRedirection.Handle => handle,
+                OutputRedirection.NullDevice => FilePal.OpenNullDevice(FileAccess.Write),
+                _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(OutputRedirection) + "."),
+            };
         }
 
         private SafeFileHandle OpenFile(

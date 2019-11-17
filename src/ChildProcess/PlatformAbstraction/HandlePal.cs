@@ -12,16 +12,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.HandlePalWindows.ToWaitHandle(handle);
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.HandlePalWindows.ToWaitHandle(handle);
-                case PlatformKind.Linux:
-                    return Linux.HandlePalLinux.ToWaitHandle(handle);
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.HandlePalWindows.ToWaitHandle(handle),
+                PlatformKind.Linux => Linux.HandlePalLinux.ToWaitHandle(handle),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
     }

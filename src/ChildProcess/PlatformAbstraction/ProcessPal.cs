@@ -21,16 +21,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.ProcessPalWindows.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr);
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.ProcessPalWindows.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr);
-                case PlatformKind.Linux:
-                    return Linux.ProcessPalLinux.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr);
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.ProcessPalWindows.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr),
+                PlatformKind.Linux => Linux.ProcessPalLinux.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
     }

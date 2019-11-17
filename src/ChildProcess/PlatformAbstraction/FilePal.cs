@@ -14,16 +14,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.FilePalWindows.OpenNullDevice(fileAccess);
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.FilePalWindows.OpenNullDevice(fileAccess);
-                case PlatformKind.Linux:
-                    return Linux.FilePalLinux.OpenNullDevice(fileAccess);
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.FilePalWindows.OpenNullDevice(fileAccess),
+                PlatformKind.Linux => Linux.FilePalLinux.OpenNullDevice(fileAccess),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
 
@@ -32,16 +29,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.FilePalWindows.CreatePipePair();
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.FilePalWindows.CreatePipePair();
-                case PlatformKind.Linux:
-                    return Linux.FilePalLinux.CreatePipePair();
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePair(),
+                PlatformKind.Linux => Linux.FilePalLinux.CreatePipePair(),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
 
@@ -57,16 +51,13 @@ namespace Asmichi.Utilities.PlatformAbstraction
 #if NETFRAMEWORK
             return Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection);
 #else
-            switch (Pal.PlatformKind)
+            return Pal.PlatformKind switch
             {
-                case PlatformKind.Win32:
-                    return Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection);
-                case PlatformKind.Linux:
-                    return Linux.FilePalLinux.CreatePipePairWithAsyncServerSide(pipeDirection);
-                case PlatformKind.Unknown:
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection),
+                PlatformKind.Linux => Linux.FilePalLinux.CreatePipePairWithAsyncServerSide(pipeDirection),
+                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
+                _ => throw new PlatformNotSupportedException(),
+            };
 #endif
         }
     }

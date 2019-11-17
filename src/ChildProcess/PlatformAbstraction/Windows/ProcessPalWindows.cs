@@ -27,45 +27,41 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             var commandLine = CommandLineUtil.MakeCommandLine(fileName, arguments ?? Array.Empty<string>());
             var environmentBlock = environmentVariables != null ? EnvironmentBlockUtil.MakeEnvironmentBlockWin32(environmentVariables) : null;
 
-            using (var inheritableHandleStore = new InheritableHandleStore(3))
+            using var inheritableHandleStore = new InheritableHandleStore(3);
+            var childStdInput = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
+            var childStdOutput = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
+            var childStdError = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
+
+            Span<IntPtr> inheritableHandles = stackalloc IntPtr[inheritableHandleStore.Count];
+            inheritableHandleStore.DangerousGetHandles(inheritableHandles);
+
+            fixed (IntPtr* pInheritableHandles = inheritableHandles)
             {
-                var childStdInput = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
-                var childStdOutput = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
-                var childStdError = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
+                using var attr = new ProcThreadAttributeList(1);
+                attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
 
-                Span<IntPtr> inheritableHandles = stackalloc IntPtr[inheritableHandleStore.Count];
-                inheritableHandleStore.DangerousGetHandles(inheritableHandles);
+                bool createNoWindow = !ConsolePal.HasConsoleWindow();
+                int creationFlags =
+                    Kernel32.CREATE_UNICODE_ENVIRONMENT
+                    | Kernel32.EXTENDED_STARTUPINFO_PRESENT
+                    | (createNoWindow ? Kernel32.CREATE_NO_WINDOW : 0);
 
-                fixed (IntPtr* pInheritableHandles = inheritableHandles)
+                try
                 {
-                    using (var attr = new ProcThreadAttributeList(1))
-                    {
-                        attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
-
-                        bool createNoWindow = !ConsolePal.HasConsoleWindow();
-                        int creationFlags =
-                            Kernel32.CREATE_UNICODE_ENVIRONMENT
-                            | Kernel32.EXTENDED_STARTUPINFO_PRESENT
-                            | (createNoWindow ? Kernel32.CREATE_NO_WINDOW : 0);
-
-                        try
-                        {
-                            return InvokeCreateProcess(
-                                commandLine,
-                                creationFlags,
-                                environmentBlock,
-                                workingDirectory,
-                                childStdInput,
-                                childStdOutput,
-                                childStdError,
-                                attr);
-                        }
-                        catch (Win32Exception e)
-                        {
-                            throw new ProcessCreationFailedException(
-                                string.Format(CultureInfo.CurrentCulture, "Process cannot be created: {0}", e.Message));
-                        }
-                    }
+                    return InvokeCreateProcess(
+                        commandLine,
+                        creationFlags,
+                        environmentBlock,
+                        workingDirectory,
+                        childStdInput,
+                        childStdOutput,
+                        childStdError,
+                        attr);
+                }
+                catch (Win32Exception e)
+                {
+                    throw new ProcessCreationFailedException(
+                        string.Format(CultureInfo.CurrentCulture, "Process cannot be created: {0}", e.Message));
                 }
             }
         }

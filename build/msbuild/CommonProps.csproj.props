@@ -27,7 +27,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <NoWarn>1591;1701;1702</NoWarn>
   </PropertyGroup>
 

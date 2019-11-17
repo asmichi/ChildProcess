@@ -22,12 +22,10 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdErrorRedirection = OutputRedirection.NullDevice,
             };
 
-            using (var sut = ChildProcess.Start(si))
-            {
-                WaitForAsyncIsTrulyAsynchronous(sut);
-                sut.WaitForExit();
-                Assert.True(sut.IsSuccessful);
-            }
+            using var sut = ChildProcess.Start(si);
+            WaitForAsyncIsTrulyAsynchronous(sut);
+            sut.WaitForExit();
+            Assert.True(sut.IsSuccessful);
         }
 
         private static void WaitForAsyncIsTrulyAsynchronous(IChildProcess sut)

@@ -39,17 +39,15 @@ namespace Asmichi.Utilities
                 StdOutputRedirection = OutputRedirection.OutputPipe,
             };
 
-            using (var p = ChildProcess.Start(si))
+            using var p = ChildProcess.Start(si);
+            using (var sr = new StreamReader(p.StandardOutput))
             {
-                using (var sr = new StreamReader(p.StandardOutput))
-                {
-                    // "foo"
-                    Console.Write(await sr.ReadToEndAsync());
-                }
-                await p.WaitForExitAsync();
-                // ExitCode: 0
-                Console.WriteLine("ExitCode: {0}", p.ExitCode);
+                // "foo"
+                Console.Write(await sr.ReadToEndAsync());
             }
+            await p.WaitForExitAsync();
+            // ExitCode: 0
+            Console.WriteLine("ExitCode: {0}", p.ExitCode);
         }
 
         private static async Task RedirectionToFileAsync()
@@ -101,10 +99,8 @@ namespace Asmichi.Utilities
                     StdOutputRedirection = OutputRedirection.NullDevice,
                 };
 
-                using (var p = ChildProcess.Start(si))
-                {
-                    await p.WaitForExitAsync();
-                }
+                using var p = ChildProcess.Start(si);
+                await p.WaitForExitAsync();
             }
         }
     }

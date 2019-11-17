@@ -29,28 +29,26 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             startInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
 
-            using (var stdHandles = new PipelineStdHandleCreator(startInfo))
-            {
-                var processHandle = ProcessPal.SpawnProcess(
-                    fileName: startInfo.FileName,
-                    arguments: startInfo.Arguments,
-                    workingDirectory: startInfo.WorkingDirectory,
-                    environmentVariables: startInfo.EnvironmentVariables,
-                    stdIn: stdHandles.PipelineStdIn,
-                    stdOut: stdHandles.PipelineStdOut,
-                    stdErr: stdHandles.PipelineStdErr);
+            using var stdHandles = new PipelineStdHandleCreator(startInfo);
+            var processHandle = ProcessPal.SpawnProcess(
+                fileName: startInfo.FileName,
+                arguments: startInfo.Arguments,
+                workingDirectory: startInfo.WorkingDirectory,
+                environmentVariables: startInfo.EnvironmentVariables,
+                stdIn: stdHandles.PipelineStdIn,
+                stdOut: stdHandles.PipelineStdOut,
+                stdErr: stdHandles.PipelineStdErr);
 
-                try
-                {
-                    var process = new ChildProcess(processHandle, stdHandles.InputStream, stdHandles.OutputStream, stdHandles.ErrorStream);
-                    stdHandles.DetachStreams();
-                    return process;
-                }
-                catch
-                {
-                    processHandle.Dispose();
-                    throw;
-                }
+            try
+            {
+                var process = new ChildProcess(processHandle, stdHandles.InputStream, stdHandles.OutputStream, stdHandles.ErrorStream);
+                stdHandles.DetachStreams();
+                return process;
+            }
+            catch
+            {
+                processHandle.Dispose();
+                throw;
             }
         }
     }
