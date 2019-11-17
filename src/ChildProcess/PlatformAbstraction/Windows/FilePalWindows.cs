@@ -15,6 +15,16 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
     internal static class FilePalWindows
     {
         private const string NullDeviceFileName = "NUL";
+
+        // NOTE: There may be multiple instances of this assembly (AppDomain or AssemblyLoadContext).
+        //       Therefore embedding pid only does not provide uniqueness.
+        private static readonly string PipePathPrefix =
+            string.Format(
+                CultureInfo.InvariantCulture,
+                @"\\.\pipe\Asmichi.ChildProcess.{0}.{1}.",
+                Kernel32.GetCurrentProcessId(),
+                Path.GetRandomFileName());
+
         private static int pipeSerialNumber;
 
         public static SafeFileHandle OpenNullDevice(FileAccess fileAccess)
@@ -68,11 +78,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             {
                 // Make a unique name of a named pipe to create.
                 var thisPipeSerialNumber = Interlocked.Increment(ref pipeSerialNumber);
-                var pipeName = string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"\\.\pipe\Asmichi.ChildProcess.7785FB5A-AB05-42B2-BC02-A14769CC463E.{0}.{1}",
-                    Kernel32.GetCurrentProcessId(),
-                    thisPipeSerialNumber);
+                var pipeName = PipePathPrefix + thisPipeSerialNumber.ToString(CultureInfo.InvariantCulture);
 
                 var serverPipe = Kernel32.CreateNamedPipe(
                     pipeName,
