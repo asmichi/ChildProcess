@@ -15,7 +15,7 @@ namespace Asmichi.Utilities
     {
         public TemporaryDirectory()
         {
-            this.Location = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Location = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(Location);
         }
 

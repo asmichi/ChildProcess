@@ -116,8 +116,8 @@ namespace Asmichi.Utilities.Interop.Windows
 
             public Element(SafeHandle originalHandle, SafeHandle inheritableHandle)
             {
-                this.OriginalHandle = originalHandle;
-                this.InheritableHandle = inheritableHandle;
+                OriginalHandle = originalHandle;
+                InheritableHandle = inheritableHandle;
             }
         }
     }

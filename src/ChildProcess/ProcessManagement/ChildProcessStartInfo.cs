@@ -104,8 +104,8 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <param name="arguments">The command-line arguments to be passed to the child process.</param>
         public ChildProcessStartInfo(string fileName, params string[] arguments)
         {
-            this.FileName = fileName;
-            this.Arguments = arguments;
+            FileName = fileName;
+            Arguments = arguments;
         }
 
         /// <summary>

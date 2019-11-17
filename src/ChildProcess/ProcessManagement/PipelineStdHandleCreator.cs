@@ -68,28 +68,28 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 if (stdInputRedirection == InputRedirection.InputPipe)
                 {
-                    (this.InputStream, _inputReadPipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.Out);
+                    (InputStream, _inputReadPipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.Out);
                 }
 
                 if (stdOutputRedirection == OutputRedirection.OutputPipe
                     || stdErrorRedirection == OutputRedirection.OutputPipe)
                 {
-                    (this.OutputStream, _outputWritePipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.In);
+                    (OutputStream, _outputWritePipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.In);
                 }
 
                 if (stdOutputRedirection == OutputRedirection.ErrorPipe
                     || stdErrorRedirection == OutputRedirection.ErrorPipe)
                 {
-                    (this.ErrorStream, _errorWritePipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.In);
+                    (ErrorStream, _errorWritePipe) = FilePal.CreatePipePairWithAsyncServerSide(System.IO.Pipes.PipeDirection.In);
                 }
 
-                this.PipelineStdIn = ChooseInput(
+                PipelineStdIn = ChooseInput(
                     stdInputRedirection,
                     stdInputFile,
                     stdInputHandle,
                     _inputReadPipe);
 
-                this.PipelineStdOut = ChooseOutput(
+                PipelineStdOut = ChooseOutput(
                     stdOutputRedirection,
                     stdOutputFile,
                     stdOutputHandle,
@@ -98,11 +98,11 @@ namespace Asmichi.Utilities.ProcessManagement
 
                 if (redirectingToSameFile)
                 {
-                    this.PipelineStdErr = this.PipelineStdOut;
+                    PipelineStdErr = PipelineStdOut;
                 }
                 else
                 {
-                    this.PipelineStdErr = ChooseOutput(
+                    PipelineStdErr = ChooseOutput(
                         stdErrorRedirection,
                         stdErrorFile,
                         stdErrorHandle,

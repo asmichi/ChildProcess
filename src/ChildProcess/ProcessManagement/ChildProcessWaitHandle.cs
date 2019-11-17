@@ -9,7 +9,7 @@ namespace Asmichi.Utilities.ProcessManagement
     {
         public ChildProcessWaitHandle(SafeWaitHandle waitHandle)
         {
-            this.SetSafeWaitHandle(waitHandle);
+            WaitHandleExtensions.SetSafeWaitHandle(this, waitHandle);
         }
     }
 }
