@@ -11,6 +11,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
     {
         public static SafeFileHandle OpenNullDevice(FileAccess fileAccess)
         {
+#if NETFRAMEWORK
+            return Windows.FilePalWindows.OpenNullDevice(fileAccess);
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -21,10 +24,14 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
 
         public static (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair()
         {
+#if NETFRAMEWORK
+            return Windows.FilePalWindows.CreatePipePair();
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -35,6 +42,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
 
         /// <summary>
@@ -46,6 +54,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
         /// <returns>A pipe pair.</returns>
         public static (Stream serverStream, SafeFileHandle clientPipe) CreatePipePairWithAsyncServerSide(PipeDirection pipeDirection)
         {
+#if NETFRAMEWORK
+            return Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection);
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -56,6 +67,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
     }
 }

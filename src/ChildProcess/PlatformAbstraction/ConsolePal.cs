@@ -9,6 +9,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
     {
         public static SafeFileHandle GetStdInputHandleForChild()
         {
+#if NETFRAMEWORK
+            return Windows.ConsolePalWindows.GetStdInputHandleForChild();
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -19,10 +22,14 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
 
         public static SafeFileHandle GetStdOutputHandleForChild()
         {
+#if NETFRAMEWORK
+            return Windows.ConsolePalWindows.GetStdOutputHandleForChild();
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -33,10 +40,14 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
 
         public static SafeFileHandle GetStdErrorHandleForChild()
         {
+#if NETFRAMEWORK
+            return Windows.ConsolePalWindows.GetStdErrorHandleForChild();
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -47,10 +58,14 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
 
         public static bool HasConsoleWindow()
         {
+#if NETFRAMEWORK
+            return Windows.ConsolePalWindows.HasConsoleWindow();
+#else
             switch (Pal.PlatformKind)
             {
                 case PlatformKind.Win32:
@@ -61,6 +76,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 default:
                     throw new PlatformNotSupportedException();
             }
+#endif
         }
     }
 }

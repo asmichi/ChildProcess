@@ -2,7 +2,7 @@
 
 using System.Runtime.InteropServices;
 
-// PERF: Not using virtual calls via interfaces so that those calls are easy to inline.
+// PERF: Not using virtual calls via interfaces so that those calls will be easy to inline.
 namespace Asmichi.Utilities.PlatformAbstraction
 {
     internal enum PlatformKind
@@ -18,6 +18,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
 
         private static PlatformKind GetPlatformKind()
         {
+#if NETFRAMEWORK
+            return PlatformKind.Win32;
+#else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return PlatformKind.Win32;
@@ -31,6 +34,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
             {
                 return PlatformKind.Unknown;
             }
+#endif
         }
     }
 }
