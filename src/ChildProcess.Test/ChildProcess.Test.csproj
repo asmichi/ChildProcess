@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
@@ -29,7 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
     <!-- Workaround for expressing BuildOderingOnly: https://github.com/microsoft/msbuild/issues/3843 -->
-    <!-- NOTE: This workaround does not work in Visual Studio when the target project uses TargetFramework*s*.-->
+    <!-- NOTE: This workaround does not work in Visual Studio when the target project uses TargetFramework*s*. -->
     <ProjectReference Include="..\TestChild\TestChild.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework" />
   </ItemGroup>
 

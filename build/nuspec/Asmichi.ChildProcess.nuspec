@@ -14,10 +14,14 @@
     <tags>win32 process</tags>
     <repository type="git" url="https://github.com/asmichi/ChildProcess" commit="$commitHash$"/>
     <dependencies>
-      <dependency id="System.Memory" version="4.5.3" exclude="Build,Analyzers" />
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="System.Memory" version="4.5.3" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.1" />
     </dependencies>
   </metadata>
   <files>
-    <file src="netstandard2.0\Asmichi.Utilities.ChildProcess.*" target="lib\netstandard2.0\" />
+    <file src="net472\Asmichi.Utilities.ChildProcess.*" target="lib\net472\" />
+    <file src="netstandard2.1\Asmichi.Utilities.ChildProcess.*" target="lib\netstandard2.1\" />
   </files>
 </package>
