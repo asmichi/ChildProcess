@@ -15,7 +15,8 @@
       "blankLinesBetweenUsingGroups": "omit"
     },
     "namingRules": {
-      "allowCommonHungarianPrefixes": false
+      "allowCommonHungarianPrefixes": false,
+      "tupleElementNameCasing": "camelCase"
     },
     "maintainabilityRules": {
       "topLevelTypes": []
