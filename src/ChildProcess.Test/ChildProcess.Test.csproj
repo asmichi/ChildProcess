@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
@@ -37,7 +37,7 @@
 
   <Target Name="AfterBuild">
     <ItemGroup>
-      <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp2.1\TestChild.*" />
+      <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.*" />
     </ItemGroup>
     <Copy SourceFiles="@(TestChildBin)" DestinationFolder="$(TargetDir)" />
   </Target>

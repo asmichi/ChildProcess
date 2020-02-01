@@ -11,9 +11,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
     {
         public static SafeFileHandle OpenNullDevice(FileAccess fileAccess)
         {
-#if NETFRAMEWORK
-            return Windows.FilePalWindows.OpenNullDevice(fileAccess);
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.FilePalWindows.OpenNullDevice(fileAccess),
@@ -21,14 +18,10 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
 
         public static (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair()
         {
-#if NETFRAMEWORK
-            return Windows.FilePalWindows.CreatePipePair();
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePair(),
@@ -36,7 +29,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
 
         /// <summary>
@@ -48,9 +40,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
         /// <returns>A pipe pair.</returns>
         public static (Stream serverStream, SafeFileHandle clientPipe) CreatePipePairWithAsyncServerSide(PipeDirection pipeDirection)
         {
-#if NETFRAMEWORK
-            return Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection);
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection),
@@ -58,7 +47,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
     }
 }

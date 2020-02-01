@@ -9,9 +9,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
     {
         public static SafeWaitHandle ToWaitHandle(SafeProcessHandle handle)
         {
-#if NETFRAMEWORK
-            return Windows.HandlePalWindows.ToWaitHandle(handle);
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.HandlePalWindows.ToWaitHandle(handle),
@@ -19,7 +16,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
     }
 }

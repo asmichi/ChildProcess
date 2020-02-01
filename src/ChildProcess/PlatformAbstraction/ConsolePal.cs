@@ -9,9 +9,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
     {
         public static SafeFileHandle GetStdInputHandleForChild()
         {
-#if NETFRAMEWORK
-            return Windows.ConsolePalWindows.GetStdInputHandleForChild();
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdInputHandleForChild(),
@@ -19,14 +16,10 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
 
         public static SafeFileHandle GetStdOutputHandleForChild()
         {
-#if NETFRAMEWORK
-            return Windows.ConsolePalWindows.GetStdOutputHandleForChild();
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdOutputHandleForChild(),
@@ -34,14 +27,10 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
 
         public static SafeFileHandle GetStdErrorHandleForChild()
         {
-#if NETFRAMEWORK
-            return Windows.ConsolePalWindows.GetStdErrorHandleForChild();
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdErrorHandleForChild(),
@@ -49,14 +38,10 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
 
         public static bool HasConsoleWindow()
         {
-#if NETFRAMEWORK
-            return Windows.ConsolePalWindows.HasConsoleWindow();
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.ConsolePalWindows.HasConsoleWindow(),
@@ -64,7 +49,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
     }
 }

@@ -18,9 +18,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
 
         private static PlatformKind GetPlatformKind()
         {
-#if NETFRAMEWORK
-            return PlatformKind.Win32;
-#else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return PlatformKind.Win32;
@@ -34,7 +31,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
             {
                 return PlatformKind.Unknown;
             }
-#endif
         }
     }
 }

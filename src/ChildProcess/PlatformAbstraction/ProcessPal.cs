@@ -18,9 +18,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
             SafeHandle stdOut,
             SafeHandle stdErr)
         {
-#if NETFRAMEWORK
-            return Windows.ProcessPalWindows.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr);
-#else
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => Windows.ProcessPalWindows.SpawnProcess(fileName, arguments, workingDirectory, environmentVariables, stdIn, stdOut, stdErr),
@@ -28,7 +25,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
-#endif
         }
     }
 }

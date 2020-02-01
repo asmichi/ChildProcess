@@ -27,8 +27,7 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 
 # Supported Runtimes
 
-- .NET Framework 4.7.2 or later
-- .NET Core 3.0 or later
+- .NET Core 3.1 or later
 
 OS:
 
