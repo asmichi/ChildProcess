@@ -20,14 +20,14 @@ namespace Asmichi.Utilities.Interop.Windows
         [DllImport(DllName, EntryPoint = "CreateProcessW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern unsafe bool CreateProcess(
-            [In] string lpApplicationName,
+            [In] string? lpApplicationName,
             [In] StringBuilder lpCommandLine,
             [In] IntPtr procSecAttrs,
             [In] IntPtr threadSecAttrs,
             [In] bool bInheritHandles,
             [In] int dwCreationFlags,
             [In] char* lpEnvironment,
-            [In] string lpCurrentDirectory,
+            [In] string? lpCurrentDirectory,
             [In][Out] ref STARTUPINFOEX lpStartupInfo,
             [Out] out PROCESS_INFORMATION lpProcessInformation);
 

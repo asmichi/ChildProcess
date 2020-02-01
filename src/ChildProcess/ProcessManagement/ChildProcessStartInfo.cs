@@ -111,25 +111,25 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// Path to the executable to start.
         /// </summary>
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
 
         /// <summary>
         /// The command-line arguments to be passed to the child process.
         /// null will be treated as Array.Empty&lt;string&gt;().
         /// </summary>
-        public IReadOnlyCollection<string> Arguments { get; set; }
+        public IReadOnlyCollection<string>? Arguments { get; set; }
 
         /// <summary>
         /// The working directory of the child process.
         /// If it is null, the child process inherits the working directory of the current process.
         /// </summary>
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         /// <summary>
         /// The list of the environment variables that apply to the child process.
         /// If it is null, the child process inherits the environment variables of the current process.
         /// </summary>
-        public IReadOnlyCollection<(string name, string value)> EnvironmentVariables { get; set; }
+        public IReadOnlyCollection<(string name, string value)>? EnvironmentVariables { get; set; }
 
         /// <summary>
         /// Specifies how the stdin of the child process is redirected.
@@ -153,41 +153,41 @@ namespace Asmichi.Utilities.ProcessManagement
         /// specifies the file where the stdin of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public string StdInputFile { get; set; }
+        public string? StdInputFile { get; set; }
 
         /// <summary>
         /// If <see cref="StdOutputRedirection"/> is <see cref="OutputRedirection.File"/> or <see cref="OutputRedirection.AppendToFile"/>,
         /// specifies the file where the stdout of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public string StdOutputFile { get; set; }
+        public string? StdOutputFile { get; set; }
 
         /// <summary>
         /// If <see cref="StdErrorRedirection"/> is <see cref="OutputRedirection.File"/> or <see cref="OutputRedirection.AppendToFile"/>,
         /// specifies the file where the stderr of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public string StdErrorFile { get; set; }
+        public string? StdErrorFile { get; set; }
 
         /// <summary>
         /// If <see cref="StdInputRedirection"/> is <see cref="InputRedirection.Handle"/>,
         /// specifies the file handle where the stdin of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle StdInputHandle { get; set; }
+        public SafeFileHandle? StdInputHandle { get; set; }
 
         /// <summary>
         /// If <see cref="StdOutputRedirection"/> is <see cref="OutputRedirection.Handle"/>,
         /// specifies the file handle where the stdout of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle StdOutputHandle { get; set; }
+        public SafeFileHandle? StdOutputHandle { get; set; }
 
         /// <summary>
         /// If <see cref="StdErrorRedirection"/> is <see cref="OutputRedirection.Handle"/>,
         /// specifies the file handle where the stderr of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle StdErrorHandle { get; set; }
+        public SafeFileHandle? StdErrorHandle { get; set; }
     }
 }

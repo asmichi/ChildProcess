@@ -71,7 +71,7 @@ namespace Asmichi.Utilities
 
             foreach (var key in evars.Keys.Cast<string>().OrderBy(x => x))
             {
-                Console.Write("{0}={1}\0", key, (string)evars[key]);
+                Console.Write("{0}={1}\0", key, (string?)evars[key]);
             }
 
             return 0;

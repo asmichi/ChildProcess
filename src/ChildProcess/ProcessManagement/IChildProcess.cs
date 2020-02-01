@@ -29,19 +29,19 @@ namespace Asmichi.Utilities.ProcessManagement
         /// A stream associated to the pipe that writes to the stdin of the process, if any.
         /// If no such pipe has been crated, null.
         /// </summary>
-        Stream StandardInput { get; }
+        Stream? StandardInput { get; }
 
         /// <summary>
         /// A stream associated to the pipe that reads from the stdout of the process, if any.
         /// If no such pipe has been crated, null.
         /// </summary>
-        Stream StandardOutput { get; }
+        Stream? StandardOutput { get; }
 
         /// <summary>
         /// A stream associated to the pipe that reads from the stderr of the process, if any.
         /// If no such pipe has been crated, null.
         /// </summary>
-        Stream StandardError { get; }
+        Stream? StandardError { get; }
 
         /// <summary>
         /// Waits indefinitely for the process to exit.

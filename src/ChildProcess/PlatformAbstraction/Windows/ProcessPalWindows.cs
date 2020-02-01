@@ -18,8 +18,8 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
         internal static unsafe SafeProcessHandle SpawnProcess(
             string fileName,
             IReadOnlyCollection<string> arguments,
-            string workingDirectory,
-            IReadOnlyCollection<(string name, string value)> environmentVariables,
+            string? workingDirectory,
+            IReadOnlyCollection<(string name, string value)>? environmentVariables,
             SafeHandle stdIn,
             SafeHandle stdOut,
             SafeHandle stdErr)
@@ -69,11 +69,11 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
         private static unsafe SafeProcessHandle InvokeCreateProcess(
             StringBuilder commandLine,
             int creationFlags,
-            char[] environmentBlock,
-            string currentDirectory,
-            SafeHandle stdInput,
-            SafeHandle stdOutput,
-            SafeHandle stdError,
+            char[]? environmentBlock,
+            string? currentDirectory,
+            SafeHandle? stdInput,
+            SafeHandle? stdOutput,
+            SafeHandle? stdError,
             ProcThreadAttributeList attr)
         {
             commandLine = commandLine ?? throw new ArgumentNullException(nameof(commandLine));
@@ -137,15 +137,15 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
 
                     if (stdInputRefAdded)
                     {
-                        stdInput.DangerousRelease();
+                        stdInput!.DangerousRelease();
                     }
                     if (stdOutputRefAdded)
                     {
-                        stdOutput.DangerousRelease();
+                        stdOutput!.DangerousRelease();
                     }
                     if (stdErrorRefAdded)
                     {
-                        stdError.DangerousRelease();
+                        stdError!.DangerousRelease();
                     }
                     if (attrRefAdded)
                     {
@@ -161,7 +161,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
                     throw new Win32Exception(win32Error);
                 }
 
-                return process;
+                return process!;
             }
         }
     }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Asmichi.Utilities.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
@@ -13,10 +14,10 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     internal sealed class PipelineStdHandleCreator : IDisposable
     {
-        private readonly SafeFileHandle _inputReadPipe;
-        private readonly SafeFileHandle _outputWritePipe;
-        private readonly SafeFileHandle _errorWritePipe;
-        private List<IDisposable> _objectsToDispose;
+        private readonly SafeFileHandle? _inputReadPipe;
+        private readonly SafeFileHandle? _outputWritePipe;
+        private readonly SafeFileHandle? _errorWritePipe;
+        private List<IDisposable>? _objectsToDispose;
         private bool _isDisposed;
 
         public PipelineStdHandleCreator(ChildProcessStartInfo startInfo)
@@ -33,27 +34,27 @@ namespace Asmichi.Utilities.ProcessManagement
 
             if (stdInputRedirection == InputRedirection.Handle && stdInputHandle == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdInputHandle must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdInputHandle must not be null.", nameof(startInfo));
             }
             if (stdInputRedirection == InputRedirection.File && stdInputFile == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdInputFile must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdInputFile must not be null.", nameof(startInfo));
             }
             if (stdOutputRedirection == OutputRedirection.Handle && stdOutputHandle == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdOutputHandle must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdOutputHandle must not be null.", nameof(startInfo));
             }
             if (IsFileRedirection(stdOutputRedirection) && stdOutputFile == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdOutputFile must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdOutputFile must not be null.", nameof(startInfo));
             }
             if (stdErrorRedirection == OutputRedirection.Handle && stdErrorHandle == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdErrorHandle must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdErrorHandle must not be null.", nameof(startInfo));
             }
             if (IsFileRedirection(stdErrorRedirection) && stdErrorFile == null)
             {
-                throw new ArgumentNullException(nameof(startInfo), "ChildProcessStartInfo.StdErrorFile must not be null.");
+                throw new ArgumentException("ChildProcessStartInfo.StdErrorFile must not be null.", nameof(startInfo));
             }
 
             bool redirectingToSameFile = IsFileRedirection(stdOutputRedirection) && IsFileRedirection(stdErrorRedirection) && stdOutputFile == stdErrorFile;
@@ -157,17 +158,17 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// An asynchronous <see cref="Stream"/> that writes to the pipeline.
         /// </summary>
-        public Stream InputStream { get; private set; }
+        public Stream? InputStream { get; private set; }
 
         /// <summary>
         /// An asynchronous <see cref="Stream"/> that reads from the standard output of the pipeline.
         /// </summary>
-        public Stream OutputStream { get; private set; }
+        public Stream? OutputStream { get; private set; }
 
         /// <summary>
         /// An asynchronous <see cref="Stream"/> that reads from the standard error of the pipeline.
         /// </summary>
-        public Stream ErrorStream { get; private set; }
+        public Stream? ErrorStream { get; private set; }
 
         /// <summary>
         /// Detaches <see cref="InputStream"/>, <see cref="OutputStream"/> and <see cref="ErrorStream"/> so that they will no be disposed by this instance.
@@ -182,16 +183,16 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private SafeFileHandle ChooseInput(
             InputRedirection redirection,
-            string fileName,
-            SafeFileHandle handle,
-            SafeFileHandle inputPipe)
+            string? fileName,
+            SafeFileHandle? handle,
+            SafeFileHandle? inputPipe)
         {
             return redirection switch
             {
                 InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read),
-                InputRedirection.InputPipe => inputPipe,
-                InputRedirection.File => OpenFile(fileName, FileMode.Open, FileAccess.Read, FileShare.Read),
-                InputRedirection.Handle => handle,
+                InputRedirection.InputPipe => inputPipe!,
+                InputRedirection.File => OpenFile(fileName!, FileMode.Open, FileAccess.Read, FileShare.Read),
+                InputRedirection.Handle => handle!,
                 InputRedirection.NullDevice => OpenNullDevice(FileAccess.Read),
                 _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(InputRedirection) + "."),
             };
@@ -199,20 +200,20 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private SafeFileHandle ChooseOutput(
             OutputRedirection redirection,
-            string fileName,
-            SafeFileHandle handle,
-            SafeFileHandle outputPipe,
-            SafeFileHandle errorPipe)
+            string? fileName,
+            SafeFileHandle? handle,
+            SafeFileHandle? outputPipe,
+            SafeFileHandle? errorPipe)
         {
             return redirection switch
             {
                 OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write),
                 OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write),
-                OutputRedirection.OutputPipe => outputPipe,
-                OutputRedirection.ErrorPipe => errorPipe,
-                OutputRedirection.File => OpenFile(fileName, FileMode.Create, FileAccess.Write, FileShare.Read),
-                OutputRedirection.AppendToFile => OpenFile(fileName, FileMode.Append, FileAccess.Write, FileShare.Read),
-                OutputRedirection.Handle => handle,
+                OutputRedirection.OutputPipe => outputPipe!,
+                OutputRedirection.ErrorPipe => errorPipe!,
+                OutputRedirection.File => OpenFile(fileName!, FileMode.Create, FileAccess.Write, FileShare.Read),
+                OutputRedirection.AppendToFile => OpenFile(fileName!, FileMode.Append, FileAccess.Write, FileShare.Read),
+                OutputRedirection.Handle => handle!,
                 OutputRedirection.NullDevice => FilePal.OpenNullDevice(FileAccess.Write),
                 _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(OutputRedirection) + "."),
             };
@@ -224,28 +225,26 @@ namespace Asmichi.Utilities.ProcessManagement
             FileAccess access,
             FileShare share)
         {
-            EnsureObjectsToDispose();
-
             var fs = new FileStream(fileName, mode, access, share);
-            _objectsToDispose.Add(fs);
+            AddObjectsToDispose(fs);
             return fs.SafeFileHandle;
         }
 
         private SafeFileHandle OpenNullDevice(FileAccess access)
         {
-            EnsureObjectsToDispose();
-
             var handle = FilePal.OpenNullDevice(access);
-            _objectsToDispose.Add(handle);
+            AddObjectsToDispose(handle);
             return handle;
         }
 
-        private void EnsureObjectsToDispose()
+        private void AddObjectsToDispose(IDisposable value)
         {
             if (_objectsToDispose == null)
             {
                 _objectsToDispose = new List<IDisposable>(5);
             }
+
+            _objectsToDispose.Add(value);
         }
 
         private static bool IsFileRedirection(OutputRedirection redirection) =>

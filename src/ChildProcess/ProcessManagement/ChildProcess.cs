@@ -21,18 +21,18 @@ namespace Asmichi.Utilities.ProcessManagement
     {
         private readonly SafeProcessHandle _processHandle;
         private readonly WaitHandle _waitHandle;
-        private readonly Stream _standardInput;
-        private readonly Stream _standardOutput;
-        private readonly Stream _standardError;
+        private readonly Stream? _standardInput;
+        private readonly Stream? _standardOutput;
+        private readonly Stream? _standardError;
         private bool _isDisposed;
         private bool _hasExitCode;
         private int _exitCode;
 
         private ChildProcess(
             SafeProcessHandle processHandle,
-            Stream standardInput,
-            Stream standardOutput,
-            Stream standardError)
+            Stream? standardInput,
+            Stream? standardOutput,
+            Stream? standardError)
         {
             _processHandle = processHandle;
             _standardInput = standardInput;
@@ -65,21 +65,21 @@ namespace Asmichi.Utilities.ProcessManagement
         /// a stream assosiated to that pipe.
         /// Otherwise null.
         /// </summary>
-        public Stream StandardInput => _standardInput;
+        public Stream? StandardInput => _standardInput;
 
         /// <summary>
         /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
         /// set to <see cref="OutputRedirection.OutputPipe"/>, a stream assosiated to that pipe.
         /// Otherwise null.
         /// </summary>
-        public Stream StandardOutput => _standardOutput;
+        public Stream? StandardOutput => _standardOutput;
 
         /// <summary>
         /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
         /// set to <see cref="OutputRedirection.ErrorPipe"/>, a stream assosiated to that pipe.
         /// Otherwise null.
         /// </summary>
-        public Stream StandardError => _standardError;
+        public Stream? StandardError => _standardError;
 
         /// <summary>
         /// (For tests.) Tests use this to wait for the child process without caching its status.
@@ -153,8 +153,8 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             // Start an asynchronous wait operation.
-            var operation = new WaitAsyncOperation();
-            return operation.StartAsync(_waitHandle, millisecondsTimeout, cancellationToken);
+            var operation = WaitAsyncOperation.Start(_waitHandle, millisecondsTimeout, cancellationToken);
+            return operation.Completion;
         }
 
         /// <summary>

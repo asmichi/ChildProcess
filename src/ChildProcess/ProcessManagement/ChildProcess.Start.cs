@@ -27,7 +27,9 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <exception cref="ProcessCreationFailedException">Process creation failed.</exception>
         public static ChildProcess Start(ChildProcessStartInfo startInfo)
         {
-            startInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
+            _ = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
+            _ = startInfo.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
+            _ = startInfo.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
             using var stdHandles = new PipelineStdHandleCreator(startInfo);
             var processHandle = ProcessPal.SpawnProcess(

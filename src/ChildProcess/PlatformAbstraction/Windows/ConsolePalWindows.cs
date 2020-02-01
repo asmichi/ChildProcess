@@ -8,12 +8,12 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
 {
     internal static class ConsolePalWindows
     {
-        public static SafeFileHandle GetStdInputHandleForChild() => GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE);
-        public static SafeFileHandle GetStdOutputHandleForChild() => GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE);
-        public static SafeFileHandle GetStdErrorHandleForChild() => GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE);
+        public static SafeFileHandle? GetStdInputHandleForChild() => GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE);
+        public static SafeFileHandle? GetStdOutputHandleForChild() => GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE);
+        public static SafeFileHandle? GetStdErrorHandleForChild() => GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE);
 
         // Returns the std* handle of the current process that can be inherited by a child process.
-        private static SafeFileHandle GetStdHandleForChild(int kind)
+        private static SafeFileHandle? GetStdHandleForChild(int kind)
         {
             var handle = new SafeFileHandle(Kernel32.GetStdHandle(kind), false);
 

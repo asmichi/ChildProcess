@@ -25,7 +25,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.Equal(0, sut.ExitCode);
 
             // This closes StandardOutput, which should be acceptable.
-            using var sr = new StreamReader(sut.StandardOutput);
+            using var sr = new StreamReader(sut.StandardOutput!);
             Assert.Equal("TestChild", sr.ReadToEnd());
         }
 
@@ -71,7 +71,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.Throws<InvalidOperationException>(() => sut.IsSuccessful);
             Assert.Throws<InvalidOperationException>(() => sut.ExitCode);
 
-            sut.StandardInput.Close();
+            sut.StandardInput!.Close();
             sut.WaitForExit();
 
             Assert.True(sut.IsSuccessful);
@@ -85,7 +85,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.False(sut.WaitForExit(0));
             Assert.False(sut.WaitForExit(1));
 
-            sut.StandardInput.Close();
+            sut.StandardInput!.Close();
             sut.WaitHandle.WaitOne();
 
             Assert.True(sut.WaitForExit(0));
@@ -98,7 +98,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.False(await sut.WaitForExitAsync(0));
             Assert.False(await sut.WaitForExitAsync(1));
 
-            sut.StandardInput.Close();
+            sut.StandardInput!.Close();
             sut.WaitHandle.WaitOne();
 
             Assert.True(await sut.WaitForExitAsync(0));
@@ -117,7 +117,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 Assert.Throws<TaskCanceledException>(() => t.GetAwaiter().GetResult());
             }
 
-            sut.StandardInput.Close();
+            sut.StandardInput!.Close();
             sut.WaitHandle.WaitOne();
 
             // If the process has already exited, returns true instead of returning CanceledTask.
@@ -167,8 +167,8 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private static async Task CorrectlyConnectsPipesAsync(IChildProcess sut, string expectedStdout, string expectedStderr)
         {
-            using var srOut = new StreamReader(sut.StandardOutput);
-            using var srErr = new StreamReader(sut.StandardError);
+            using var srOut = new StreamReader(sut.StandardOutput!);
+            using var srErr = new StreamReader(sut.StandardError!);
             var stdoutTask = srOut.ReadToEndAsync();
             var stderrTask = srErr.ReadToEndAsync();
             sut.WaitForExit();
@@ -188,9 +188,9 @@ namespace Asmichi.Utilities.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
-            Assert.True(((FileStream)sut.StandardInput).IsAsync);
-            Assert.True(((FileStream)sut.StandardOutput).IsAsync);
-            Assert.True(((FileStream)sut.StandardError).IsAsync);
+            Assert.True(((FileStream)sut.StandardInput!).IsAsync);
+            Assert.True(((FileStream)sut.StandardOutput!).IsAsync);
+            Assert.True(((FileStream)sut.StandardError!).IsAsync);
 
             using (var sr = new StreamReader(sut.StandardOutput))
             {
@@ -386,7 +386,7 @@ namespace Asmichi.Utilities.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
-            using var sr = new StreamReader(sut.StandardOutput);
+            using var sr = new StreamReader(sut.StandardOutput!);
             var output = sr.ReadToEnd();
             sut.WaitForExit();
             Assert.Equal(new[] { "A=a", "BB=bb" }, output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries));
@@ -403,7 +403,7 @@ namespace Asmichi.Utilities.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
-            using var sr = new StreamReader(sut.StandardOutput);
+            using var sr = new StreamReader(sut.StandardOutput!);
             var output = sr.ReadToEnd();
             sut.WaitForExit();
             Assert.Equal(tmp.Location, output);

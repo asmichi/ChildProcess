@@ -12,8 +12,8 @@ namespace Asmichi.Utilities.PlatformAbstraction.Linux
         public static SafeProcessHandle SpawnProcess(
             string fileName,
             IReadOnlyCollection<string> arguments,
-            string workingDirectory,
-            IReadOnlyCollection<(string name, string value)> environmentVariables,
+            string? workingDirectory,
+            IReadOnlyCollection<(string name, string value)>? environmentVariables,
             SafeHandle stdIn,
             SafeHandle stdOut,
             SafeHandle stdErr)

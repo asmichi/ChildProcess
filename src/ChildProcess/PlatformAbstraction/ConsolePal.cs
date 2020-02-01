@@ -7,7 +7,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
 {
     internal static class ConsolePal
     {
-        public static SafeFileHandle GetStdInputHandleForChild()
+        public static SafeFileHandle? GetStdInputHandleForChild()
         {
             return Pal.PlatformKind switch
             {
@@ -18,7 +18,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
             };
         }
 
-        public static SafeFileHandle GetStdOutputHandleForChild()
+        public static SafeFileHandle? GetStdOutputHandleForChild()
         {
             return Pal.PlatformKind switch
             {
@@ -29,7 +29,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
             };
         }
 
-        public static SafeFileHandle GetStdErrorHandleForChild()
+        public static SafeFileHandle? GetStdErrorHandleForChild()
         {
             return Pal.PlatformKind switch
             {
