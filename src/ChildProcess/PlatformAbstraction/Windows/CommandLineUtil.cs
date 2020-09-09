@@ -21,7 +21,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
 
             foreach (var arg in args)
             {
-                sb.Append(" ");
+                sb.Append(' ');
                 AppendArgumentQuoted(sb, arg);
             }
 
@@ -53,7 +53,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
                 return;
             }
 
-            sb.Append("\"");
+            sb.Append('"');
 
             int backslashCount = 0;
             foreach (var c in s)
@@ -89,7 +89,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             // Escape trailing backslashes.
             sb.Append('\\', backslashCount);
 
-            sb.Append("\"");
+            sb.Append('"');
         }
 
         private static bool IsQuotingRequired(string s)
