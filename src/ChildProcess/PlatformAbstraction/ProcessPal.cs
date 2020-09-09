@@ -13,7 +13,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
             string fileName,
             IReadOnlyCollection<string> arguments,
             string? workingDirectory,
-            IReadOnlyCollection<(string name, string value)>? environmentVariables,
+            IReadOnlyCollection<KeyValuePair<string, string>>? environmentVariables,
             SafeHandle stdIn,
             SafeHandle stdOut,
             SafeHandle stdErr)

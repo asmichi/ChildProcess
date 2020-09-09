@@ -12,7 +12,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
         /// </summary>
         /// <param name="evars">Collection of environment variables.</param>
         /// <returns>A string that contains the environment block.</returns>
-        public static char[] MakeEnvironmentBlockWin32(IReadOnlyCollection<(string name, string value)> evars)
+        public static char[] MakeEnvironmentBlockWin32(IReadOnlyCollection<KeyValuePair<string, string>> evars)
         {
             var buf = new char[CalculateLength(evars)];
 
@@ -39,7 +39,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             return buf;
         }
 
-        private static int CalculateLength(IReadOnlyCollection<(string name, string value)> evars)
+        private static int CalculateLength(IReadOnlyCollection<KeyValuePair<string, string>> evars)
         {
             int length = 0;
             foreach (var (name, value) in evars)

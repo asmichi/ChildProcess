@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -382,7 +383,11 @@ namespace Asmichi.Utilities.ProcessManagement
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "DumpEnvironmentVariables")
             {
                 StdOutputRedirection = OutputRedirection.OutputPipe,
-                EnvironmentVariables = new[] { ("A", "a"), ("BB", "bb") },
+                EnvironmentVariables = new[]
+                {
+                    new KeyValuePair<string, string>("A", "a"),
+                    new KeyValuePair<string, string>("BB", "bb"),
+                },
             };
 
             using var sut = ChildProcess.Start(si);
