@@ -34,10 +34,10 @@ jobs:
       arguments: '-CommitHash $(Build.SourceVersion) -BranchName $(Build.SourceBranchName)'
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.101'
+    displayName: 'Use .NET Core SDK 3.1.402'
     inputs:
       packageType: sdk
-      version: 3.1.101
+      version: 3.1.402
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet restore'
