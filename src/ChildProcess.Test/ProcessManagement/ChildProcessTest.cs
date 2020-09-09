@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -383,18 +384,38 @@ namespace Asmichi.Utilities.ProcessManagement
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "DumpEnvironmentVariables")
             {
                 StdOutputRedirection = OutputRedirection.OutputPipe,
-                EnvironmentVariables = new[]
-                {
-                    new KeyValuePair<string, string>("A", "a"),
-                    new KeyValuePair<string, string>("BB", "bb"),
-                },
+                EnvironmentVariables = GetTestEnvironmentVariables(),
             };
 
             using var sut = ChildProcess.Start(si);
             using var sr = new StreamReader(sut.StandardOutput!);
             var output = sr.ReadToEnd();
+            var childEvars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
             sut.WaitForExit();
-            Assert.Equal(new[] { "A=a", "BB=bb" }, output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries));
+
+            Assert.Equal(0, sut.ExitCode);
+            Assert.Contains("A=a", childEvars);
+            Assert.Contains("BB=bb", childEvars);
+
+            static List<KeyValuePair<string, string>> GetTestEnvironmentVariables()
+            {
+                var evars = new List<KeyValuePair<string, string>>();
+
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                {
+                    var key = (string)de.Key;
+                    var value = (string)de.Value!;
+
+                    evars.Add(new KeyValuePair<string, string>(key, value));
+                }
+
+                evars.Add(new KeyValuePair<string, string>("A", "a"));
+                evars.Add(new KeyValuePair<string, string>("BB", "bb"));
+
+                return evars;
+            }
         }
 
         [Fact]
