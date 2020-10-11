@@ -43,4 +43,10 @@
     <Version>0.2.0-localbuild+unknown</Version>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>$(WorkTreeRoot)build\public.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
 </Project>
