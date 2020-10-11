@@ -7,29 +7,31 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.PlatformAbstraction
 {
+    internal interface IFilePal
+    {
+        (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair();
+        (Stream serverStream, SafeFileHandle clientPipe) CreatePipePairWithAsyncServerSide(PipeDirection pipeDirection);
+        SafeFileHandle OpenNullDevice(FileAccess fileAccess);
+    }
+
     internal static class FilePal
     {
-        public static SafeFileHandle OpenNullDevice(FileAccess fileAccess)
+        private static readonly IFilePal Impl = CreatePlatformSpecificImpl();
+
+        private static IFilePal CreatePlatformSpecificImpl()
         {
             return Pal.PlatformKind switch
             {
-                PlatformKind.Win32 => Windows.FilePalWindows.OpenNullDevice(fileAccess),
-                PlatformKind.Linux => Linux.FilePalLinux.OpenNullDevice(fileAccess),
+                PlatformKind.Win32 => new Windows.WindowsFilePal(),
+                PlatformKind.Linux => new Unix.UnixFilePal(),
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
         }
 
-        public static (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair()
-        {
-            return Pal.PlatformKind switch
-            {
-                PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePair(),
-                PlatformKind.Linux => Linux.FilePalLinux.CreatePipePair(),
-                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
-                _ => throw new PlatformNotSupportedException(),
-            };
-        }
+        public static SafeFileHandle OpenNullDevice(FileAccess fileAccess) => Impl.OpenNullDevice(fileAccess);
+
+        public static (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair() => Impl.CreatePipePair();
 
         /// <summary>
         /// Creates a pipe pair. Asynchronous IO is enabled for the server side.
@@ -38,15 +40,7 @@ namespace Asmichi.Utilities.PlatformAbstraction
         /// </summary>
         /// <param name="pipeDirection">Specifies which side is the server side.</param>
         /// <returns>A pipe pair.</returns>
-        public static (Stream serverStream, SafeFileHandle clientPipe) CreatePipePairWithAsyncServerSide(PipeDirection pipeDirection)
-        {
-            return Pal.PlatformKind switch
-            {
-                PlatformKind.Win32 => Windows.FilePalWindows.CreatePipePairWithAsyncServerSide(pipeDirection),
-                PlatformKind.Linux => Linux.FilePalLinux.CreatePipePairWithAsyncServerSide(pipeDirection),
-                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
-                _ => throw new PlatformNotSupportedException(),
-            };
-        }
+        public static (Stream serverStream, SafeFileHandle clientPipe) CreatePipePairWithAsyncServerSide(PipeDirection pipeDirection) =>
+            Impl.CreatePipePairWithAsyncServerSide(pipeDirection);
     }
 }

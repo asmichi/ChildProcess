@@ -1,14 +1,10 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Asmichi.Utilities.Interop.Windows;
-using Asmichi.Utilities.PlatformAbstraction;
 using Asmichi.Utilities.Utilities;
-using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
@@ -19,28 +15,22 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     public sealed partial class ChildProcess : IDisposable, IChildProcess
     {
-        private readonly SafeProcessHandle _processHandle;
-        private readonly WaitHandle _waitHandle;
+        private readonly IChildProcessStateHolder _stateHolder;
         private readonly Stream? _standardInput;
         private readonly Stream? _standardOutput;
         private readonly Stream? _standardError;
         private bool _isDisposed;
-        private bool _hasExitCode;
-        private int _exitCode;
 
         private ChildProcess(
-            SafeProcessHandle processHandle,
+            IChildProcessStateHolder childProcessStateHolder,
             Stream? standardInput,
             Stream? standardOutput,
             Stream? standardError)
         {
-            _processHandle = processHandle;
+            _stateHolder = childProcessStateHolder;
             _standardInput = standardInput;
             _standardOutput = standardOutput;
             _standardError = standardError;
-
-            // In Windows it is easy to get a WaitHandle from a process handle... What about Linux?
-            _waitHandle = new ChildProcessWaitHandle(HandlePal.ToWaitHandle(processHandle));
         }
 
         /// <summary>
@@ -50,8 +40,7 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             if (!_isDisposed)
             {
-                _processHandle.Dispose();
-                _waitHandle.Dispose();
+                _stateHolder.Dispose();
                 _standardInput?.Dispose();
                 _standardOutput?.Dispose();
                 _standardError?.Dispose();
@@ -84,7 +73,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// (For tests.) Tests use this to wait for the child process without caching its status.
         /// </summary>
-        internal WaitHandle WaitHandle => _waitHandle;
+        internal WaitHandle ExitedWaitHandle => _stateHolder.State.ExitedWaitHandle;
 
         /// <summary>
         /// Waits indefinitely for the process to exit.
@@ -101,17 +90,19 @@ namespace Asmichi.Utilities.ProcessManagement
             ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
             CheckNotDisposed();
 
-            if (_hasExitCode)
+            var state = _stateHolder.State;
+
+            if (state.HasExitCode)
             {
                 return true;
             }
 
-            if (!_waitHandle.WaitOne(millisecondsTimeout))
+            if (!state.ExitedWaitHandle.WaitOne(millisecondsTimeout))
             {
                 return false;
             }
 
-            DangerousRetrieveExitCode();
+            state.DangerousRetrieveExitCode();
             return true;
         }
 
@@ -134,15 +125,18 @@ namespace Asmichi.Utilities.ProcessManagement
             ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
             CheckNotDisposed();
 
-            if (_hasExitCode)
+            var state = _stateHolder.State;
+
+            if (state.HasExitCode)
             {
                 return CompletedBoolTask.True;
             }
 
             // Synchronous path: the process has already exited.
-            if (_waitHandle.WaitOne(0))
+            var waitHandle = _stateHolder.State.ExitedWaitHandle;
+            if (waitHandle.WaitOne(0))
             {
-                DangerousRetrieveExitCode();
+                state.DangerousRetrieveExitCode();
                 return CompletedBoolTask.True;
             }
 
@@ -153,7 +147,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             // Start an asynchronous wait operation.
-            var operation = WaitAsyncOperation.Start(_waitHandle, millisecondsTimeout, cancellationToken);
+            var operation = WaitAsyncOperation.Start(waitHandle, millisecondsTimeout, cancellationToken);
             return operation.Completion;
         }
 
@@ -174,7 +168,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 CheckNotDisposed();
                 RetrieveExitCode();
 
-                return _exitCode;
+                return _stateHolder.State.ExitCode;
             }
         }
 
@@ -188,26 +182,15 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private void RetrieveExitCode()
         {
-            if (!_hasExitCode)
+            if (!_stateHolder.State.HasExitCode)
             {
                 if (!WaitForExit(0))
                 {
                     throw new InvalidOperationException("The process has not exited. Call WaitForExit before accessing ExitCode.");
                 }
 
-                DangerousRetrieveExitCode();
+                _stateHolder.State.DangerousRetrieveExitCode();
             }
-        }
-
-        // Pre: The process has exited. Otherwise we will end up getting STILL_ACTIVE (259).
-        private void DangerousRetrieveExitCode()
-        {
-            if (!Kernel32.GetExitCodeProcess(_processHandle, out _exitCode))
-            {
-                throw new Win32Exception();
-            }
-
-            _hasExitCode = true;
         }
     }
 }

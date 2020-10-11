@@ -33,11 +33,30 @@ OS:
 
 - `win10-x86` (1803 or later)
 - `win10-x64` (1803 or later)
-- `linux-x64` support is planned but not implemented.
+- `linux-x64`
+    - GLIBC 2.x.y or later, LIBSTDCXX 3.x.y or later.
+    - (Alpine Linux is not currently supported.)
 
 # Notes
 
 - When overriding environment variables, it is recommended that you include basic environment variables such as `SystemRoot`, etc.
+
+# Assumptions on Runtimes
+
+This library assumes that the underlying runtime has the following characteristics:
+
+- Windows
+    - The inner value of a `SafeFileHandle` is a file handle.
+    - The inner value of a `SafeWaitHandle` is a handle that `WaitForSingleObject` can wait for.
+    - The inner value of a `SafeProcessHandle` is a process handle.
+- *nix
+    - The inner value of a `SafeFileHandle` is a file descriptor.
+    - The inner value of a `SafeProcessHandle` is a process id.
+    - `Socket.Handle` returns a socket file descriptor.
+
+# Limitations
+
+- More than 2^63 processes cannot be created.
 
 # Examples
 

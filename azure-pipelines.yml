@@ -59,34 +59,36 @@ jobs:
       projects: src/ChildProcess.Test/ChildProcess.Test.csproj
       arguments: '$(CommonBuildOptions)'
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.4'
-    inputs:
-      versionSpec: 4.9.4
+  # TODO: Implement this.
+  # Disabled; currently the linux native libraries do not build on Azure Pipelines.
+  # - task: NuGetToolInstaller@0
+  #   displayName: 'Use NuGet 4.9.4'
+  #   inputs:
+  #     versionSpec: 4.9.4
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet custom'
-    inputs:
-      command: custom
-      arguments: 'pack -Verbosity quiet -ForceEnglishOutput -Version $(PackageVersion) -BasePath bin/ChildProcess/AnyCPU/Release -OutputDirectory bin/nupkg -Properties commitHash=$(Build.SourceVersion) build/nuspec/Asmichi.ChildProcess.nuspec'
+  # - task: NuGetCommand@2
+  #   displayName: 'NuGet custom'
+  #   inputs:
+  #     command: custom
+  #     arguments: 'pack -Verbosity quiet -ForceEnglishOutput -Version $(PackageVersion) -BasePath bin/ChildProcess/AnyCPU/Release -OutputDirectory bin/nupkg -Properties commitHash=$(Build.SourceVersion) build/nuspec/Asmichi.ChildProcess.nuspec'
 
-  - task: CopyFiles@2
-    displayName: 'Copy Files to: $(Build.artifactstagingdirectory)'
-    inputs:
-      SourceFolder: '$(system.defaultworkingdirectory)'
-      Contents: 'bin/nupkg/*'
-      TargetFolder: '$(Build.artifactstagingdirectory)'
+  # - task: CopyFiles@2
+  #   displayName: 'Copy Files to: $(Build.artifactstagingdirectory)'
+  #   inputs:
+  #     SourceFolder: '$(system.defaultworkingdirectory)'
+  #     Contents: 'bin/nupkg/*'
+  #     TargetFolder: '$(Build.artifactstagingdirectory)'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.artifactstagingdirectory)'
+  # - task: PublishBuildArtifacts@1
+  #   displayName: 'Publish Artifact: drop'
+  #   inputs:
+  #     PathtoPublish: '$(Build.artifactstagingdirectory)'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet push'
-    inputs:
-      command: push
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-      nuGetFeedType: 'internal'
-      publishVstsFeed: 'ChildProcessCI'
-      allowPackageConflicts: true
+  # - task: NuGetCommand@2
+  #   displayName: 'NuGet push'
+  #   inputs:
+  #     command: push
+  #     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+  #     nuGetFeedType: 'internal'
+  #     publishVstsFeed: 'ChildProcessCI'
+  #     allowPackageConflicts: true

@@ -19,5 +19,6 @@
   </metadata>
   <files>
     <file src="netcoreapp3.1\Asmichi.Utilities.ChildProcess.*" target="lib\netcoreapp3.1\" />
+    <file src="netcoreapp3.1\runtimes\**\*" target="runtimes\" />
   </files>
 </package>

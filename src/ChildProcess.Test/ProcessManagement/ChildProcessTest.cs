@@ -3,7 +3,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -32,18 +36,32 @@ namespace Asmichi.Utilities.ProcessManagement
         }
 
         [Fact]
+        public void ReportsFileNotFoundError()
+        {
+            Assert.Throws<FileNotFoundException>(() => ChildProcess.Start(new ChildProcessStartInfo("nonexistentfile")));
+            Assert.Throws<FileNotFoundException>(() => ChildProcess.Start(new ChildProcessStartInfo("/nonexistentfile.exe")));
+            Assert.Throws<FileNotFoundException>(() => ChildProcess.Start(new ChildProcessStartInfo("/nonexistentdir/nonexistentfile.exe")));
+        }
+
+        [Fact]
         public void ReportsCreationFailure()
         {
-            var si = new ChildProcessStartInfo("nonexistentfile");
+            // Create a bad executable.
+            var badExecutableName = @".\bad_executable.exe";
+            File.WriteAllBytes(badExecutableName, new byte[128]);
 
-            Assert.Throws<ProcessCreationFailedException>(() => ChildProcess.Start(si));
+            Assert.Throws<Win32Exception>(() => ChildProcess.Start(new ChildProcessStartInfo(badExecutableName)));
         }
 
         [Fact]
         public void CanObtainExitCode()
         {
             {
-                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "ExitCode", "0");
+                var si = new ChildProcessStartInfo(
+                    TestUtil.DotnetCommand,
+                    TestUtil.TestChildPath,
+                    "ExitCode",
+                    "0");
 
                 using var sut = ChildProcess.Start(si);
                 sut.WaitForExit();
@@ -52,12 +70,19 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             {
-                var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "ExitCode", "-1");
+                // An exit code is 32-bit on Windows while it is 8-bit on POSIX.
+                int nonZeroExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xc0000005) : 255;
+
+                var si = new ChildProcessStartInfo(
+                    TestUtil.DotnetCommand,
+                    TestUtil.TestChildPath,
+                    "ExitCode",
+                    nonZeroExitCode.ToString(CultureInfo.InvariantCulture));
 
                 using var sut = ChildProcess.Start(si);
                 sut.WaitForExit();
                 Assert.False(sut.IsSuccessful);
-                Assert.Equal(-1, sut.ExitCode);
+                Assert.Equal(nonZeroExitCode, sut.ExitCode);
             }
         }
 
@@ -88,7 +113,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.False(sut.WaitForExit(1));
 
             sut.StandardInput!.Close();
-            sut.WaitHandle.WaitOne();
+            sut.ExitedWaitHandle.WaitOne();
 
             Assert.True(sut.WaitForExit(0));
         }
@@ -101,7 +126,7 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.False(await sut.WaitForExitAsync(1));
 
             sut.StandardInput!.Close();
-            sut.WaitHandle.WaitOne();
+            sut.ExitedWaitHandle.WaitOne();
 
             Assert.True(await sut.WaitForExitAsync(0));
         }
@@ -120,7 +145,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             sut.StandardInput!.Close();
-            sut.WaitHandle.WaitOne();
+            sut.ExitedWaitHandle.WaitOne();
 
             // If the process has already exited, returns true instead of returning CanceledTask.
             using (var cts = new CancellationTokenSource())
@@ -137,7 +162,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdInputRedirection = InputRedirection.InputPipe,
                 StdOutputRedirection = OutputRedirection.NullDevice,
             };
-            return ChildProcess.Start(si);
+            return (ChildProcess)ChildProcess.Start(si);
         }
 
         [Fact]
@@ -190,15 +215,15 @@ namespace Asmichi.Utilities.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
-            Assert.True(((FileStream)sut.StandardInput!).IsAsync);
-            Assert.True(((FileStream)sut.StandardOutput!).IsAsync);
-            Assert.True(((FileStream)sut.StandardError!).IsAsync);
+            Assert.True(IsAsync(sut.StandardInput!));
+            Assert.True(IsAsync(sut.StandardOutput!));
+            Assert.True(IsAsync(sut.StandardError!));
 
-            using (var sr = new StreamReader(sut.StandardOutput))
+            using (var sr = new StreamReader(sut.StandardOutput!))
             {
                 const string text = "foobar";
                 var stdoutTask = sr.ReadToEndAsync();
-                using (var sw = new StreamWriter(sut.StandardInput))
+                using (var sw = new StreamWriter(sut.StandardInput!))
                 {
                     await sw.WriteAsync(text);
                 }
@@ -207,6 +232,16 @@ namespace Asmichi.Utilities.ProcessManagement
 
             sut.WaitForExit();
             Assert.Equal(0, sut.ExitCode);
+
+            static bool IsAsync(Stream stream)
+            {
+                return stream switch
+                {
+                    FileStream fs => fs.IsAsync,
+                    NetworkStream _ => true, // Trust the runtime; it must be truly async!
+                    _ => throw new InvalidOperationException("Unknown stream type."),
+                };
+            }
         }
 
         [Fact]

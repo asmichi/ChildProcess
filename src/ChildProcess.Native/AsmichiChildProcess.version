@@ -1,0 +1,18 @@
+{
+    global:
+        ConnectToUnixSocket;
+        CreatePipe;
+        CreateUnixStreamSocketPair;
+        GetDllPath;
+        GetENOENT;
+        GetMaxSocketPathLength;
+        GetPid;
+        OpenNullDevice;
+        HelperMain;
+        SubchannelCreate;
+        SubchannelDestroy;
+        SubchannelRecvExactBytes;
+        SubchannelSendExactBytesAndFds;
+    local:
+        *;
+};

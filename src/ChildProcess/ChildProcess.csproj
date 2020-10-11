@@ -18,6 +18,27 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- *** Invoke build/BuildNativeLib.ps1 beforehand! ***  -->
+  <ItemGroup>
+    <!-- See https://github.com/NuGet/Home/issues/6645 -->
+    <!--
+      This only works in the NuGet (PackageReference) scenario. Projects that ProjectReference this project
+      will not receive these runtime assets in their deps.json files. See https://github.com/dotnet/sdk/issues/1088.
+    -->
+    <Content Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\libAsmichiChildProcess.so">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\linux-x64\native\libAsmichiChildProcess.so</Link>
+      <PackagePath>runtimes\linux-x64\native</PackagePath>
+    </Content>
+    <Content Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\AsmichiChildProcessHelper">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\linux-x64\native\AsmichiChildProcessHelper</Link>
+      <PackagePath>runtimes\linux-x64\native</PackagePath>
+    </Content>
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

@@ -8,6 +8,24 @@ using Microsoft.Win32.SafeHandles;
 namespace Asmichi.Utilities.ProcessManagement
 {
     /// <summary>
+    /// Specifies how a child process is created.
+    /// </summary>
+    [Flags]
+    public enum ChildProcessFlags
+    {
+        /// <summary>
+        /// Specifies that no options are set.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Specifies that the search path should not be searched for the executable.
+        /// See <see cref="ChildProcessStartInfo.FileName"/> for details.
+        /// </summary>
+        IgnoreSearchPath = 0x0001,
+    }
+
+    /// <summary>
     /// Specifies how a stdin is redirected.
     /// </summary>
     public enum InputRedirection
@@ -74,7 +92,7 @@ namespace Asmichi.Utilities.ProcessManagement
         AppendToFile,
 
         /// <summary>
-        /// Redirected to a file handle. The corresponding StdOutputtHandle or StdErrorHandle property must be set.
+        /// Redirected to a file handle. The corresponding StdOutputHandle or StdErrorHandle property must be set.
         /// </summary>
         Handle,
 
@@ -109,7 +127,21 @@ namespace Asmichi.Utilities.ProcessManagement
         }
 
         /// <summary>
-        /// Path to the executable to start.
+        /// <para>Path to the executable to start.</para>
+        /// <para>
+        /// <see cref="FileName"/> is first treated as a path relative to the current directory (NOTE: a rooted path allowed).
+        /// If no executable is found at the path, <see cref="FileName"/> does not contain any path separators,
+        /// and <see cref="ChildProcessFlags.IgnoreSearchPath"/> is unset, the directories specified
+        /// in the PATH environment variable are searched for the executable.
+        /// Note that unlike CreateProcess this procedure does not search the directory of the current executable.
+        /// </para>
+        /// <para>
+        /// (Windows-specific) If <see cref="FileName"/> does not contain an extension, ".exe" is appended.
+        /// </para>
+        /// <para>
+        /// (Windows-specific) The 32-bit Windows system directory (system32) and the Windows directory
+        /// are also searched as if they were included at the beginning of the PATH environment variable.
+        /// </para>
         /// </summary>
         public string? FileName { get; set; }
 
@@ -130,6 +162,11 @@ namespace Asmichi.Utilities.ProcessManagement
         /// If it is null, the child process inherits the environment variables of the current process.
         /// </summary>
         public IReadOnlyCollection<KeyValuePair<string, string>>? EnvironmentVariables { get; set; }
+
+        /// <summary>
+        /// Specifies how the child process is created.
+        /// </summary>
+        public ChildProcessFlags Flags { get; set; }
 
         /// <summary>
         /// Specifies how the stdin of the child process is redirected.

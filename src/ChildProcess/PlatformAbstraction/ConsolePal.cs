@@ -5,50 +5,32 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.PlatformAbstraction
 {
+    internal interface IConsolePal
+    {
+        SafeFileHandle? GetStdInputHandleForChild();
+        SafeFileHandle? GetStdOutputHandleForChild();
+        SafeFileHandle? GetStdErrorHandleForChild();
+        bool HasConsoleWindow();
+    }
+
     internal static class ConsolePal
     {
-        public static SafeFileHandle? GetStdInputHandleForChild()
+        private static readonly IConsolePal Impl = CreatePlatformSpecificImpl();
+
+        private static IConsolePal CreatePlatformSpecificImpl()
         {
             return Pal.PlatformKind switch
             {
-                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdInputHandleForChild(),
-                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdInputHandleForChild(),
+                PlatformKind.Win32 => new Windows.WindowsConsolePal(),
+                PlatformKind.Linux => new Unix.UnixConsolePal(),
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };
         }
 
-        public static SafeFileHandle? GetStdOutputHandleForChild()
-        {
-            return Pal.PlatformKind switch
-            {
-                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdOutputHandleForChild(),
-                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdOutputHandleForChild(),
-                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
-                _ => throw new PlatformNotSupportedException(),
-            };
-        }
-
-        public static SafeFileHandle? GetStdErrorHandleForChild()
-        {
-            return Pal.PlatformKind switch
-            {
-                PlatformKind.Win32 => Windows.ConsolePalWindows.GetStdErrorHandleForChild(),
-                PlatformKind.Linux => Linux.ConsolePalLinux.GetStdErrorHandleForChild(),
-                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
-                _ => throw new PlatformNotSupportedException(),
-            };
-        }
-
-        public static bool HasConsoleWindow()
-        {
-            return Pal.PlatformKind switch
-            {
-                PlatformKind.Win32 => Windows.ConsolePalWindows.HasConsoleWindow(),
-                PlatformKind.Linux => Linux.ConsolePalLinux.HasConsoleWindow(),
-                PlatformKind.Unknown => throw new PlatformNotSupportedException(),
-                _ => throw new PlatformNotSupportedException(),
-            };
-        }
+        public static SafeFileHandle? GetStdInputHandleForChild() => Impl.GetStdInputHandleForChild();
+        public static SafeFileHandle? GetStdOutputHandleForChild() => Impl.GetStdOutputHandleForChild();
+        public static SafeFileHandle? GetStdErrorHandleForChild() => Impl.GetStdErrorHandleForChild();
+        public static bool HasConsoleWindow() => Impl.HasConsoleWindow();
     }
 }

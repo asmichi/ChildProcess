@@ -42,5 +42,6 @@
   </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+  <Import Project="$(WorktreeRoot)\build\msbuild\CopyNativeAssets.targets" />
 
 </Project>

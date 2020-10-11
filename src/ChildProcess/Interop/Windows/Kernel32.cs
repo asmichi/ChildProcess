@@ -12,6 +12,7 @@ namespace Asmichi.Utilities.Interop.Windows
 {
     internal static partial class Kernel32
     {
+        public const int ERROR_FILE_NOT_FOUND = 2;
         public const int ERROR_PIPE_BUSY = 231;
 
         public const uint GENERIC_READ = 0x80000000;
@@ -53,7 +54,7 @@ namespace Asmichi.Utilities.Interop.Windows
         public static extern int GetFileType([In] SafeHandle hFile);
 
         [DllImport(DllName, SetLastError = true)]
-        public static extern bool GetHandleInformation([In]SafeHandle hObject, out int lpdwFlags);
+        public static extern bool GetHandleInformation([In] SafeHandle hObject, out int lpdwFlags);
 
         [DllImport(DllName, SetLastError = true)]
         public static extern bool DuplicateHandle(
@@ -77,7 +78,7 @@ namespace Asmichi.Utilities.Interop.Windows
 
         [DllImport(DllName, SetLastError = true)]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static extern bool CloseHandle([In]IntPtr handle);
+        public static extern bool CloseHandle([In] IntPtr handle);
 
         [DllImport(DllName)]
         public static extern IntPtr GetCurrentProcess();
