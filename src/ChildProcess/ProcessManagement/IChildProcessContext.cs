@@ -8,7 +8,7 @@ namespace Asmichi.Utilities.ProcessManagement
     internal interface IChildProcessContext
     {
         IChildProcessStateHolder SpawnProcess(
-            string fileName,
+            string path,
             IReadOnlyCollection<string> arguments,
             string? workingDirectory,
             IReadOnlyCollection<KeyValuePair<string, string>>? environmentVariables,

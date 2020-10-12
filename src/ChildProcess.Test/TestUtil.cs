@@ -7,7 +7,7 @@ namespace Asmichi.Utilities
 {
     internal static class TestUtil
     {
-        public static string DotnetCommand => "dotnet";
+        public static string DotnetCommandName => "dotnet";
         public static string TestChildPath => Path.Combine(Environment.CurrentDirectory, "TestChild.dll");
     }
 

@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Diagnostics;
 using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.ProcessManagement
@@ -23,6 +23,33 @@ namespace Asmichi.Utilities.ProcessManagement
         /// See <see cref="ChildProcessStartInfo.FileName"/> for details.
         /// </summary>
         IgnoreSearchPath = 0x0001,
+
+        /// <summary>
+        /// Specifies that <see cref="ChildProcessStartInfo.FileName"/> is treated as
+        /// a path relative to the current directory (if it is not an absolute path).
+        /// See <see cref="ChildProcessStartInfo.FileName"/> for details.
+        /// </summary>
+        AllowRelativeFileName = 0x0002,
+    }
+
+    /// <summary>
+    /// Provides extension methos for <see cref="ChildProcessFlags"/>.
+    /// </summary>
+    public static class ChildProcessFlagsExtensions
+    {
+        /// <summary>
+        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.IgnoreSearchPath"/> flag.
+        /// </summary>
+        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
+        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.IgnoreSearchPath"/> flag.</returns>
+        public static bool HasIgnoreSearchPath(this ChildProcessFlags flags) => (flags & ChildProcessFlags.IgnoreSearchPath) != 0;
+
+        /// <summary>
+        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.AllowRelativeFileName"/> flag.
+        /// </summary>
+        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
+        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.AllowRelativeFileName"/> flag.</returns>
+        public static bool HasSearchCurrentDirectory(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AllowRelativeFileName) != 0;
     }
 
     /// <summary>
@@ -129,47 +156,66 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// <para>Path to the executable to start.</para>
         /// <para>
-        /// <see cref="FileName"/> is first treated as a path relative to the current directory (NOTE: a rooted path allowed).
-        /// If no executable is found at the path, <see cref="FileName"/> does not contain any path separators,
-        /// and <see cref="ChildProcessFlags.IgnoreSearchPath"/> is unset, the directories specified
-        /// in the PATH environment variable are searched for the executable.
-        /// Note that unlike CreateProcess this procedure does not search the directory of the current executable.
+        /// The executable is searched for in the following order:
+        /// <list type="number">
+        /// <item>
+        /// If <see cref="ChildProcessFlags.AllowRelativeFileName"/> is set, <see cref="FileName"/> is
+        /// treated as a path relative to the current directory.
+        /// </item>
+        /// <item>
+        /// If <see cref="ChildProcessFlags.IgnoreSearchPath"/> is unset and <see cref="FileName"/> does not contain
+        /// any path separators, the directories specified in <see cref="SearchPath"/> are searched for the executable.
+        /// </item>
+        /// </list>
         /// </para>
+        /// Note that unlike <see cref="Process.Start(ProcessStartInfo)"/> this procedure does not search the directory of the current executable.
         /// <para>
         /// (Windows-specific) If <see cref="FileName"/> does not contain an extension, ".exe" is appended.
-        /// </para>
-        /// <para>
-        /// (Windows-specific) The 32-bit Windows system directory (system32) and the Windows directory
-        /// are also searched as if they were included at the beginning of the PATH environment variable.
         /// </para>
         /// </summary>
         public string? FileName { get; set; }
 
         /// <summary>
-        /// The command-line arguments to be passed to the child process.
-        /// null will be treated as Array.Empty&lt;string&gt;().
+        /// <para>The command-line arguments to be passed to the child process. The default value is the empty array.</para>
         /// </summary>
-        public IReadOnlyCollection<string>? Arguments { get; set; }
+        public IReadOnlyCollection<string> Arguments { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// The working directory of the child process.
-        /// If it is null, the child process inherits the working directory of the current process.
+        /// <para>The working directory of the child process. The default value is <see langword="null"/>.</para>
+        /// <para>If it is null, the child process inherits the working directory of the current process.</para>
         /// </summary>
         public string? WorkingDirectory { get; set; }
 
         /// <summary>
+        /// <para>
         /// The list of the environment variables that apply to the child process.
-        /// If it is null, the child process inherits the environment variables of the current process.
+        /// The default value is <see langword="null"/>.
+        /// </para>
+        /// <para>If it is null, the child process inherits the environment variables of the current process.</para>
         /// </summary>
         public IReadOnlyCollection<KeyValuePair<string, string>>? EnvironmentVariables { get; set; }
 
         /// <summary>
         /// Specifies how the child process is created.
+        /// The default value is <see cref="ChildProcessFlags.None"/>.
         /// </summary>
         public ChildProcessFlags Flags { get; set; }
 
         /// <summary>
+        /// <para>
+        /// Specifies the directories to be searched for the executable.
+        /// The default value is <see langword="null"/>.
+        /// </para>
+        /// <para>
+        /// If it is <see langword="null"/>, the directories specified in the PATH environment variable are used as the defaut.
+        /// (Windows-specific) This default list has the 32-bit Windows system directory (system32) and the Windows directory prepended.
+        /// </para>
+        /// </summary>
+        public IReadOnlyList<string>? SearchPath { get; set; }
+
+        /// <summary>
         /// Specifies how the stdin of the child process is redirected.
+        /// The default value is <see cref="InputRedirection.NullDevice"/>.
         /// </summary>
         public InputRedirection StdInputRedirection { get; set; } = InputRedirection.NullDevice;
 

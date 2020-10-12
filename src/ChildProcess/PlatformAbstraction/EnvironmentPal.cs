@@ -6,7 +6,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
 {
     internal interface IEnvironmentPal
     {
-        char SearchPathSeparator { get; }
         bool IsFileNotFoundError(int error);
     }
 
@@ -24,8 +23,6 @@ namespace Asmichi.Utilities.PlatformAbstraction
                 _ => throw new PlatformNotSupportedException(),
             };
         }
-
-        public static readonly char SearchPathSeparator = Impl.SearchPathSeparator;
 
         public static bool IsFileNotFoundError(int error) => Impl.IsFileNotFoundError(error);
     }

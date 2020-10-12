@@ -1,11 +1,10 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Asmichi.Utilities.PlatformAbstraction;
 using Asmichi.Utilities.Utilities;
 
@@ -31,15 +30,14 @@ namespace Asmichi.Utilities.ProcessManagement
             _ = startInfo.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
             _ = startInfo.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
-            bool ignoreSearchPath = (startInfo.Flags & ChildProcessFlags.IgnoreSearchPath) != 0;
-            var resolvedFileName = ResolveExecutablePath(startInfo.FileName, ignoreSearchPath);
+            var resolvedPath = ResolveExecutablePath(startInfo.FileName, startInfo.Flags);
 
             using var stdHandles = new PipelineStdHandleCreator(startInfo);
             IChildProcessStateHolder processState;
             try
             {
                 processState = ChildProcessContext.Shared.SpawnProcess(
-                    fileName: resolvedFileName,
+                    path: resolvedPath,
                     arguments: startInfo.Arguments,
                     workingDirectory: startInfo.WorkingDirectory,
                     environmentVariables: startInfo.EnvironmentVariables,
@@ -51,7 +49,7 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 if (EnvironmentPal.IsFileNotFoundError(ex.NativeErrorCode))
                 {
-                    ThrowHelper.ThrowExecutableNotFoundException(resolvedFileName, ignoreSearchPath, ex);
+                    ThrowHelper.ThrowExecutableNotFoundException(resolvedPath, startInfo.Flags, ex);
                 }
 
                 // Win32Exception does not provide detailed information by its type.
@@ -65,87 +63,41 @@ namespace Asmichi.Utilities.ProcessManagement
             return process;
         }
 
-        private static string ResolveExecutablePath(string fileName, bool ignoreSearchPath)
+        private static string ResolveExecutablePath(string fileName, ChildProcessFlags flags)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            bool ignoreSearchPath = flags.HasIgnoreSearchPath();
+            var searchPath = ignoreSearchPath ? null : EnvironmentSearchPathCache.ResolveSearchPath();
+            var resolvedPath = SearchPathSearcher.FindExecutable(fileName, flags.HasSearchCurrentDirectory(), searchPath);
+            if (resolvedPath is null)
             {
-                // Append ".exe"
-                if (!Path.GetFileName(fileName.AsSpan()).Contains('.'))
-                {
-                    fileName += ".exe";
-                }
+                ThrowHelper.ThrowExecutableNotFoundException(fileName, flags);
             }
-
-            if (Path.IsPathRooted(fileName))
-            {
-                return fileName;
-            }
-
-            string? resolvedPath;
-            if (TryResolveRelativeExecutablePath(fileName, Environment.CurrentDirectory, out resolvedPath))
-            {
-                return resolvedPath;
-            }
-
-            if (!ignoreSearchPath)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    if (TryResolveRelativeExecutablePathBySpecialFolder(fileName, Environment.SpecialFolder.System, out resolvedPath))
-                    {
-                        return resolvedPath;
-                    }
-                    if (TryResolveRelativeExecutablePathBySpecialFolder(fileName, Environment.SpecialFolder.Windows, out resolvedPath))
-                    {
-                        return resolvedPath;
-                    }
-                }
-
-                var searchPath = Environment.GetEnvironmentVariable("PATH");
-                if (searchPath is { })
-                {
-                    var remainingSearchPath = searchPath.AsSpan();
-                    while (true)
-                    {
-                        var separatorIndex = remainingSearchPath.IndexOf(EnvironmentPal.SearchPathSeparator);
-                        var dir = separatorIndex < 0 ? remainingSearchPath : remainingSearchPath.Slice(0, separatorIndex);
-                        if (dir.Length > 0 && TryResolveRelativeExecutablePath(fileName, dir, out resolvedPath))
-                        {
-                            return resolvedPath;
-                        }
-                        if (separatorIndex < 0)
-                        {
-                            break;
-                        }
-                        remainingSearchPath = remainingSearchPath.Slice(separatorIndex + 1);
-                    }
-                }
-            }
-
-            ThrowHelper.ThrowExecutableNotFoundException(fileName, ignoreSearchPath);
-            return null;
+            return resolvedPath;
         }
 
-        private static bool TryResolveRelativeExecutablePathBySpecialFolder(string fileName, Environment.SpecialFolder folder, [NotNullWhen(true)] out string? resolvedPath) =>
-            TryResolveRelativeExecutablePath(
-                fileName,
-                Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify),
-                out resolvedPath);
-
-        private static bool TryResolveRelativeExecutablePath(string fileName, ReadOnlySpan<char> baseDir, [NotNullWhen(true)] out string? resolvedPath)
+        private static class EnvironmentSearchPathCache
         {
-            Debug.Assert(!Path.IsPathRooted(fileName));
+            private static readonly object Lock = new object();
+            private static string? _previousEnvStr = Environment.GetEnvironmentVariable("PATH");
+            private static IReadOnlyList<string> _cachedSearchPath = SearchPathSearcher.ResolveSearchPath(_previousEnvStr);
 
-            var candidate = Path.Join(baseDir, fileName.AsSpan());
-            if (File.Exists(candidate))
+            public static IReadOnlyList<string> ResolveSearchPath()
             {
-                resolvedPath = candidate;
-                return true;
-            }
-            else
-            {
-                resolvedPath = null;
-                return false;
+                var envStr = Environment.GetEnvironmentVariable("PATH");
+                lock (Lock)
+                {
+                    if (envStr == _previousEnvStr)
+                    {
+                        return _cachedSearchPath;
+                    }
+                    else
+                    {
+                        var searchPath = SearchPathSearcher.ResolveSearchPath(envStr);
+                        _previousEnvStr = envStr;
+                        _cachedSearchPath = searchPath;
+                        return searchPath;
+                    }
+                }
             }
         }
     }

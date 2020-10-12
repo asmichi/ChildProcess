@@ -16,7 +16,7 @@ namespace Asmichi.Utilities.ProcessManagement
         [Fact]
         public void ChildProcessWaitForAsyncIsTrulyAsynchronous()
         {
-            var si = new ChildProcessStartInfo(TestUtil.DotnetCommand, TestUtil.TestChildPath, "Sleep", "1000")
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "Sleep", "1000")
             {
                 StdOutputRedirection = OutputRedirection.NullDevice,
                 StdErrorRedirection = OutputRedirection.NullDevice,
