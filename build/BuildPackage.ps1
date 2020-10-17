@@ -4,7 +4,7 @@
 param(
     [parameter()]
     [switch]
-    $RetailRelease = $false
+    $AllowRetailRelease = $false
 )
 
 Set-StrictMode -Version latest
@@ -17,7 +17,7 @@ $worktreeRoot = Resolve-Path "$PSScriptRoot\.."
 $slnFile = "$worktreeRoot\src\ChildProcess.sln"
 
 $commitHash = (git rev-parse HEAD)
-$versionInfo = Get-VersionInfo -CommitHash $commitHash -RetailRelease:$RetailRelease
+$versionInfo = Get-VersionInfo -CommitHash $commitHash -AllowRetailRelease:$AllowRetailRelease
 
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 

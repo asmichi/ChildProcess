@@ -11,7 +11,7 @@ param
     $BranchName,
     [parameter()]
     [switch]
-    $RetailRelease = $false
+    $AllowRetailRelease = $false
 )
 
 Set-StrictMode -Version latest
@@ -19,9 +19,11 @@ $ErrorActionPreference = "Stop"
 
 Import-Module "$PSScriptRoot\psm\Build.psm1"
 
-$versionInfo = Get-VersionInfo -CommitHash $CommitHash -RetailRelease:$RetailRelease
+$versionInfo = Get-VersionInfo -CommitHash $CommitHash -AllowRetailRelease:$AllowRetailRelease
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 $commonBuildOptionsString = [string]$commonBuildOptions
 
 Write-Host "##vso[task.setvariable variable=PackageVersion]$($versionInfo.PackageVersion)"
 Write-Host "##vso[task.setvariable variable=CommonBuildOptions]$commonBuildOptionsString"
+Write-Host "##vso[task.setvariable variable=DOTNET_NOLOGO]1"
+Write-Host "##vso[task.setvariable variable=DOTNET_CLI_TELEMETRY_OPTOUT]1"

@@ -14,7 +14,7 @@ function Get-VersionInfo {
         $CommitHash,
         [parameter()]
         [switch]
-        $RetailRelease
+        $AllowRetailRelease
     )
 
     $shortCommitHash = $CommitHash.Substring(0, 10)
@@ -23,7 +23,12 @@ function Get-VersionInfo {
     $assemblyVersion = "$baseVersion.0"
     $fileVersion = $assemblyVersion
     $informationalVersion = "$fileVersion+g$shortCommitHash"
-    $packageVersion = if ($RetailRelease) { $baseVersion } else { "$baseVersion-pre.$commitCount+g$shortCommitHash" }
+    $retailRelease = $false
+    if ($AllowRetailRelease) {
+        [System.Object[]]$tags = $(git tag --points-at HEAD)
+        $retailRelease = $null -ne $tags -and $tags.Length -gt 0
+    }
+    $packageVersion = if ($retailRelease) { $baseVersion } else { "$baseVersion-pre.$commitCount+g$shortCommitHash" }
 
     return @{
         CommitHash           = $CommitHash;

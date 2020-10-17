@@ -19,76 +19,91 @@ variables:
   SolutionFile: 'src/ChildProcess.sln'
 
 jobs:
+- job: build_linux
+
+  continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
+
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  steps:
+  - template: 'build/prepare-job.yml'
+
+  - script: 'sudo apt-get install -qq -y ninja-build'
+
+  - task: Bash@3
+    inputs:
+      targetType: 'filePath'
+      filePath: 'src/ChildProcess.Native/Subbuild-linux.sh'
+      arguments: 'obj/Subbuild-linux'
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: 'obj/Subbuild-linux/bin/linux-x64/Release'
+      Contents: '**'
+      TargetFolder: 'bin/ChildProcess.Native/linux-x64/Release'
+
+  - publish: 'obj/Subbuild-linux/bin/linux-x64'
+    artifact: 'ChildProcess.Native-linux-x64'
+
+  - template: 'build/build-and-test.yml'
+    parameters:
+      platform: linux
+
 - job: build
+
+  dependsOn: build_linux
 
   pool:
     vmImage: 'windows-2019'
 
   steps:
-  - task: PowerShell@2
-    displayName: 'Set Variables'
+  - template: 'build/prepare-job.yml'
+
+  - task: DownloadPipelineArtifact@2
     inputs:
-      targetType: 'filePath'
-      failOnStderr: true
-      filePath: '$(Build.SourcesDirectory)/build/SetAzurePipelineVariables.ps1'
-      arguments: '-CommitHash $(Build.SourceVersion) -BranchName $(Build.SourceBranchName)'
+      source: current
+      artifact: 'ChildProcess.Native-linux-x64'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/linux-x64'
 
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.402'
+  - template: 'build/build-and-test.yml'
+    parameters:
+      platform: win
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 5.7.0'
     inputs:
-      packageType: sdk
-      version: 3.1.402
+      versionSpec: 5.7.0
 
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+  - task: NuGetCommand@2
+    displayName: 'NuGet pack'
     inputs:
-      command: restore
-      projects: '$(SolutionFile)'
-      verbosityRestore: Quiet
+      command: pack
+      packagesToPack: 'build/nuspec/Asmichi.ChildProcess.nuspec'
+      basePath: 'bin/ChildProcess/AnyCPU/Release'
+      buildProperties: 'commitHash=$(Build.SourceVersion)'
+      includeSymbols: true
+      packDestination: 'bin/nupkg'
+      verbosityPack: quiet
+      versionEnvVar: PackageVersion
+      versioningScheme: byEnvVar
 
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet build'
+  - task: NuGetCommand@2
+    displayName: 'NuGet push'
     inputs:
-      projects: '$(SolutionFile)'
-      arguments: '$(CommonBuildOptions)'
+      command: push
+      packagesToPush: 'bin/nupkg/*.nupkg;bin/nupkg/*.snupkg'
+      allowPackageConflicts: true
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'ChildProcessCI'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+  - task: CopyFiles@2
     inputs:
-      command: test
-      projects: src/ChildProcess.Test/ChildProcess.Test.csproj
-      arguments: '$(CommonBuildOptions)'
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: 'bin/nupkg/*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-  # TODO: Implement this.
-  # Disabled; currently the linux native libraries do not build on Azure Pipelines.
-  # - task: NuGetToolInstaller@0
-  #   displayName: 'Use NuGet 4.9.4'
-  #   inputs:
-  #     versionSpec: 4.9.4
-
-  # - task: NuGetCommand@2
-  #   displayName: 'NuGet custom'
-  #   inputs:
-  #     command: custom
-  #     arguments: 'pack -Verbosity quiet -ForceEnglishOutput -Version $(PackageVersion) -BasePath bin/ChildProcess/AnyCPU/Release -OutputDirectory bin/nupkg -Properties commitHash=$(Build.SourceVersion) build/nuspec/Asmichi.ChildProcess.nuspec'
-
-  # - task: CopyFiles@2
-  #   displayName: 'Copy Files to: $(Build.artifactstagingdirectory)'
-  #   inputs:
-  #     SourceFolder: '$(system.defaultworkingdirectory)'
-  #     Contents: 'bin/nupkg/*'
-  #     TargetFolder: '$(Build.artifactstagingdirectory)'
-
-  # - task: PublishBuildArtifacts@1
-  #   displayName: 'Publish Artifact: drop'
-  #   inputs:
-  #     PathtoPublish: '$(Build.artifactstagingdirectory)'
-
-  # - task: NuGetCommand@2
-  #   displayName: 'NuGet push'
-  #   inputs:
-  #     command: push
-  #     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-  #     nuGetFeedType: 'internal'
-  #     publishVstsFeed: 'ChildProcessCI'
-  #     allowPackageConflicts: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'

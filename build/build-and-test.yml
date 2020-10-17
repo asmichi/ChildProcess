@@ -1,0 +1,29 @@
+parameters:
+  - name: platform
+    type: string
+    values:
+    - win
+    - linux
+
+steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet restore'
+    inputs:
+      command: restore
+      projects: '$(SolutionFile)'
+      verbosityRestore: Quiet
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      projects: '$(SolutionFile)'
+      arguments: '$(CommonBuildOptions)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: 'src/ChildProcess.Test/ChildProcess.Test.csproj'
+      arguments: '$(CommonBuildOptions)'
+      continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
+      testRunTitle: ${{ parameters.platform }}

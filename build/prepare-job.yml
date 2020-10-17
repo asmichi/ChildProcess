@@ -1,0 +1,16 @@
+parameters: []
+
+steps:
+  - task: PowerShell@2
+    displayName: 'Set Variables'
+    inputs:
+      targetType: 'filePath'
+      failOnStderr: true
+      filePath: '$(Build.SourcesDirectory)/build/SetAzurePipelineVariables.ps1'
+      arguments: '-CommitHash $(Build.SourceVersion) -BranchName $(Build.SourceBranchName) -AllowRetailRelease'
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.402'
+    inputs:
+      packageType: sdk
+      version: 3.1.402
