@@ -12,6 +12,7 @@
     <CodeAnalysisRuleSet>..\PublicAssembly.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>$(OutDir)$(AssemblyName).xml</DocumentationFile>
     <RootNamespace>Asmichi.Utilities</RootNamespace>
+    <DefineConstants Condition="'$(AddImportSearchPathAssemblyDirectory)'=='true'">$(DefineConstants);ADD_IMPORT_SEARCH_PATH_ASSEMBLY_DIRECTORY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

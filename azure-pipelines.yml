@@ -49,6 +49,7 @@ jobs:
   - template: 'build/build-and-test.yml'
     parameters:
       platform: linux
+      additionalArguments: '-p:AddImportSearchPathAssemblyDirectory=true' # Workaround for https://github.com/dotnet/sdk/issues/1088
 
 - job: build
 
