@@ -16,8 +16,9 @@ $worktreeRoot = Resolve-Path "$PSScriptRoot\.."
 . $worktreeRoot\Build\Common.ps1
 $slnFile = "$worktreeRoot\src\ChildProcess.sln"
 
-$commitHash = (git rev-parse HEAD)
-$versionInfo = Get-VersionInfo -CommitHash $commitHash -AllowRetailRelease:$AllowRetailRelease
+$commitHash = $(git rev-parse HEAD)
+$branchName = $(git rev-parse --abbrev-ref HEAD)
+$versionInfo = Get-VersionInfo -CommitHash $commitHash -BranchName $branchName -AllowRetailRelease:$AllowRetailRelease
 
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 

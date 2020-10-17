@@ -19,7 +19,7 @@ $ErrorActionPreference = "Stop"
 
 Import-Module "$PSScriptRoot\psm\Build.psm1"
 
-$versionInfo = Get-VersionInfo -CommitHash $CommitHash -AllowRetailRelease:$AllowRetailRelease
+$versionInfo = Get-VersionInfo -CommitHash $CommitHash -BranchName $BranchName -AllowRetailRelease:$AllowRetailRelease
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 $commonBuildOptionsString = [string]$commonBuildOptions
 
