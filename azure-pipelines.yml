@@ -96,7 +96,7 @@ jobs:
       packagesToPush: 'bin/nupkg/*.nupkg;bin/nupkg/*.snupkg'
       allowPackageConflicts: true
       nuGetFeedType: 'internal'
-      publishVstsFeed: 'ChildProcessCI'
+      publishVstsFeed: 'ChildProcess/CI'
 
   - task: CopyFiles@2
     inputs:
