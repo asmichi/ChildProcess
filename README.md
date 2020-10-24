@@ -3,7 +3,7 @@ A .NET library that provides functionality for creating child processes. Easier,
 
 This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.ChildProcess/).
 
-[![Build Status](https://dev.azure.com/asmichi/ChildProcess/_apis/build/status/ChildProcess-CI?branchName=master)](https://dev.azure.com/asmichi/ChildProcess/_build/latest?definitionId=4&branchName=master)
+[![Build Status](https://dev.azure.com/asmichi/ChildProcess/_apis/build/status/ChildProcess-CI?branchName=master)](https://dev.azure.com/asmichi/ChildProcess/_build/latest?definitionId=5&branchName=master)
 
 ## Comparison with `System.Diagnostics.Process`
 
