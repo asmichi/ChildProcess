@@ -76,33 +76,22 @@ jobs:
     inputs:
       versionSpec: 5.7.0
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet pack'
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet pack'
     inputs:
-      command: pack
-      packagesToPack: 'build/nuspec/Asmichi.ChildProcess.nuspec'
-      basePath: 'bin/ChildProcess/AnyCPU/Release'
-      buildProperties: 'commitHash=$(Build.SourceVersion)'
-      includeSymbols: true
-      packDestination: 'bin/nupkg'
-      verbosityPack: quiet
-      versionEnvVar: PackageVersion
-      versioningScheme: byEnvVar
+      command: custom
+      custom: pack
+      arguments: '$(Build.SourcesDirectory)/src/ChildProcess/ChildProcess.csproj $(CommonBuildOptions) --output $(Build.ArtifactStagingDirectory)'
 
   - task: NuGetCommand@2
     displayName: 'NuGet push'
     inputs:
       command: push
-      packagesToPush: 'bin/nupkg/*.nupkg;bin/nupkg/*.snupkg'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
       allowPackageConflicts: true
+      configurationToPack: 'Release'
       nuGetFeedType: 'internal'
       publishVstsFeed: 'ChildProcess/CI'
-
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'
-      Contents: 'bin/nupkg/*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: drop'

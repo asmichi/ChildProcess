@@ -1,6 +1,8 @@
 
 # Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+#Requires -Version 7.0
+
 param(
     [parameter()]
     [switch]
@@ -24,16 +26,6 @@ $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 
 & $worktreeRoot\Build\BuildNativeLib.ps1
 
-Exec { dotnet restore --verbosity:quiet $slnFile }
 Exec { dotnet build @commonBuildOptions $slnFile }
-Exec { dotnet test @commonBuildOptions "$worktreeRoot\src\ChildProcess.Test\ChildProcess.Test.csproj" }
-
-Exec {
-    nuget pack `
-        -Verbosity quiet -ForceEnglishOutput `
-        -Version $($versionInfo.PackageVersion) `
-        -BasePath "$worktreeRoot\bin\ChildProcess\AnyCPU\Release" `
-        -OutputDirectory "$worktreeRoot\bin\nupkg" `
-        -Properties commitHash=$($versionInfo.CommitHash) `
-        "$worktreeRoot\build\nuspec\Asmichi.ChildProcess.nuspec"
-}
+Exec { dotnet test @commonBuildOptions --no-build "$worktreeRoot\src\ChildProcess.Test\ChildProcess.Test.csproj" }
+Exec { dotnet pack @commonBuildOptions --no-build "$worktreeRoot\src\ChildProcess\ChildProcess.csproj" }

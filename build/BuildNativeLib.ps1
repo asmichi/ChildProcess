@@ -1,5 +1,7 @@
 # Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project worktreeRoot for details.
 
+#Requires -Version 7.0
+
 # TODO: Embed the commit hash.
 
 param(

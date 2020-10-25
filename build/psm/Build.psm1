@@ -67,14 +67,15 @@ function Get-CommonBuildOptions {
     return @(
         "-nologo",
         "--verbosity:quiet",
-        "-p:Platform=AnyCPU",
         "--configuration",
         "Release",
-        "-p:Version=$($VersionInfo.AssemblyVersion)",
-        "-p:PackageVersion=$($VersionInfo.PackageVersion)",
-        "-p:FileVersion=$($VersionInfo.FileVersion)",
+        "-p:Platform=AnyCPU",
+        "-p:RepositoryCommit=$($VersionInfo.CommitHash)",
         "-p:AssemblyVersion=$($VersionInfo.AssemblyVersion)",
-        "-p:InformationalVersion=$($VersionInfo.InformationalVersion)"
+        "-p:FileVersion=$($VersionInfo.FileVersion)",
+        "-p:InformationalVersion=$($VersionInfo.InformationalVersion)",
+        "-p:PackageVersion=$($VersionInfo.PackageVersion)",
+        "-p:Version=$($VersionInfo.AssemblyVersion)"
     )
 }
 

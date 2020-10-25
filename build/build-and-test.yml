@@ -10,23 +10,17 @@ parameters:
 
 steps:
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
-    inputs:
-      command: restore
-      projects: '$(SolutionFile)'
-      verbosityRestore: Quiet
-
-  - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
     inputs:
       projects: '$(SolutionFile)'
       arguments: '$(CommonBuildOptions) ${{ parameters.additionalArguments }}'
+      verbosityRestore: Quiet
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test'
     inputs:
       command: test
       projects: 'src/ChildProcess.Test/ChildProcess.Test.csproj'
-      arguments: '$(CommonBuildOptions) ${{ parameters.additionalArguments }}'
+      arguments: '$(CommonBuildOptions) --no-build ${{ parameters.additionalArguments }}'
       continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
       testRunTitle: ${{ parameters.platform }}

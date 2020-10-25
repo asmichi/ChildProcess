@@ -15,6 +15,11 @@
     <DefineConstants Condition="'$(AddImportSearchPathAssemblyDirectory)'=='true'">$(DefineConstants);ADD_IMPORT_SEARCH_PATH_ASSEMBLY_DIRECTORY</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Asmichi.ChildProcess</PackageId>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>

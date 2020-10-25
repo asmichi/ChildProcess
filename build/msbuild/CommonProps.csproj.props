@@ -21,6 +21,8 @@
     <OutDir>$(BinDir)\$(MSBuildProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(TargetFramework)' != ''">$(OutDir)$(TargetFramework)\</OutDir>
     <OutputPath>$(OutDir)</OutputPath>
+
+    <PackageOutputPath>$(BinDir)\nupkg\</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,14 +35,29 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>asmichi</Authors>
-    <Company>asmichi</Company>
-    <Product>Asmichi.Utilities.ChildProcess</Product>
-    <Copyright>Copyright (c) @asmichi (https://github.com/asmichi)</Copyright>
     <AssemblyVersion>0.3.0.0</AssemblyVersion>
     <FileVersion>0.3.0.0</FileVersion>
     <InformationalVersion>0.3.0.0+unknown</InformationalVersion>
     <Version>0.3.0-localbuild+unknown</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>asmichi</Authors>
+    <Company>asmichi</Company>
+    <Copyright>Copyright (c) @asmichi (https://github.com/asmichi)</Copyright>
+    <Description>A .NET library that provides functionality for creating child processes.</Description>
+    <PackageDescription>A .NET library that provides functionality for creating child processes. Easier, less error-prone, more flexible than `System.Diagnostics.Process` at creating child processes.</PackageDescription>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/asmichi/ChildProcess</PackageProjectUrl>
+    <PackageTags>dotnetcore;process</PackageTags>
+    <Product>Asmichi.ChildProcess</Product>
+    <RepositoryUrl>https://github.com/asmichi/ChildProcess</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup>
