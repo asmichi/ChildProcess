@@ -6,6 +6,9 @@
 param(
     [parameter()]
     [switch]
+    $IncrementalBuild = $false,
+    [parameter()]
+    [switch]
     $AllowRetailRelease = $false
 )
 
@@ -24,7 +27,7 @@ $versionInfo = Get-VersionInfo -CommitHash $commitHash -BranchName $branchName -
 
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
 
-& $worktreeRoot\Build\BuildNativeLib.ps1
+& $worktreeRoot\Build\BuildNativeLib.ps1 -Rebuild:(-not $IncrementalBuild)
 
 Exec { dotnet build @commonBuildOptions $slnFile }
 Exec { dotnet test @commonBuildOptions --no-build "$worktreeRoot\src\ChildProcess.Test\ChildProcess.Test.csproj" }

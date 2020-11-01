@@ -34,8 +34,10 @@ OS:
 - `win10-x86` (1803 or later)
 - `win10-x64` (1803 or later)
 - `linux-x64`
-    - GLIBC 2.x.y or later, LIBSTDCXX 3.x.y or later.
-    - (Alpine Linux is not currently supported.)
+- `linux-arm` (Not tested)
+- `linux-aarch64` (Not tested)
+
+NOTE: On Linux, the system must have GLIBC 2.x.y or later and LIBSTDCXX 3.x.y or later. Musl-based Linux (Alpine, etc.) is not currently supported.
 
 # Notes
 

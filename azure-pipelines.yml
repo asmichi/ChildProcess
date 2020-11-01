@@ -19,7 +19,26 @@ variables:
   SolutionFile: 'src/ChildProcess.sln'
 
 jobs:
-- job: build_linux
+- job: build_native_linux
+
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  container: 'asmichi/childprocess-buildtools-ubuntu:18.04.20201102.1'
+
+  steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'filePath'
+      filePath: 'src/ChildProcess.Native/Subbuild-linux.sh'
+      arguments: 'obj/Subbuild-linux'
+
+  - publish: 'obj/Subbuild-linux/bin'
+    artifact: 'ChildProcess.Native-linux'
+
+- job: test_linux
+
+  dependsOn: build_native_linux
 
   continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
 
@@ -29,22 +48,16 @@ jobs:
   steps:
   - template: 'build/prepare-job.yml'
 
-  - script: 'sudo apt-get install -qq -y ninja-build'
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-linux'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
 
   - task: Bash@3
     inputs:
-      targetType: 'filePath'
-      filePath: 'src/ChildProcess.Native/Subbuild-linux.sh'
-      arguments: 'obj/Subbuild-linux'
-
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: 'obj/Subbuild-linux/bin/linux-x64/Release'
-      Contents: '**'
-      TargetFolder: 'bin/ChildProcess.Native/linux-x64/Release'
-
-  - publish: 'obj/Subbuild-linux/bin/linux-x64'
-    artifact: 'ChildProcess.Native-linux-x64'
+      targetType: 'inline'
+      script: 'chmod +x -R $(Build.SourcesDirectory)/bin/ChildProcess.Native'
 
   - template: 'build/build-and-test.yml'
     parameters:
@@ -53,7 +66,7 @@ jobs:
 
 - job: build
 
-  dependsOn: build_linux
+  dependsOn: build_native_linux
 
   pool:
     vmImage: 'windows-2019'
@@ -64,8 +77,8 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       source: current
-      artifact: 'ChildProcess.Native-linux-x64'
-      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/linux-x64'
+      artifact: 'ChildProcess.Native-linux'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
 
   - template: 'build/build-and-test.yml'
     parameters:
