@@ -36,7 +36,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <see cref="ChildProcessStartInfo.CodePage"/>. If it is not set, newly created consoles will use
         /// the system default code page.
         /// </summary>
-        UseCustomCodepage = 0x0004,
+        UseCustomCodePage = 0x0004,
     }
 
     /// <summary>
@@ -212,7 +212,7 @@ namespace Asmichi.Utilities.ProcessManagement
         public ChildProcessFlags Flags { get; set; }
 
         /// <summary>
-        /// (Windows-specific) If <see cref="ChildProcessFlags.UseCustomCodepage"/> is set,
+        /// (Windows-specific) If <see cref="ChildProcessFlags.UseCustomCodePage"/> is set,
         /// specifies the code page that should be used by newly created consoles (if any).
         /// The default value is 65001 (UTF-8).
         /// </summary>

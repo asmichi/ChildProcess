@@ -36,7 +36,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
             try
             {
-                if (startInfo.Flags.HasFlag(ChildProcessFlags.UseCustomCodepage))
+                if (startInfo.Flags.HasFlag(ChildProcessFlags.UseCustomCodePage))
                 {
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }

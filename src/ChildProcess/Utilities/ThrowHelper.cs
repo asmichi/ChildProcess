@@ -22,7 +22,7 @@ namespace Asmichi.Utilities.Utilities
         public static void ThrowChcpFailedException(int codePage, int exitCode, string paramName)
         {
             throw new ArgumentException(
-                string.Format(CultureInfo.InvariantCulture, "chcp.com {0} failed with exit code {1} most likely because codepage {0} is invalid", codePage, exitCode),
+                string.Format(CultureInfo.InvariantCulture, "chcp.com {0} failed with exit code {1} most likely because code page {0} is invalid", codePage, exitCode),
                 paramName);
         }
     }
