@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="ChildProcess.NET Ruleset" Description="Ruleset for ChildProcess.NET." ToolsVersion="12.0">
   <Include Path="FxCopRules.ruleset" Action="Default" />
-  <Rules AnalyzerId="Roslynator.CSharp.Analyzers" RuleNamespace="Roslynator.CSharp.Analyzers">
-    <Rule Id="RCS1085" Action="None" />
-  </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1101" Action="None" />
     <Rule Id="SA1122" Action="None" /> <!-- Use string.Empty for empty strings -->
