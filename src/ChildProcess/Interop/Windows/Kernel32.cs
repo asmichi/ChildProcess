@@ -1,11 +1,9 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-#pragma warning disable SA1307 // Accessible fields must begin with upper-case letter
 #pragma warning disable SA1310 // Field names must not contain underscore
 
 namespace Asmichi.Utilities.Interop.Windows
@@ -77,7 +75,6 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] int dwOptions);
 
         [DllImport(DllName, SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static extern bool CloseHandle([In] IntPtr handle);
 
         [DllImport(DllName)]

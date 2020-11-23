@@ -2,8 +2,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -43,32 +41,24 @@ namespace Asmichi.Utilities.Interop.Windows
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public IntPtr DangerousGetHandle() => _unmanaged.DangerousGetHandle();
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         public void DangerousAddRef(ref bool success) => _unmanaged.DangerousAddRef(ref success);
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void DangerousRelease() => _unmanaged.DangerousRelease();
     }
 
     internal sealed class SafeUnmanagedProcThreadAttributeList : SafeHandleZeroOrMinusOneIsInvalid
     {
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         private SafeUnmanagedProcThreadAttributeList()
             : this(IntPtr.Zero)
         {
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         public SafeUnmanagedProcThreadAttributeList(IntPtr memory)
             : base(true)
         {
             SetHandle(memory);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         protected override bool ReleaseHandle()
         {
             // Must be DeleteProcThreadAttributeList'ed before freed.
@@ -79,35 +69,19 @@ namespace Asmichi.Utilities.Interop.Windows
 
         public static SafeUnmanagedProcThreadAttributeList Create(int attributeCount)
         {
-            var result = default(SafeUnmanagedProcThreadAttributeList);
             var size = IntPtr.Zero;
-            int win32Error = 0;
 
             Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, attributeCount, 0, ref size);
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-            }
-            finally
-            {
-                var buffer = Marshal.AllocHGlobal(size.ToInt32());
+            var buffer = Marshal.AllocHGlobal(size.ToInt32());
 
-                if (!Kernel32.InitializeProcThreadAttributeList(buffer, attributeCount, 0, ref size))
-                {
-                    win32Error = Marshal.GetLastWin32Error();
-                    Marshal.FreeHGlobal(buffer);
-                }
-
-                result = new SafeUnmanagedProcThreadAttributeList(buffer);
+            if (!Kernel32.InitializeProcThreadAttributeList(buffer, attributeCount, 0, ref size))
+            {
+                Marshal.FreeHGlobal(buffer);
+                throw new Win32Exception();
             }
 
-            if (win32Error != 0)
-            {
-                throw new Win32Exception(win32Error);
-            }
-
-            return result;
+            return new SafeUnmanagedProcThreadAttributeList(buffer);
         }
     }
 }

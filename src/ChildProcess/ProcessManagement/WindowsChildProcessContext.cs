@@ -84,29 +84,19 @@ namespace Asmichi.Utilities.ProcessManagement
 
             fixed (char* pEnvironment = environmentBlock)
             {
-                var pi = default(Kernel32.PROCESS_INFORMATION);
-                bool processCreated = false;
-                var process = default(SafeProcessHandle);
-
                 bool stdInputRefAdded = false;
                 bool stdOutputRefAdded = false;
                 bool stdErrorRefAdded = false;
                 bool attrRefAdded = false;
-                int win32Error = 0;
 
-                RuntimeHelpers.PrepareConstrainedRegions();
                 try
-                {
-                }
-                finally
                 {
                     stdInput?.DangerousAddRef(ref stdInputRefAdded);
                     stdOutput?.DangerousAddRef(ref stdOutputRefAdded);
                     stdError?.DangerousAddRef(ref stdErrorRefAdded);
                     attr.DangerousAddRef(ref attrRefAdded);
 
-                    // Ensure handles are either closed or wrapped in SafeHandle even when the try block is interrupted.
-                    processCreated = Kernel32.CreateProcess(
+                    if (!Kernel32.CreateProcess(
                         null,
                         commandLine,
                         IntPtr.Zero,
@@ -116,18 +106,16 @@ namespace Asmichi.Utilities.ProcessManagement
                         pEnvironment,
                         currentDirectory,
                         ref nativeSi,
-                        out pi);
-
-                    if (processCreated)
+                        out var pi))
                     {
-                        Kernel32.CloseHandle(pi.hThread);
-                        process = new SafeProcessHandle(pi.hProcess, true);
-                    }
-                    else
-                    {
-                        win32Error = Marshal.GetLastWin32Error();
+                        throw new Win32Exception();
                     }
 
+                    Kernel32.CloseHandle(pi.hThread);
+                    return new SafeProcessHandle(pi.hProcess, true);
+                }
+                finally
+                {
                     if (stdInputRefAdded)
                     {
                         stdInput!.DangerousRelease();
@@ -145,13 +133,6 @@ namespace Asmichi.Utilities.ProcessManagement
                         attr.DangerousRelease();
                     }
                 }
-
-                if (!processCreated)
-                {
-                    throw new Win32Exception(win32Error);
-                }
-
-                return process!;
             }
         }
     }

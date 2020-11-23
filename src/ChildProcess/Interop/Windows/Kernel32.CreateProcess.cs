@@ -1,7 +1,6 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -18,7 +17,6 @@ namespace Asmichi.Utilities.Interop.Windows
         public const int CREATE_NO_WINDOW = 0x08000000;
 
         [DllImport(DllName, EntryPoint = "CreateProcessW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern unsafe bool CreateProcess(
             [In] string? lpApplicationName,
             [In] StringBuilder lpCommandLine,
