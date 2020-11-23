@@ -11,7 +11,7 @@ namespace Asmichi.Utilities.ProcessManagement
     /// <summary>
     /// Used to count references to a <see cref="UnixChildProcessState"/> object.
     /// Because a <see cref="UnixChildProcessState"/> is shared by the corresponding
-    /// <see cref="ChildProcess"/> (user-visible) and the signal handler,
+    /// <see cref="ChildProcessImpl"/> (disposed by users) and the signal handler,
     /// we need to ensure all references have been dropped before disposing it.
     /// </summary>
     internal sealed class UnixChildProcessStateHolder : IChildProcessStateHolder
@@ -177,7 +177,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// Sets the PID of the child process.
-        /// The caller of <see cref="Create"/> must call this before returning <see cref="UnixChildProcessState"/> to <see cref="ChildProcess"/>.
+        /// The caller of <see cref="Create"/> must call this before returning <see cref="UnixChildProcessState"/> to <see cref="ChildProcessImpl"/>.
         /// </summary>
         /// <param name="pid">The PID of the created child process.</param>
         public void SetPid(int pid)

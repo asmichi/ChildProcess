@@ -186,7 +186,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
-        private static ChildProcess CreateForWaitForExitTest()
+        private static ChildProcessImpl CreateForWaitForExitTest()
         {
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoBack")
             {
@@ -194,7 +194,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 StdOutputRedirection = OutputRedirection.NullDevice,
                 StdErrorRedirection = OutputRedirection.NullDevice,
             };
-            return (ChildProcess)ChildProcess.Start(si);
+            return (ChildProcessImpl)ChildProcess.Start(si);
         }
 
         [Fact]

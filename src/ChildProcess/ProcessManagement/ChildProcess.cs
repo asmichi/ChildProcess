@@ -1,195 +1,102 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using Asmichi.Utilities.PlatformAbstraction;
 using Asmichi.Utilities.Utilities;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
     /// <summary>
-    /// Represents a child process created.
-    /// Static members are thread-safe.
-    /// All instance members are not thread-safe and must not be called simultaneously by multiple threads.
+    /// Provides functionality for creating child processes.
     /// </summary>
-    public sealed partial class ChildProcess : IDisposable, IChildProcess
+    public static class ChildProcess
     {
-        private readonly IChildProcessStateHolder _stateHolder;
-        private readonly Stream? _standardInput;
-        private readonly Stream? _standardOutput;
-        private readonly Stream? _standardError;
-        private bool _isDisposed;
-
-        private ChildProcess(
-            IChildProcessStateHolder childProcessStateHolder,
-            Stream? standardInput,
-            Stream? standardOutput,
-            Stream? standardError)
+        /// <summary>
+        /// Starts a child process as specified in <paramref name="startInfo"/>.
+        /// </summary>
+        /// <param name="startInfo"><see cref="ChildProcessStartInfo"/>.</param>
+        /// <returns>The started process.</returns>
+        /// <exception cref="ArgumentException"><paramref name="startInfo"/> has an invalid value.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="startInfo"/> is null.</exception>
+        /// <exception cref="FileNotFoundException">The executable not found.</exception>
+        /// <exception cref="IOException">Failed to open a specified file.</exception>
+        /// <exception cref="AsmichiChildProcessLibraryCrashedException">The operation failed due to critical disturbance.</exception>
+        /// <exception cref="Win32Exception">Another kind of native errors.</exception>
+        public static IChildProcess Start(ChildProcessStartInfo startInfo)
         {
-            _stateHolder = childProcessStateHolder;
-            _standardInput = standardInput;
-            _standardOutput = standardOutput;
-            _standardError = standardError;
-        }
+            _ = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
+            _ = startInfo.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
+            _ = startInfo.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
-        /// <summary>
-        /// Releases resources associated to this object.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_isDisposed)
+            var resolvedPath = ResolveExecutablePath(startInfo.FileName, startInfo.Flags);
+
+            using var stdHandles = new PipelineStdHandleCreator(startInfo);
+            IChildProcessStateHolder processState;
+            try
             {
-                _stateHolder.Dispose();
-                _standardInput?.Dispose();
-                _standardOutput?.Dispose();
-                _standardError?.Dispose();
-
-                _isDisposed = true;
+                processState = ChildProcessContext.Shared.SpawnProcess(
+                    startInfo: startInfo,
+                    resolvedPath: resolvedPath,
+                    stdIn: stdHandles.PipelineStdIn,
+                    stdOut: stdHandles.PipelineStdOut,
+                    stdErr: stdHandles.PipelineStdErr);
             }
-        }
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdInputRedirection"/> set to <see cref="InputRedirection.InputPipe"/>,
-        /// a stream assosiated to that pipe.
-        /// Otherwise null.
-        /// </summary>
-        public Stream? StandardInput => _standardInput;
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.OutputPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise null.
-        /// </summary>
-        public Stream? StandardOutput => _standardOutput;
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.ErrorPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise null.
-        /// </summary>
-        public Stream? StandardError => _standardError;
-
-        /// <summary>
-        /// (For tests.) Tests use this to wait for the child process without caching its status.
-        /// </summary>
-        internal WaitHandle ExitedWaitHandle => _stateHolder.State.ExitedWaitHandle;
-
-        /// <summary>
-        /// Waits indefinitely for the process to exit.
-        /// </summary>
-        public void WaitForExit() => WaitForExit(Timeout.Infinite);
-
-        /// <summary>
-        /// Waits <paramref name="millisecondsTimeout"/> milliseconds for the process to exit.
-        /// </summary>
-        /// <param name="millisecondsTimeout">The amount of time in milliseconds to wait for the process to exit. <see cref="Timeout.Infinite"/> means infinite amount of time.</param>
-        /// <returns>true if the process has exited. Otherwise false.</returns>
-        public bool WaitForExit(int millisecondsTimeout)
-        {
-            ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
-            CheckNotDisposed();
-
-            var state = _stateHolder.State;
-
-            if (state.HasExitCode)
+            catch (Win32Exception ex)
             {
-                return true;
-            }
-
-            if (!state.ExitedWaitHandle.WaitOne(millisecondsTimeout))
-            {
-                return false;
-            }
-
-            state.DangerousRetrieveExitCode();
-            return true;
-        }
-
-        /// <summary>
-        /// Asynchronously waits indefinitely for the process to exit.
-        /// </summary>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous wait operation.</returns>
-        public Task WaitForExitAsync(CancellationToken cancellationToken = default) =>
-            WaitForExitAsync(Timeout.Infinite, cancellationToken);
-
-        /// <summary>
-        /// Asynchronously waits <paramref name="millisecondsTimeout"/> milliseconds for the process to exit.
-        /// </summary>
-        /// <param name="millisecondsTimeout">The amount of time in milliseconds to wait for the process to exit. <see cref="Timeout.Infinite"/> means infinite amount of time.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous wait operation. true if the process has exited. Otherwise false.</returns>
-        public Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default)
-        {
-            ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
-            CheckNotDisposed();
-
-            var state = _stateHolder.State;
-
-            if (state.HasExitCode)
-            {
-                return CompletedBoolTask.True;
-            }
-
-            // Synchronous path: the process has already exited.
-            var waitHandle = _stateHolder.State.ExitedWaitHandle;
-            if (waitHandle.WaitOne(0))
-            {
-                state.DangerousRetrieveExitCode();
-                return CompletedBoolTask.True;
-            }
-
-            // Synchronous path: already canceled.
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Task.FromCanceled<bool>(cancellationToken);
-            }
-
-            // Start an asynchronous wait operation.
-            var operation = WaitAsyncOperation.Start(waitHandle, millisecondsTimeout, cancellationToken);
-            return operation.Completion;
-        }
-
-        /// <summary>
-        /// Gets if the exit code of the process is 0.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
-        public bool IsSuccessful => ExitCode == 0;
-
-        /// <summary>
-        /// Gets the exit code of the process.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
-        public int ExitCode
-        {
-            get
-            {
-                CheckNotDisposed();
-                RetrieveExitCode();
-
-                return _stateHolder.State.ExitCode;
-            }
-        }
-
-        private void CheckNotDisposed()
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChildProcess));
-            }
-        }
-
-        private void RetrieveExitCode()
-        {
-            if (!_stateHolder.State.HasExitCode)
-            {
-                if (!WaitForExit(0))
+                if (EnvironmentPal.IsFileNotFoundError(ex.NativeErrorCode))
                 {
-                    throw new InvalidOperationException("The process has not exited. Call WaitForExit before accessing ExitCode.");
+                    ThrowHelper.ThrowExecutableNotFoundException(resolvedPath, startInfo.Flags, ex);
                 }
 
-                _stateHolder.State.DangerousRetrieveExitCode();
+                // Win32Exception does not provide detailed information by its type.
+                // The NativeErrorCode and Message property should be enough because normally there is
+                // nothing we can do to programmatically recover from this error.
+                throw;
+            }
+
+            var process = new ChildProcessImpl(processState, stdHandles.InputStream, stdHandles.OutputStream, stdHandles.ErrorStream);
+            stdHandles.DetachStreams();
+            return process;
+        }
+
+        private static string ResolveExecutablePath(string fileName, ChildProcessFlags flags)
+        {
+            bool ignoreSearchPath = flags.HasIgnoreSearchPath();
+            var searchPath = ignoreSearchPath ? null : EnvironmentSearchPathCache.ResolveSearchPath();
+            var resolvedPath = SearchPathSearcher.FindExecutable(fileName, flags.HasSearchCurrentDirectory(), searchPath);
+            if (resolvedPath is null)
+            {
+                ThrowHelper.ThrowExecutableNotFoundException(fileName, flags);
+            }
+            return resolvedPath;
+        }
+
+        private static class EnvironmentSearchPathCache
+        {
+            private static readonly object Lock = new object();
+            private static string? _previousEnvStr = Environment.GetEnvironmentVariable("PATH");
+            private static IReadOnlyList<string> _cachedSearchPath = SearchPathSearcher.ResolveSearchPath(_previousEnvStr);
+
+            public static IReadOnlyList<string> ResolveSearchPath()
+            {
+                var envStr = Environment.GetEnvironmentVariable("PATH");
+                lock (Lock)
+                {
+                    if (envStr == _previousEnvStr)
+                    {
+                        return _cachedSearchPath;
+                    }
+                    else
+                    {
+                        var searchPath = SearchPathSearcher.ResolveSearchPath(envStr);
+                        _previousEnvStr = envStr;
+                        _cachedSearchPath = searchPath;
+                        return searchPath;
+                    }
+                }
             }
         }
     }
