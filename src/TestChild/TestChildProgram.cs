@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Asmichi.Utilities
@@ -32,6 +33,8 @@ namespace Asmichi.Utilities
                     return CommandDumpEnvironmentVariables();
                 case "EchoWorkingDirectory":
                     return CommandEchoWorkingDirectory();
+                case "EchoCodePage":
+                    return CommandEchoCodePage();
                 default:
                     Console.WriteLine("Unknown command: {0}", command);
                     return 1;
@@ -80,6 +83,18 @@ namespace Asmichi.Utilities
         private static int CommandEchoWorkingDirectory()
         {
             Console.Write(Environment.CurrentDirectory);
+            return 0;
+        }
+
+        private static int CommandEchoCodePage()
+        {
+            int codePage = Kernel32.GetConsoleOutputCP();
+            if (codePage == 0)
+            {
+                return Marshal.GetLastWin32Error();
+            }
+
+            Console.Write("{0}", codePage);
             return 0;
         }
     }

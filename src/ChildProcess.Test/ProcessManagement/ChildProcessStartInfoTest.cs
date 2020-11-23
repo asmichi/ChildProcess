@@ -13,8 +13,8 @@ namespace Asmichi.Utilities.ProcessManagement
             var sut = new ChildProcessStartInfo();
 
             Assert.Equal(InputRedirection.NullDevice, sut.StdInputRedirection);
-            Assert.Equal(OutputRedirection.ParentOutput, sut.StdOutputRedirection);
-            Assert.Equal(OutputRedirection.ParentError, sut.StdErrorRedirection);
+            Assert.Equal(OutputRedirection.NullDevice, sut.StdOutputRedirection);
+            Assert.Equal(OutputRedirection.NullDevice, sut.StdErrorRedirection);
             Assert.Null(sut.StdInputFile);
             Assert.Null(sut.StdInputHandle);
             Assert.Null(sut.StdOutputFile);
@@ -25,6 +25,8 @@ namespace Asmichi.Utilities.ProcessManagement
             Assert.Equal(sut.Arguments, Array.Empty<string>());
             Assert.Null(sut.WorkingDirectory);
             Assert.Null(sut.EnvironmentVariables);
+            Assert.Equal(ChildProcessFlags.None, sut.Flags);
+            Assert.Equal(65001, sut.CodePage);
         }
     }
 }

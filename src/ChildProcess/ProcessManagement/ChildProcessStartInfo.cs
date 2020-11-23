@@ -30,6 +30,13 @@ namespace Asmichi.Utilities.ProcessManagement
         /// See <see cref="ChildProcessStartInfo.FileName"/> for details.
         /// </summary>
         AllowRelativeFileName = 0x0002,
+
+        /// <summary>
+        /// (Windows-specific) Specifies that newly created consoles should use the code page specified by
+        /// <see cref="ChildProcessStartInfo.CodePage"/>. If it is not set, newly created consoles will use
+        /// the system default code page.
+        /// </summary>
+        UseCustomCodepage = 0x0004,
     }
 
     /// <summary>
@@ -57,15 +64,16 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     public enum InputRedirection
     {
-        /// <summary>
-        /// Redirected to the stdin of the current process.
-        /// </summary>
-        ParentInput,
+        // Support for attached child processes temporarily removed.
+        // /// <summary>
+        // /// Redirected to the stdin of the current process.
+        // /// </summary>
+        // ParentInput,
 
         /// <summary>
         /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardInput property.
         /// </summary>
-        InputPipe,
+        InputPipe = 1,
 
         /// <summary>
         /// Redirected to a file. The corresponding StdInputFile property must be set.
@@ -88,20 +96,22 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     public enum OutputRedirection
     {
-        /// <summary>
-        /// Redirected to the stdout of the current process.
-        /// </summary>
-        ParentOutput,
+        // Support for attached child processes temporarily removed.
+        // /// <summary>
+        // /// Redirected to the stdout of the current process.
+        // /// </summary>
+        // ParentOutput,
 
-        /// <summary>
-        /// Redirected to the stderr of the current process.
-        /// </summary>
-        ParentError,
+        // Support for attached child processes temporarily removed.
+        // /// <summary>
+        // /// Redirected to the stderr of the current process.
+        // /// </summary>
+        // ParentError,
 
         /// <summary>
         /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardOutput property.
         /// </summary>
-        OutputPipe,
+        OutputPipe = 2,
 
         /// <summary>
         /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardError property.
@@ -202,6 +212,13 @@ namespace Asmichi.Utilities.ProcessManagement
         public ChildProcessFlags Flags { get; set; }
 
         /// <summary>
+        /// (Windows-specific) If <see cref="ChildProcessFlags.UseCustomCodepage"/> is set,
+        /// specifies the code page that should be used by newly created consoles (if any).
+        /// The default value is 65001 (UTF-8).
+        /// </summary>
+        public int CodePage { get; set; } = 65001;
+
+        /// <summary>
         /// <para>
         /// Specifies the directories to be searched for the executable.
         /// The default value is <see langword="null"/>.
@@ -221,15 +238,15 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// Specifies how the stdout of the child process is redirected.
-        /// The default value is <see cref="OutputRedirection.ParentOutput"/>.
+        /// The default value is <see cref="OutputRedirection.NullDevice"/> (temporary specification).
         /// </summary>
-        public OutputRedirection StdOutputRedirection { get; set; } = OutputRedirection.ParentOutput;
+        public OutputRedirection StdOutputRedirection { get; set; } = OutputRedirection.NullDevice;
 
         /// <summary>
         /// Specifies how the stderr of the child process is redirected.
-        /// The default value is <see cref="OutputRedirection.ParentError"/>.
+        /// The default value is <see cref="OutputRedirection.NullDevice"/> (temporary specification).
         /// </summary>
-        public OutputRedirection StdErrorRedirection { get; set; } = OutputRedirection.ParentError;
+        public OutputRedirection StdErrorRedirection { get; set; } = OutputRedirection.NullDevice;
 
         /// <summary>
         /// If <see cref="StdInputRedirection"/> is <see cref="InputRedirection.File"/>,

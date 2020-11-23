@@ -2,6 +2,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.Interop.Windows
 {
@@ -32,6 +34,21 @@ namespace Asmichi.Utilities.Interop.Windows
                 Kernel32.PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
                 handles,
                 new IntPtr(sizeof(IntPtr) * count),
+                IntPtr.Zero,
+                IntPtr.Zero))
+            {
+                throw new Win32Exception();
+            }
+        }
+
+        public unsafe void UpdatePseudoConsole(IntPtr hPC)
+        {
+            if (!Kernel32.UpdateProcThreadAttribute(
+                _unmanaged,
+                0,
+                Kernel32.PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE,
+                hPC.ToPointer(),
+                new IntPtr(sizeof(IntPtr)),
                 IntPtr.Zero,
                 IntPtr.Zero))
             {

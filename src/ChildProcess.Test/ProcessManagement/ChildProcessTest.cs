@@ -192,6 +192,7 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 StdInputRedirection = InputRedirection.InputPipe,
                 StdOutputRedirection = OutputRedirection.NullDevice,
+                StdErrorRedirection = OutputRedirection.NullDevice,
             };
             return (ChildProcess)ChildProcess.Start(si);
         }
@@ -499,6 +500,40 @@ namespace Asmichi.Utilities.ProcessManagement
             var output = sr.ReadToEnd();
             sut.WaitForExit();
             Assert.Equal(tmp.Location, output);
+        }
+
+        [Fact]
+        public void CanChangeCodePage()
+        {
+            // Code pages are Windows-specific.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            const int Latin1CodePage = 1252;
+            const int Utf8CodePage = 65001;
+
+            AssertOne(Latin1CodePage);
+            AssertOne(Utf8CodePage);
+
+            static void AssertOne(int codePage)
+            {
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoCodePage")
+                {
+                    CodePage = codePage,
+                    Flags = ChildProcessFlags.UseCustomCodepage,
+                    StdOutputRedirection = OutputRedirection.OutputPipe,
+                };
+
+                using var sut = ChildProcess.Start(si);
+                using var sr = new StreamReader(sut.StandardOutput!);
+                var output = sr.ReadToEnd();
+                sut.WaitForExit();
+
+                Assert.Equal(0, sut.ExitCode);
+                Assert.Equal(codePage.ToString(CultureInfo.InvariantCulture), output);
+            }
         }
     }
 }

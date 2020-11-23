@@ -188,7 +188,7 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             return redirection switch
             {
-                InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read),
+                // InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read),
                 InputRedirection.InputPipe => inputPipe!,
                 InputRedirection.File => OpenFile(fileName!, FileMode.Open, FileAccess.Read, FileShare.Read),
                 InputRedirection.Handle => handle!,
@@ -206,8 +206,8 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             return redirection switch
             {
-                OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write),
-                OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write),
+                // OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write),
+                // OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write),
                 OutputRedirection.OutputPipe => outputPipe!,
                 OutputRedirection.ErrorPipe => errorPipe!,
                 OutputRedirection.File => OpenFile(fileName!, FileMode.Create, FileAccess.Write, FileShare.Read),

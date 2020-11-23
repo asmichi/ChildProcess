@@ -93,7 +93,7 @@ namespace Asmichi.Utilities
             {
                 var si = new ChildProcessStartInfo("cmd", "/C", "timeout", "3")
                 {
-                    StdInputRedirection = InputRedirection.ParentInput,
+                    StdInputRedirection = InputRedirection.NullDevice, // FIXME:
                     StdOutputRedirection = OutputRedirection.NullDevice,
                 };
 

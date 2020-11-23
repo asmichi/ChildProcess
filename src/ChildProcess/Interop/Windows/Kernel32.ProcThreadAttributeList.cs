@@ -11,6 +11,7 @@ namespace Asmichi.Utilities.Interop.Windows
     internal static partial class Kernel32
     {
         public static readonly IntPtr PROC_THREAD_ATTRIBUTE_HANDLE_LIST = new IntPtr(0x20002);
+        public static readonly IntPtr PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE = new IntPtr(0x20016);
 
         [DllImport(DllName, SetLastError = true)]
         public static extern bool InitializeProcThreadAttributeList(

@@ -11,13 +11,15 @@ namespace Asmichi.Utilities.ProcessManagement
     internal class WindowsChildProcessState : IChildProcessStateHolder, IChildProcessState
     {
         private readonly SafeProcessHandle _processHandle;
+        private readonly InputWriterOnlyPseudoConsole _pseudoConsole;
         private readonly WaitHandle _exitedWaitHandle;
         private int _exitCode = -1;
         private bool _hasExitCode;
 
-        public WindowsChildProcessState(SafeProcessHandle processHandle)
+        public WindowsChildProcessState(SafeProcessHandle processHandle, InputWriterOnlyPseudoConsole pseudoConsole)
         {
             _processHandle = processHandle;
+            _pseudoConsole = pseudoConsole;
             _exitedWaitHandle = new WindowsProcessWaitHandle(_processHandle);
         }
 
@@ -25,6 +27,7 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             _processHandle.Dispose();
             _exitedWaitHandle.Dispose();
+            _pseudoConsole.Dispose();
         }
 
         public IChildProcessState State => this;

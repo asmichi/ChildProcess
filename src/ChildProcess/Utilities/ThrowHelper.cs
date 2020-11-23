@@ -17,5 +17,13 @@ namespace Asmichi.Utilities.Utilities
             var format = ignoreSearchPath ? "Executable not found: {0}" : "Executable not found on the search path: {0}";
             throw new FileNotFoundException(string.Format(CultureInfo.InvariantCulture, format, fileName), fileName, innerException);
         }
+
+        [DoesNotReturn]
+        public static void ThrowChcpFailedException(int codePage, int exitCode, string paramName)
+        {
+            throw new ArgumentException(
+                string.Format(CultureInfo.InvariantCulture, "chcp.com {0} failed with exit code {1} most likely because codepage {0} is invalid", codePage, exitCode),
+                paramName);
+        }
     }
 }

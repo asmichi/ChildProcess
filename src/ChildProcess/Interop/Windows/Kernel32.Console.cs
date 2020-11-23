@@ -2,6 +2,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.Interop.Windows
 {
@@ -15,6 +16,22 @@ namespace Asmichi.Utilities.Interop.Windows
 
         // Not using SafeHandle; we do not own the returned handle.
         [DllImport(DllName, SetLastError = true)]
-        public static extern IntPtr GetStdHandle([In]int nStdHandle);
+        public static extern IntPtr GetStdHandle([In] int nStdHandle);
+
+        // return: HRESULT
+        [DllImport(DllName)]
+        internal static extern int CreatePseudoConsole(
+            [In] COORD size,
+            [In] SafeHandle hInput,
+            [In] SafeHandle hOutput,
+            [In] uint dwFlags,
+            [Out] out IntPtr phPC);
+
+        // return: HRESULT
+        [DllImport(DllName)]
+        internal static extern int ResizePseudoConsole([In] IntPtr hPC, [In] COORD size);
+
+        [DllImport(DllName)]
+        internal static extern void ClosePseudoConsole([In] IntPtr hPC);
     }
 }

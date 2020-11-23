@@ -41,7 +41,7 @@ namespace Asmichi.Utilities
         }
 
         // Quotes an argument according to the UCRT command line parser.
-        private static void AppendArgumentQuoted(StringBuilder sb, string s)
+        public static void AppendArgumentQuoted(StringBuilder sb, string s)
         {
             // Technically a quoted part can start in the middle of an argument,
             // so we could quote part of the string as we iterate over the string.
