@@ -66,7 +66,7 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             bool ignoreSearchPath = flags.HasIgnoreSearchPath();
             var searchPath = ignoreSearchPath ? null : EnvironmentSearchPathCache.ResolveSearchPath();
-            var resolvedPath = SearchPathSearcher.FindExecutable(fileName, flags.HasSearchCurrentDirectory(), searchPath);
+            var resolvedPath = SearchPathSearcher.FindExecutable(fileName, flags.HasAllowRelativeFileName(), searchPath);
             if (resolvedPath is null)
             {
                 ThrowHelper.ThrowExecutableNotFoundException(fileName, flags);

@@ -56,7 +56,14 @@ namespace Asmichi.Utilities.ProcessManagement
         /// </summary>
         /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
         /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.AllowRelativeFileName"/> flag.</returns>
-        public static bool HasSearchCurrentDirectory(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AllowRelativeFileName) != 0;
+        public static bool HasAllowRelativeFileName(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AllowRelativeFileName) != 0;
+
+        /// <summary>
+        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.UseCustomCodePage"/> flag.
+        /// </summary>
+        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
+        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.UseCustomCodePage"/> flag.</returns>
+        public static bool HasUseCustomCodePage(this ChildProcessFlags flags) => (flags & ChildProcessFlags.UseCustomCodePage) != 0;
     }
 
     /// <summary>
