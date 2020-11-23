@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Asmichi.Utilities.Interop.Windows;
@@ -16,28 +14,29 @@ namespace Asmichi.Utilities.ProcessManagement
     internal sealed class WindowsChildProcessContext : IChildProcessContext
     {
         public unsafe IChildProcessStateHolder SpawnProcess(
-            string fileName,
-            IReadOnlyCollection<string> arguments,
-            string? workingDirectory,
-            IReadOnlyCollection<KeyValuePair<string, string>>? environmentVariables,
+            ChildProcessStartInfo startInfo,
+            string resolvedPath,
             SafeHandle stdIn,
             SafeHandle stdOut,
             SafeHandle stdErr)
         {
-            var commandLine = WindowsCommandLineUtil.MakeCommandLine(fileName, arguments ?? Array.Empty<string>());
+            var arguments = startInfo.Arguments;
+            var environmentVariables = startInfo.EnvironmentVariables;
+            var workingDirectory = startInfo.WorkingDirectory;
+            var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>());
             var environmentBlock = environmentVariables != null ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables) : null;
 
+            using var attr = new ProcThreadAttributeList(1);
+
             using var inheritableHandleStore = new InheritableHandleStore(3);
-            var childStdInput = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
-            var childStdOutput = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
-            var childStdError = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
+            var childStdIn = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
+            var childStdOut = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
+            var childStdErr = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
 
             Span<IntPtr> inheritableHandles = stackalloc IntPtr[inheritableHandleStore.Count];
             inheritableHandleStore.DangerousGetHandles(inheritableHandles);
-
             fixed (IntPtr* pInheritableHandles = inheritableHandles)
             {
-                using var attr = new ProcThreadAttributeList(1);
                 attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
 
                 bool createNoWindow = !ConsolePal.HasConsoleWindow();
@@ -51,10 +50,11 @@ namespace Asmichi.Utilities.ProcessManagement
                     creationFlags,
                     environmentBlock,
                     workingDirectory,
-                    childStdInput,
-                    childStdOutput,
-                    childStdError,
+                    childStdIn,
+                    childStdOut,
+                    childStdErr,
                     attr);
+
                 return new WindowsChildProcessState(processHandle);
             }
         }
@@ -63,76 +63,41 @@ namespace Asmichi.Utilities.ProcessManagement
             StringBuilder commandLine,
             int creationFlags,
             char[]? environmentBlock,
-            string? currentDirectory,
-            SafeHandle? stdInput,
-            SafeHandle? stdOutput,
-            SafeHandle? stdError,
+            string? workingDirectory,
+            SafeHandle? childStdIn,
+            SafeHandle? childStdOut,
+            SafeHandle? childStdErr,
             ProcThreadAttributeList attr)
         {
-            _ = commandLine ?? throw new ArgumentNullException(nameof(commandLine));
-            _ = attr ?? throw new ArgumentNullException(nameof(attr));
-
             var nativeSi = new Kernel32.STARTUPINFOEX()
             {
                 cb = sizeof(Kernel32.STARTUPINFOEX),
                 dwFlags = Kernel32.STARTF_USESTDHANDLES,
-                hStdInput = stdInput?.DangerousGetHandle() ?? IntPtr.Zero,
-                hStdOutput = stdOutput?.DangerousGetHandle() ?? IntPtr.Zero,
-                hStdError = stdError?.DangerousGetHandle() ?? IntPtr.Zero,
+                hStdInput = childStdIn?.DangerousGetHandle() ?? IntPtr.Zero,
+                hStdOutput = childStdOut?.DangerousGetHandle() ?? IntPtr.Zero,
+                hStdError = childStdErr?.DangerousGetHandle() ?? IntPtr.Zero,
                 lpAttributeList = attr.DangerousGetHandle(),
             };
 
-            fixed (char* pEnvironment = environmentBlock)
+            fixed (char* pEnvironmentBlock = environmentBlock)
             {
-                bool stdInputRefAdded = false;
-                bool stdOutputRefAdded = false;
-                bool stdErrorRefAdded = false;
-                bool attrRefAdded = false;
-
-                try
+                if (!Kernel32.CreateProcess(
+                     null,
+                     commandLine,
+                     IntPtr.Zero,
+                     IntPtr.Zero,
+                     true,
+                     creationFlags,
+                     pEnvironmentBlock,
+                     workingDirectory,
+                     ref nativeSi,
+                     out var pi))
                 {
-                    stdInput?.DangerousAddRef(ref stdInputRefAdded);
-                    stdOutput?.DangerousAddRef(ref stdOutputRefAdded);
-                    stdError?.DangerousAddRef(ref stdErrorRefAdded);
-                    attr.DangerousAddRef(ref attrRefAdded);
-
-                    if (!Kernel32.CreateProcess(
-                        null,
-                        commandLine,
-                        IntPtr.Zero,
-                        IntPtr.Zero,
-                        true,
-                        creationFlags,
-                        pEnvironment,
-                        currentDirectory,
-                        ref nativeSi,
-                        out var pi))
-                    {
-                        throw new Win32Exception();
-                    }
-
-                    Kernel32.CloseHandle(pi.hThread);
-                    return new SafeProcessHandle(pi.hProcess, true);
+                    throw new Win32Exception();
                 }
-                finally
-                {
-                    if (stdInputRefAdded)
-                    {
-                        stdInput!.DangerousRelease();
-                    }
-                    if (stdOutputRefAdded)
-                    {
-                        stdOutput!.DangerousRelease();
-                    }
-                    if (stdErrorRefAdded)
-                    {
-                        stdError!.DangerousRelease();
-                    }
-                    if (attrRefAdded)
-                    {
-                        attr.DangerousRelease();
-                    }
-                }
+
+                Kernel32.CloseHandle(pi.hThread);
+                return new SafeProcessHandle(pi.hProcess, true);
             }
         }
     }

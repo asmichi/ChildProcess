@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.CompilerServices;
 using Asmichi.Utilities.PlatformAbstraction;
 using Asmichi.Utilities.Utilities;
 
@@ -37,10 +36,8 @@ namespace Asmichi.Utilities.ProcessManagement
             try
             {
                 processState = ChildProcessContext.Shared.SpawnProcess(
-                    path: resolvedPath,
-                    arguments: startInfo.Arguments,
-                    workingDirectory: startInfo.WorkingDirectory,
-                    environmentVariables: startInfo.EnvironmentVariables,
+                    startInfo: startInfo,
+                    resolvedPath: resolvedPath,
                     stdIn: stdHandles.PipelineStdIn,
                     stdOut: stdHandles.PipelineStdOut,
                     stdErr: stdHandles.PipelineStdErr);

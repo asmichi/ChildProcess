@@ -28,14 +28,16 @@ namespace Asmichi.Utilities.ProcessManagement
         }
 
         public IChildProcessStateHolder SpawnProcess(
-            string fileName,
-            IReadOnlyCollection<string> arguments,
-            string? workingDirectory,
-            IReadOnlyCollection<KeyValuePair<string, string>>? environmentVariables,
+            ChildProcessStartInfo startInfo,
+            string resolvedPath,
             SafeHandle stdIn,
             SafeHandle stdOut,
             SafeHandle stdErr)
         {
+            var arguments = startInfo.Arguments;
+            var environmentVariables = startInfo.EnvironmentVariables;
+            var workingDirectory = startInfo.WorkingDirectory;
+
             Span<int> fds = stackalloc int[3];
             int handleCount = 0;
             uint flags = 0;
@@ -63,10 +65,10 @@ namespace Asmichi.Utilities.ProcessManagement
                 bw.Write(stateHolder.State.Token);
                 bw.Write(flags);
                 bw.Write(workingDirectory);
-                bw.Write(fileName);
+                bw.Write(resolvedPath);
 
                 bw.Write((uint)(arguments.Count + 1));
-                bw.Write(fileName);
+                bw.Write(resolvedPath);
                 foreach (var x in arguments)
                 {
                     bw.Write(x);
