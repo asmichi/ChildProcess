@@ -7,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-#pragma warning disable RCS1090 // Call 'ConfigureAwait(false)'.
-
 namespace Asmichi.Utilities.ProcessManagement
 {
     public class PerformanceTest

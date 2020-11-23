@@ -13,8 +13,6 @@ using System.Threading.Tasks;
 using Asmichi.Utilities.Utilities;
 using Xunit;
 
-#pragma warning disable RCS1090 // Call 'ConfigureAwait(false)'.
-
 namespace Asmichi.Utilities.ProcessManagement
 {
     public class ChildProcessTest

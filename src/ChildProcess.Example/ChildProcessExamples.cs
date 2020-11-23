@@ -8,8 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Asmichi.Utilities.ProcessManagement;
 
-#pragma warning disable RCS1090 // Call 'ConfigureAwait(false)'.
-
 namespace Asmichi.Utilities
 {
     public static class ChildProcessExamples

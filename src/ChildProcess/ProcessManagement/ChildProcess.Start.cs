@@ -9,7 +9,6 @@ using Asmichi.Utilities.Utilities;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
-    // Process creation part
     public sealed partial class ChildProcess : IDisposable
     {
         /// <summary>

@@ -11,7 +11,7 @@
     <Rule Id="SA1513" Action="None" />
     <Rule Id="SA1515" Action="None" />
     <Rule Id="SA1516" Action="None" />
-    <Rule Id="SA1601" Action="None" /> <!-- Conflicts with RCS1139. -->
+    <Rule Id="SA1601" Action="None" />
     <Rule Id="SA1623" Action="None" />
     <Rule Id="SA1649" Action="None" />
   </Rules>
