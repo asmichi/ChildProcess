@@ -20,7 +20,7 @@ namespace Asmichi.Utilities.ProcessManagement
             "chcp.com");
 
         public unsafe IChildProcessStateHolder SpawnProcess(
-            ChildProcessStartInfo startInfo,
+            ref ChildProcessStartInfoInternal startInfo,
             string resolvedPath,
             SafeHandle stdIn,
             SafeHandle stdOut,

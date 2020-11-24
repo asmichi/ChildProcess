@@ -19,7 +19,7 @@ namespace Asmichi.Utilities.ProcessManagement
         private List<IDisposable>? _objectsToDispose;
         private bool _isDisposed;
 
-        public PipelineStdHandleCreator(ChildProcessStartInfo startInfo)
+        public PipelineStdHandleCreator(ref ChildProcessStartInfoInternal startInfo)
         {
             var stdInputRedirection = startInfo.StdInputRedirection;
             var stdOutputRedirection = startInfo.StdOutputRedirection;

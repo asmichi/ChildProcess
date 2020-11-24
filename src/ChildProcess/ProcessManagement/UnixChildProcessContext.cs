@@ -1,7 +1,6 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -28,7 +27,7 @@ namespace Asmichi.Utilities.ProcessManagement
         }
 
         public IChildProcessStateHolder SpawnProcess(
-            ChildProcessStartInfo startInfo,
+            ref ChildProcessStartInfoInternal startInfo,
             string resolvedPath,
             SafeHandle stdIn,
             SafeHandle stdOut,

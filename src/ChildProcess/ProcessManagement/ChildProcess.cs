@@ -28,17 +28,19 @@ namespace Asmichi.Utilities.ProcessManagement
         public static IChildProcess Start(ChildProcessStartInfo startInfo)
         {
             _ = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
-            _ = startInfo.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
-            _ = startInfo.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
-            var resolvedPath = ResolveExecutablePath(startInfo.FileName, startInfo.Flags);
+            var startInfoInternal = new ChildProcessStartInfoInternal(startInfo);
+            _ = startInfoInternal.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
+            _ = startInfoInternal.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
-            using var stdHandles = new PipelineStdHandleCreator(startInfo);
+            var resolvedPath = ResolveExecutablePath(startInfoInternal.FileName, startInfoInternal.Flags);
+
+            using var stdHandles = new PipelineStdHandleCreator(ref startInfoInternal);
             IChildProcessStateHolder processState;
             try
             {
                 processState = ChildProcessContext.Shared.SpawnProcess(
-                    startInfo: startInfo,
+                    startInfo: ref startInfoInternal,
                     resolvedPath: resolvedPath,
                     stdIn: stdHandles.PipelineStdIn,
                     stdOut: stdHandles.PipelineStdOut,
@@ -48,7 +50,7 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 if (EnvironmentPal.IsFileNotFoundError(ex.NativeErrorCode))
                 {
-                    ThrowHelper.ThrowExecutableNotFoundException(resolvedPath, startInfo.Flags, ex);
+                    ThrowHelper.ThrowExecutableNotFoundException(resolvedPath, startInfoInternal.Flags, ex);
                 }
 
                 // Win32Exception does not provide detailed information by its type.
