@@ -1,10 +1,8 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Asmichi.Utilities.ProcessManagement;
 
@@ -91,9 +89,16 @@ namespace Asmichi.Utilities
 
             async Task SpawnCmdAsync()
             {
-                var si = new ChildProcessStartInfo("cmd", "/C", "timeout", "3")
+                // Using timeout because Windows does not have a handy sleep command.
+                // (`powershell -NoProfile -Command Sleep 3` is not an option because
+                // it takes ~200 ms to boot.)
+                //
+                // This is super racy because these N timeout processes simultaneously
+                // attempts to perform PeekConsoleInput followed by ReadConsoleInput.
+                // When a console input arrives, some processes will get stuck in ReadConsoleInput.
+                var si = new ChildProcessStartInfo("timeout", "3")
                 {
-                    StdInputRedirection = InputRedirection.NullDevice, // FIXME:
+                    StdInputRedirection = InputRedirection.ParentInput,
                     StdOutputRedirection = OutputRedirection.NullDevice,
                 };
 

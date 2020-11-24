@@ -11,9 +11,9 @@ namespace Asmichi.Utilities.PlatformAbstraction.Unix
         private static readonly SafeFileHandle StdOutputHandle = new SafeFileHandle(new IntPtr(1), ownsHandle: false);
         private static readonly SafeFileHandle StdErrorHandle = new SafeFileHandle(new IntPtr(2), ownsHandle: false);
 
-        public SafeFileHandle GetStdInputHandleForChild() => StdInputHandle;
-        public SafeFileHandle GetStdOutputHandleForChild() => StdOutputHandle;
-        public SafeFileHandle GetStdErrorHandleForChild() => StdErrorHandle;
+        public SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) => StdInputHandle;
+        public SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) => StdOutputHandle;
+        public SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) => StdErrorHandle;
 
         public bool HasConsoleWindow() => true;
     }

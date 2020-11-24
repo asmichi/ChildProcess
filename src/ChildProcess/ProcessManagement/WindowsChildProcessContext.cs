@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -29,14 +30,17 @@ namespace Asmichi.Utilities.ProcessManagement
             var arguments = startInfo.Arguments;
             var environmentVariables = startInfo.EnvironmentVariables;
             var workingDirectory = startInfo.WorkingDirectory;
+            var flags = startInfo.Flags;
+
+            Debug.Assert(startInfo.CreateNewConsole || ConsolePal.HasConsoleWindow());
+
             var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>());
             var environmentBlock = environmentVariables != null ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables) : null;
-
-            var pseudoConsole = InputWriterOnlyPseudoConsole.Create();
+            var pseudoConsole = startInfo.CreateNewConsole ? InputWriterOnlyPseudoConsole.Create() : null;
 
             try
             {
-                if (startInfo.Flags.HasUseCustomCodePage())
+                if (pseudoConsole is { } && flags.HasUseCustomCodePage())
                 {
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }
@@ -51,7 +55,10 @@ namespace Asmichi.Utilities.ProcessManagement
                 fixed (IntPtr* pInheritableHandles = inheritableHandles)
                 {
                     using var attr = new ProcThreadAttributeList(2);
-                    attr.UpdatePseudoConsole(pseudoConsole.Handle.DangerousGetHandle());
+                    if (pseudoConsole is { })
+                    {
+                        attr.UpdatePseudoConsole(pseudoConsole.Handle.DangerousGetHandle());
+                    }
                     attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
 
                     // Support for attached child processes temporarily removed.
@@ -72,7 +79,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
             catch
             {
-                pseudoConsole.Dispose();
+                pseudoConsole?.Dispose();
                 throw;
             }
         }

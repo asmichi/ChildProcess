@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Asmichi.Utilities.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
@@ -33,27 +34,27 @@ namespace Asmichi.Utilities.ProcessManagement
 
             if (stdInputRedirection == InputRedirection.Handle && stdInputHandle == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdInputHandle must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdInputHandle)} must not be null.", nameof(startInfo));
             }
             if (stdInputRedirection == InputRedirection.File && stdInputFile == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdInputFile must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdInputFile)} must not be null.", nameof(startInfo));
             }
             if (stdOutputRedirection == OutputRedirection.Handle && stdOutputHandle == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdOutputHandle must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdOutputHandle)} must not be null.", nameof(startInfo));
             }
             if (IsFileRedirection(stdOutputRedirection) && stdOutputFile == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdOutputFile must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdOutputFile)} must not be null.", nameof(startInfo));
             }
             if (stdErrorRedirection == OutputRedirection.Handle && stdErrorHandle == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdErrorHandle must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdErrorHandle)} must not be null.", nameof(startInfo));
             }
             if (IsFileRedirection(stdErrorRedirection) && stdErrorFile == null)
             {
-                throw new ArgumentException("ChildProcessStartInfo.StdErrorFile must not be null.", nameof(startInfo));
+                throw new ArgumentException($"{nameof(ChildProcessStartInfo.StdErrorFile)} must not be null.", nameof(startInfo));
             }
 
             bool redirectingToSameFile = IsFileRedirection(stdOutputRedirection) && IsFileRedirection(stdErrorRedirection) && stdOutputFile == stdErrorFile;
@@ -87,14 +88,16 @@ namespace Asmichi.Utilities.ProcessManagement
                     stdInputRedirection,
                     stdInputFile,
                     stdInputHandle,
-                    _inputReadPipe);
+                    _inputReadPipe,
+                    startInfo.CreateNewConsole);
 
                 PipelineStdOut = ChooseOutput(
                     stdOutputRedirection,
                     stdOutputFile,
                     stdOutputHandle,
                     _outputWritePipe,
-                    _errorWritePipe);
+                    _errorWritePipe,
+                    startInfo.CreateNewConsole);
 
                 if (redirectingToSameFile)
                 {
@@ -107,7 +110,8 @@ namespace Asmichi.Utilities.ProcessManagement
                         stdErrorFile,
                         stdErrorHandle,
                         _outputWritePipe,
-                        _errorWritePipe);
+                        _errorWritePipe,
+                        startInfo.CreateNewConsole);
                 }
             }
             catch
@@ -184,11 +188,12 @@ namespace Asmichi.Utilities.ProcessManagement
             InputRedirection redirection,
             string? fileName,
             SafeFileHandle? handle,
-            SafeFileHandle? inputPipe)
+            SafeFileHandle? inputPipe,
+            bool createNewConsole)
         {
             return redirection switch
             {
-                // InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild() ?? OpenNullDevice(FileAccess.Read),
+                InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild(createNewConsole),
                 InputRedirection.InputPipe => inputPipe!,
                 InputRedirection.File => OpenFile(fileName!, FileMode.Open, FileAccess.Read, FileShare.Read),
                 InputRedirection.Handle => handle!,
@@ -202,12 +207,13 @@ namespace Asmichi.Utilities.ProcessManagement
             string? fileName,
             SafeFileHandle? handle,
             SafeFileHandle? outputPipe,
-            SafeFileHandle? errorPipe)
+            SafeFileHandle? errorPipe,
+            bool createNewConsole)
         {
             return redirection switch
             {
-                // OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild() ?? OpenNullDevice(FileAccess.Write),
-                // OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild() ?? OpenNullDevice(FileAccess.Write),
+                OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild(createNewConsole),
+                OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild(createNewConsole),
                 OutputRedirection.OutputPipe => outputPipe!,
                 OutputRedirection.ErrorPipe => errorPipe!,
                 OutputRedirection.File => OpenFile(fileName!, FileMode.Create, FileAccess.Write, FileShare.Read),

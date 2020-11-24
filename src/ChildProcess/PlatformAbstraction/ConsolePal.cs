@@ -7,9 +7,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
 {
     internal interface IConsolePal
     {
-        SafeFileHandle? GetStdInputHandleForChild();
-        SafeFileHandle? GetStdOutputHandleForChild();
-        SafeFileHandle? GetStdErrorHandleForChild();
+        SafeFileHandle GetStdInputHandleForChild(bool createNewConsole);
+        SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole);
+        SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole);
         bool HasConsoleWindow();
     }
 
@@ -28,9 +28,9 @@ namespace Asmichi.Utilities.PlatformAbstraction
             };
         }
 
-        public static SafeFileHandle? GetStdInputHandleForChild() => Impl.GetStdInputHandleForChild();
-        public static SafeFileHandle? GetStdOutputHandleForChild() => Impl.GetStdOutputHandleForChild();
-        public static SafeFileHandle? GetStdErrorHandleForChild() => Impl.GetStdErrorHandleForChild();
+        public static SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) => Impl.GetStdInputHandleForChild(createNewConsole);
+        public static SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) => Impl.GetStdOutputHandleForChild(createNewConsole);
+        public static SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) => Impl.GetStdErrorHandleForChild(createNewConsole);
         public static bool HasConsoleWindow() => Impl.HasConsoleWindow();
     }
 }

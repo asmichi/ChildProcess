@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Asmichi.Utilities.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.ProcessManagement
@@ -29,6 +30,11 @@ namespace Asmichi.Utilities.ProcessManagement
         public SafeFileHandle? StdOutputHandle;
         public SafeFileHandle? StdErrorHandle;
 
+        /// <summary>
+        /// If the current process is not attached to a console, we automatically create a new pseudo console.
+        /// </summary>
+        public bool CreateNewConsole;
+
         public ChildProcessStartInfoInternal(ChildProcessStartInfo startInfo)
         {
             FileName = startInfo.FileName;
@@ -47,6 +53,9 @@ namespace Asmichi.Utilities.ProcessManagement
             StdInputHandle = startInfo.StdInputHandle;
             StdOutputHandle = startInfo.StdOutputHandle;
             StdErrorHandle = startInfo.StdErrorHandle;
+
+            // Additional parameters
+            CreateNewConsole = Flags.HasCreateNewConsole() || !ConsolePal.HasConsoleWindow();
         }
     }
 }

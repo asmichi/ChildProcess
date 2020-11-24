@@ -522,7 +522,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoCodePage")
                 {
                     CodePage = codePage,
-                    Flags = ChildProcessFlags.UseCustomCodePage,
+                    Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.CreateNewConsole,
                     StdOutputRedirection = OutputRedirection.OutputPipe,
                 };
 

@@ -32,11 +32,31 @@ namespace Asmichi.Utilities.ProcessManagement
         AllowRelativeFileName = 0x0002,
 
         /// <summary>
+        /// <para>
         /// (Windows-specific) Specifies that newly created consoles should use the code page specified by
         /// <see cref="ChildProcessStartInfo.CodePage"/>. If it is not set, newly created consoles will use
         /// the system default code page.
+        /// </para>
+        /// <para>Requires <see cref="CreateNewConsole"/>.</para>
         /// </summary>
         UseCustomCodePage = 0x0004,
+
+        /// <summary>
+        /// <para>
+        /// Specifies that the child process should be attached to a new pseudo console / session.
+        /// If it is set, the child process will be attached to a new console / session.
+        /// If it is not set, the child process will be attached the current console / session
+        /// and you cannot send the Ctrl+C / SIGINT signal to the process.
+        /// </para>
+        /// <para>
+        /// (Windows-specific) If it is not set and the current process is not attached to a console,
+        /// the child process will be attached to a pseudo console.
+        /// You still cannot send the Ctrl+C signal to the process.
+        /// </para>
+        /// <para>(Non-Windows-specific) Session creation not implemented yet.</para>
+        /// </summary>
+        // TODO: In order to express this level of difference, a separate interface (IDetachedChildProcess?) should be introduced, maybe?
+        CreateNewConsole = 0x0008,
     }
 
     /// <summary>
@@ -64,6 +84,13 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
         /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.UseCustomCodePage"/> flag.</returns>
         public static bool HasUseCustomCodePage(this ChildProcessFlags flags) => (flags & ChildProcessFlags.UseCustomCodePage) != 0;
+
+        /// <summary>
+        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.CreateNewConsole"/> flag.
+        /// </summary>
+        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
+        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.CreateNewConsole"/> flag.</returns>
+        public static bool HasCreateNewConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.CreateNewConsole) != 0;
     }
 
     /// <summary>
@@ -71,24 +98,27 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     public enum InputRedirection
     {
-        // Support for attached child processes temporarily removed.
-        // /// <summary>
-        // /// Redirected to the stdin of the current process.
-        // /// </summary>
-        // ParentInput,
-
         /// <summary>
-        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardInput property.
+        /// <para>Redirected to the stdin of the current process.</para>
+        /// <para>
+        /// (Windows-specific) If the stdout is not redirected and the child process is not attached to the current console,
+        /// redirected to the null device instead.
+        /// </para>
         /// </summary>
-        InputPipe = 1,
+        ParentInput,
 
         /// <summary>
-        /// Redirected to a file. The corresponding StdInputFile property must be set.
+        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the <see cref="IChildProcess.StandardInput"/> property.
+        /// </summary>
+        InputPipe,
+
+        /// <summary>
+        /// Redirected to a file. <see cref="ChildProcessStartInfo.StdInputFile"/> must also be set.
         /// </summary>
         File,
 
         /// <summary>
-        /// Redirected to a file handle. The corresponding StdInputHandle property must be set.
+        /// Redirected to a file handle. <see cref="ChildProcessStartInfo.StdInputHandle"/> must also be set.
         /// </summary>
         Handle,
 
@@ -103,40 +133,49 @@ namespace Asmichi.Utilities.ProcessManagement
     /// </summary>
     public enum OutputRedirection
     {
-        // Support for attached child processes temporarily removed.
-        // /// <summary>
-        // /// Redirected to the stdout of the current process.
-        // /// </summary>
-        // ParentOutput,
-
-        // Support for attached child processes temporarily removed.
-        // /// <summary>
-        // /// Redirected to the stderr of the current process.
-        // /// </summary>
-        // ParentError,
-
         /// <summary>
-        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardOutput property.
+        /// <para>Redirected to the stdout of the current process.</para>
+        /// <para>
+        /// (Windows-specific) If the stdout is not redirected and the child process is not attached to the current console,
+        /// redirected to the null device instead.
+        /// </para>
         /// </summary>
-        OutputPipe = 2,
+        ParentOutput,
 
         /// <summary>
-        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the StandardError property.
+        /// <para>Redirected to the stderr of the current process.</para>
+        /// <para>
+        /// (Windows-specific) If the stderr is not redirected and the child process is not attached to the current console,
+        /// redirected to the null device instead.
+        /// </para>
+        /// </summary>
+        ParentError,
+
+        /// <summary>
+        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the <see cref="IChildProcess.StandardOutput"/> property.
+        /// </summary>
+        OutputPipe,
+
+        /// <summary>
+        /// Redirected to a newly created pipe. The counterpart of that pipe will be exposed as the <see cref="IChildProcess.StandardError"/> property.
         /// </summary>
         ErrorPipe,
 
         /// <summary>
-        /// Redirected to a file. The existing content of the file will be truncated. The corresponding StdOutputFile or StdErrorFile property must be set.
+        /// Redirected to a file. The existing content of the file will be truncated. The corresponding <see cref="ChildProcessStartInfo.StdOutputFile"/>
+        /// or <see cref="ChildProcessStartInfo.StdErrorFile"/> property must also be set.
         /// </summary>
         File,
 
         /// <summary>
-        /// Redirected to a file. New bytes written will be appended to the file. The corresponding StdOutputFile or StdErrorFile property must be set.
+        /// Redirected to a file. New bytes written will be appended to the file. The corresponding <see cref="ChildProcessStartInfo.StdOutputFile"/>
+        /// or <see cref="ChildProcessStartInfo.StdErrorFile"/> property must also be set.
         /// </summary>
         AppendToFile,
 
         /// <summary>
-        /// Redirected to a file handle. The corresponding StdOutputHandle or StdErrorHandle property must be set.
+        /// Redirected to a file handle. The corresponding <see cref="ChildProcessStartInfo.StdOutputHandle"/>
+        /// or <see cref="ChildProcessStartInfo.StdErrorHandle"/> property must also be set.
         /// </summary>
         Handle,
 
@@ -153,7 +192,7 @@ namespace Asmichi.Utilities.ProcessManagement
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildProcessStartInfo"/> class.
-        /// The FileName and Arguments properties must be set later.
+        /// The <see cref="FileName"/> and <see cref="Arguments"/> properties must be set later.
         /// </summary>
         public ChildProcessStartInfo()
         {
@@ -245,15 +284,15 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// Specifies how the stdout of the child process is redirected.
-        /// The default value is <see cref="OutputRedirection.NullDevice"/> (temporary specification).
+        /// The default value is <see cref="OutputRedirection.ParentOutput"/>.
         /// </summary>
-        public OutputRedirection StdOutputRedirection { get; set; } = OutputRedirection.NullDevice;
+        public OutputRedirection StdOutputRedirection { get; set; } = OutputRedirection.ParentOutput;
 
         /// <summary>
         /// Specifies how the stderr of the child process is redirected.
-        /// The default value is <see cref="OutputRedirection.NullDevice"/> (temporary specification).
+        /// The default value is <see cref="OutputRedirection.ParentError"/>.
         /// </summary>
-        public OutputRedirection StdErrorRedirection { get; set; } = OutputRedirection.NullDevice;
+        public OutputRedirection StdErrorRedirection { get; set; } = OutputRedirection.ParentError;
 
         /// <summary>
         /// If <see cref="StdInputRedirection"/> is <see cref="InputRedirection.File"/>,

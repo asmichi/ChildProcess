@@ -1,28 +1,44 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.ComponentModel;
 using Asmichi.Utilities.Interop.Windows;
+using Asmichi.Utilities.ProcessManagement;
 using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.PlatformAbstraction.Windows
 {
     internal sealed class WindowsConsolePal : IConsolePal
     {
-        public SafeFileHandle? GetStdInputHandleForChild() => GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE);
-        public SafeFileHandle? GetStdOutputHandleForChild() => GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE);
-        public SafeFileHandle? GetStdErrorHandleForChild() => GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE);
+        public SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Read);
+        public SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
+        public SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
 
-        // Returns the std* handle of the current process that can be inherited by a child process.
-        private SafeFileHandle? GetStdHandleForChild(int kind)
+        /// <summary>
+        /// Returns the std* handle of the current process that can be inherited by a child process.
+        /// This handle can only be used if the child process share the same console with the current process
+        /// (that is, <see cref="ChildProcessFlags.CreateNewConsole"/> is not set and the current process
+        /// is attached to a console).
+        /// </summary>
+        /// <returns>The std* handle of the current process. <see langword="null"/> if the current process does not have any. </returns>
+        private static SafeFileHandle? GetStdHandleForChild(int kind, bool createNewConsole)
         {
-            var handle = new SafeFileHandle(Kernel32.GetStdHandle(kind), false);
+            // GetStdHandle may return INVALID_HANDLE_VALUE on success because one can perform SetStdHandle(..., INVALID_HANDLE_VALUE).
+            var handleValue = Kernel32.GetStdHandle(kind);
+            if (handleValue == IntPtr.Zero || handleValue == Kernel32.InvalidHandleValue)
+            {
+                return null;
+            }
 
-            // If we do not have a console window, we attach a new console to a child process.
-            // In this case console pseudo handles cannot be inherited by a child process.
-            // Ignore console pseudo handles and redirect from/to NUL instead, so that
-            // our child processes should not stuck reading from an invisible console.
-            if (handle.IsInvalid
-                || (IsConsoleHandle(handle) && !HasConsoleWindow()))
+            var handle = new SafeFileHandle(handleValue, false);
+
+            // Console handles can be inherited only by a child process within the same console.
+            // If the child process will be attached to a new pseudo console,
+            // ignore console handles and redirect from/to NUL instead.
+            if (createNewConsole && IsConsoleHandle(handle))
             {
                 handle.Dispose();
                 return null;
@@ -45,9 +61,6 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             return Kernel32.GetConsoleMode(handle, out var _);
         }
 
-        public bool HasConsoleWindow()
-        {
-            return Kernel32.GetConsoleWindow() != IntPtr.Zero;
-        }
+        public bool HasConsoleWindow() => Kernel32.GetConsoleWindow() != IntPtr.Zero;
     }
 }

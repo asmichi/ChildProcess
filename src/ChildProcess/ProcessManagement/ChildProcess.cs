@@ -33,6 +33,13 @@ namespace Asmichi.Utilities.ProcessManagement
             _ = startInfoInternal.FileName ?? throw new ArgumentException("ChildProcessStartInfo.FileName must not be null.", nameof(startInfo));
             _ = startInfoInternal.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
+            var flags = startInfoInternal.Flags;
+            if (flags.HasUseCustomCodePage() && !flags.HasCreateNewConsole())
+            {
+                throw new ArgumentException(
+                    $"{nameof(ChildProcessFlags.UseCustomCodePage)} requires {nameof(ChildProcessFlags.CreateNewConsole)}.", nameof(startInfo));
+            }
+
             var resolvedPath = ResolveExecutablePath(startInfoInternal.FileName, startInfoInternal.Flags);
 
             using var stdHandles = new PipelineStdHandleCreator(ref startInfoInternal);

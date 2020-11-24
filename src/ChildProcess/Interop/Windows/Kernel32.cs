@@ -38,6 +38,8 @@ namespace Asmichi.Utilities.Interop.Windows
 
         private const string DllName = "kernel32.dll";
 
+        public static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
+
         [DllImport(DllName, EntryPoint = "CreateFileW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
         public static extern SafeFileHandle CreateFile(
             [In] string lpFileName,
