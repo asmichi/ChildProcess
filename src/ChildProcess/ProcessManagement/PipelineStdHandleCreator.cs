@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Asmichi.Utilities.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;

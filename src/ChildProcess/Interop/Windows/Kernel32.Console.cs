@@ -2,7 +2,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.Interop.Windows
 {

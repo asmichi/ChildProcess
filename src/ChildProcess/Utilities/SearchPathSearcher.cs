@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
-using Asmichi.Utilities.ProcessManagement;
 
 namespace Asmichi.Utilities.Utilities
 {
