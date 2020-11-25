@@ -12,17 +12,24 @@ namespace Asmichi.Utilities
         /// </summary>
         /// <param name="fileName">Path to an executable.</param>
         /// <param name="args">Arguments of a command.</param>
+        /// <param name="shouldQuoteArguments">Specifies that the arguments should be quoted.</param>
         /// <returns>A <see cref="StringBuilder"/> that contains the command line.</returns>
-        // TODO: custom quoting
-        public static StringBuilder MakeCommandLine(string fileName, IReadOnlyCollection<string> args)
+        public static StringBuilder MakeCommandLine(string fileName, IReadOnlyCollection<string> args, bool shouldQuoteArguments)
         {
             var sb = new StringBuilder(EstimateRequiredCapacity(fileName, args));
-            AppendArgumentQuoted(sb, fileName);
+            AppendStringQuoted(sb, fileName);
 
             foreach (var arg in args)
             {
                 sb.Append(' ');
-                AppendArgumentQuoted(sb, arg);
+                if (shouldQuoteArguments)
+                {
+                    AppendStringQuoted(sb, arg);
+                }
+                else
+                {
+                    sb.Append(arg);
+                }
             }
 
             return sb;
@@ -40,8 +47,8 @@ namespace Asmichi.Utilities
             return capacity;
         }
 
-        // Quotes an argument according to the UCRT command line parser.
-        public static void AppendArgumentQuoted(StringBuilder sb, string s)
+        // Quotes an argument (including a program name) according to the UCRT command line parser.
+        public static void AppendStringQuoted(StringBuilder sb, string s)
         {
             // Technically a quoted part can start in the middle of an argument,
             // so we could quote part of the string as we iterate over the string.

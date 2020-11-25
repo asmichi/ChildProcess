@@ -57,40 +57,26 @@ namespace Asmichi.Utilities.ProcessManagement
         /// </summary>
         // TODO: In order to express this level of difference, a separate interface (IDetachedChildProcess?) should be introduced, maybe?
         CreateNewConsole = 0x0008,
+
+        /// <summary>
+        /// (Windows-specific) Specifies that <see cref="ChildProcessStartInfo.Arguments"/> should not be
+        /// automatically quoted, that is, should just be concatenated using a white space (U+0020) as the delimiter.
+        /// This effectively gives you full control over the command line.
+        /// Note that <see cref="ChildProcessStartInfo.FileName"/> will still be automatically quoted.
+        /// </summary>
+        DisableArgumentQuoting = 0x0010,
     }
 
     /// <summary>
     /// Provides extension methos for <see cref="ChildProcessFlags"/>.
     /// </summary>
-    public static class ChildProcessFlagsExtensions
+    internal static class ChildProcessFlagsExtensions
     {
-        /// <summary>
-        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.IgnoreSearchPath"/> flag.
-        /// </summary>
-        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
-        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.IgnoreSearchPath"/> flag.</returns>
         public static bool HasIgnoreSearchPath(this ChildProcessFlags flags) => (flags & ChildProcessFlags.IgnoreSearchPath) != 0;
-
-        /// <summary>
-        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.AllowRelativeFileName"/> flag.
-        /// </summary>
-        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
-        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.AllowRelativeFileName"/> flag.</returns>
         public static bool HasAllowRelativeFileName(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AllowRelativeFileName) != 0;
-
-        /// <summary>
-        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.UseCustomCodePage"/> flag.
-        /// </summary>
-        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
-        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.UseCustomCodePage"/> flag.</returns>
         public static bool HasUseCustomCodePage(this ChildProcessFlags flags) => (flags & ChildProcessFlags.UseCustomCodePage) != 0;
-
-        /// <summary>
-        /// Returns whether <paramref name="flags"/> has the <see cref="ChildProcessFlags.CreateNewConsole"/> flag.
-        /// </summary>
-        /// <param name="flags">The <see cref="ChildProcessFlags"/> to inspect.</param>
-        /// <returns><see langword="true"/> if <paramref name="flags"/> has the <see cref="ChildProcessFlags.CreateNewConsole"/> flag.</returns>
         public static bool HasCreateNewConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.CreateNewConsole) != 0;
+        public static bool HasDisableArgumentQuoting(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableArgumentQuoting) != 0;
     }
 
     /// <summary>

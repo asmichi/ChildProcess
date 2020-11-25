@@ -34,7 +34,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
             Debug.Assert(startInfo.CreateNewConsole || ConsolePal.HasConsoleWindow());
 
-            var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>());
+            var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>(), !flags.HasDisableArgumentQuoting());
             var environmentBlock = environmentVariables != null ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables) : null;
             var pseudoConsole = startInfo.CreateNewConsole ? InputWriterOnlyPseudoConsole.Create() : null;
 
@@ -91,7 +91,7 @@ namespace Asmichi.Utilities.ProcessManagement
             string? workingDirectory)
         {
             var commandLine = new StringBuilder(ChcpPath.Length + 5);
-            WindowsCommandLineUtil.AppendArgumentQuoted(commandLine, ChcpPath);
+            WindowsCommandLineUtil.AppendStringQuoted(commandLine, ChcpPath);
             commandLine.Append(' ');
             commandLine.Append(codePage.ToString(CultureInfo.InvariantCulture));
 

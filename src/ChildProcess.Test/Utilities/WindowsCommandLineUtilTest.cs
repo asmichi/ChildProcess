@@ -15,36 +15,59 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
             // NOTE: in the following asserts, we substitute ' for " to ease escaping.
 
             // no need for quoting
-            Assert("cmd 1 2 3", "cmd", "1", "2", "3");
-            Assert(@"c\m\d\ \1\2\3\", @"c\m\d\", @"\1\2\3\");
+            AssertCommandLine("cmd 1 2 3", "cmd", "1", "2", "3");
+            AssertCommandLine(@"c\m\d\ \1\2\3\", @"c\m\d\", @"\1\2\3\");
 
             // spaces, tabs
-            Assert("'c m d' '1 2' a", "c m d", "1 2", "a");
-            Assert("'c\tm\td' '1\t2' a", "c\tm\td", "1\t2", "a");
-            Assert("'c m d' ' 1 2 ' a", "c m d", " 1 2 ", "a");
-            Assert("'c\tm\td' '\t1\t2\t' a", "c\tm\td", "\t1\t2\t", "a");
+            AssertCommandLine("'c m d' '1 2' a", "c m d", "1 2", "a");
+            AssertCommandLine("'c\tm\td' '1\t2' a", "c\tm\td", "1\t2", "a");
+            AssertCommandLine("'c m d' ' 1 2 ' a", "c m d", " 1 2 ", "a");
+            AssertCommandLine("'c\tm\td' '\t1\t2\t' a", "c\tm\td", "\t1\t2\t", "a");
 
             // quotes
-            Assert(@"'\'cmd\'' '\'1\''", "'cmd'", "'1'");
+            AssertCommandLine(@"'\'cmd\'' '\'1\''", "'cmd'", "'1'");
 
             // backslashes in a quoted part (no need for escape)
-            Assert(@"'c m\d' '1 2\3'", @"c m\d", @"1 2\3");
+            AssertCommandLine(@"'c m\d' '1 2\3'", @"c m\d", @"1 2\3");
 
             // trailing backslash in a quoted part.
-            Assert(@"'c md\\' '1 23\\'", @"c md\", @"1 23\");
+            AssertCommandLine(@"'c md\\' '1 23\\'", @"c md\", @"1 23\");
 
             // backslashes followed by a double quote
-            Assert(@"'cmd\\\'' '123\\\''", @"cmd\'", @"123\'");
-            Assert(@"'cmd\\\\\'' '123\\\\\''", @"cmd\\'", @"123\\'");
+            AssertCommandLine(@"'cmd\\\'' '123\\\''", @"cmd\'", @"123\'");
+            AssertCommandLine(@"'cmd\\\\\'' '123\\\\\''", @"cmd\\'", @"123\\'");
 
-            static void Assert(string expected, string fileName, params string[] args)
+            static void AssertCommandLine(string expected, string fileName, params string[] args)
             {
-                static string Replace(string s) => s.Replace('\'', '"');
+                expected = ReplaceBack(expected);
+                fileName = ReplaceBack(fileName);
+                args = ReplaceBack(args);
 
-                var commandLine = WindowsCommandLineUtil.MakeCommandLine(Replace(fileName), args.Select(Replace).ToArray()).ToString();
+                var commandLine = WindowsCommandLineUtil.MakeCommandLine(fileName, args, shouldQuoteArguments: true).ToString();
 
-                Xunit.Assert.Equal(Replace(expected), commandLine);
-                Xunit.Assert.Equal(new[] { fileName }.Concat(args).Select(Replace).ToArray(), ParseCommandLine(commandLine).ToArray());
+                Assert.Equal(expected, commandLine);
+                Assert.Equal(new[] { fileName }.Concat(args), ParseCommandLine(commandLine));
+            }
+        }
+
+        [Fact]
+        public void CanDisableQuoting()
+        {
+            // NOTE: in the following asserts, we substitute ' for " to ease escaping.
+
+            // FileName should still be quoted. Arguments should not be quoted.
+            AssertCommandLine(@"'\'cmd\'' '1 2 3'", "'cmd'", "'1", "2", "3'");
+            AssertCommandLine(@"'\'cmd\'' '1   2   3'", "'cmd'", "'1 ", " 2 ", " 3'");
+
+            static void AssertCommandLine(string expected, string fileName, params string[] args)
+            {
+                expected = ReplaceBack(expected);
+                fileName = ReplaceBack(fileName);
+                args = ReplaceBack(args);
+
+                var commandLine = WindowsCommandLineUtil.MakeCommandLine(fileName, args, shouldQuoteArguments: false).ToString();
+
+                Assert.Equal(expected, commandLine);
             }
         }
 
@@ -141,5 +164,8 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
                 }
             }
         }
+
+        private static string[] ReplaceBack(string[] ss) => ss.Select(ReplaceBack).ToArray();
+        private static string ReplaceBack(string s) => s.Replace('\'', '"');
     }
 }
