@@ -224,7 +224,7 @@ void Subchannel::HandleRequest(const Request& r)
             SendResponse(err, 0);
         }
 
-        if (!WriteToChildCreationPipe(childPid, execSuccessful, r.Token))
+        if (!WriteToChildCreationPipe(childPid, r.Token))
         {
             FatalErrorAbort(errno, "write");
         }

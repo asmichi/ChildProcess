@@ -19,5 +19,5 @@ struct ChildExitNotification
 };
 
 [[nodiscard]] int ServiceMain(int mainChannelFd);
-[[nodiscard]] bool WriteToChildCreationPipe(int pid, bool execSuccessful, int64_t token);
+[[nodiscard]] bool WriteToChildCreationPipe(int pid, int64_t token);
 void WriteToSignalDataPipe(const void* buf, size_t len);

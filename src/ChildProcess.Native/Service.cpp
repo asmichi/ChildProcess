@@ -37,9 +37,6 @@ namespace
     struct ChildCreationNotification
     {
         int Pid;
-        // Indicates whether execve was successful.
-        // We should not report the exit status of such a child because we already reported failure.
-        bool ExecSuccessful;
         std::int64_t Token;
     };
 
@@ -104,11 +101,10 @@ void WriteToSignalDataPipe(const void* buf, size_t len)
     }
 }
 
-[[nodiscard]] bool WriteToChildCreationPipe(int pid, bool execSuccessful, int64_t token)
+[[nodiscard]] bool WriteToChildCreationPipe(int pid, int64_t token)
 {
     ChildCreationNotification ccn{};
     ccn.Pid = pid;
-    ccn.ExecSuccessful = execSuccessful;
     ccn.Token = token;
     if (!WriteExactBytes(g_ChildCreationPipeWriteEnd, &ccn, sizeof(ccn)))
     {
@@ -320,18 +316,15 @@ bool NotifyChildExited(std::unordered_map<int, ChildProcessData>::iterator it)
 
     g_ChildProcesses.erase(it);
 
-    if (data.CCN.ExecSuccessful)
+    ChildExitNotification cen{};
+    cen.Token = data.CCN.Token;
+    cen.ProcessID = data.SigInfo.si_pid;
+    cen.Code = data.SigInfo.si_code;
+    cen.Status = data.SigInfo.si_status;
+    if (!g_MainChannel->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
-        ChildExitNotification cen{};
-        cen.Token = data.CCN.Token;
-        cen.ProcessID = data.SigInfo.si_pid;
-        cen.Code = data.SigInfo.si_code;
-        cen.Status = data.SigInfo.si_status;
-        if (!g_MainChannel->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
-        {
-            TRACE_INFO("Main channel disconnected: send %d\n", errno);
-            return false;
-        }
+        TRACE_INFO("Main channel disconnected: send %d\n", errno);
+        return false;
     }
 
     return true;

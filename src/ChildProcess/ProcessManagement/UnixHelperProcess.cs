@@ -90,6 +90,7 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             if (!UnixChildProcessState.TryGetChildProcessState(notification.Token, out var holder))
             {
+                // Ignore. This is a process where exec failed and we already reported that failure.
                 return;
             }
 
