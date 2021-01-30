@@ -31,15 +31,9 @@ namespace Asmichi.Utilities
             }
         }
 
-        public long Length => _pos;
+        public int Length => _pos;
 
         public ReadOnlySpan<byte> GetBuffer() => _buf.AsSpan(0, _pos);
-
-        public void RewritePrefixedLength()
-        {
-            Debug.Assert(_pos >= sizeof(int));
-            WriteBytes(_buf.AsSpan(0, sizeof(int)), (uint)(_pos - sizeof(int)));
-        }
 
         public void Write(uint value)
         {

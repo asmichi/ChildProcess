@@ -232,7 +232,7 @@ extern "C" bool SubchannelDestroy(std::intptr_t subchannelFd)
 #endif
 }
 
-// Sends data along with fds.
+// Receives data to entire buf
 extern "C" bool SubchannelRecvExactBytes(std::intptr_t subchannelFd, void* buf, std::size_t len) noexcept
 {
     if (!IsWithinFdRange(subchannelFd))
@@ -244,7 +244,19 @@ extern "C" bool SubchannelRecvExactBytes(std::intptr_t subchannelFd, void* buf, 
     return RecvExactBytes(static_cast<int>(subchannelFd), buf, len);
 }
 
-// Sends data along with fds.
+// Sends entire data
+extern "C" bool SubchannelSendExactBytes(std::intptr_t subchannelFd, const void* buf, std::size_t len) noexcept
+{
+    if (!IsWithinFdRange(subchannelFd))
+    {
+        errno = EINVAL;
+        return false;
+    }
+
+    return SendExactBytes(static_cast<int>(subchannelFd), buf, len);
+}
+
+// Sends entire data along with fds.
 extern "C" bool SubchannelSendExactBytesAndFds(std::intptr_t subchannelFd, const void* buf, std::size_t len, const int* fds, std::size_t fdCount) noexcept
 {
     if (!IsWithinFdRange(subchannelFd))

@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
@@ -60,7 +61,6 @@ namespace Asmichi.Utilities.ProcessManagement
             var stateHolder = UnixChildProcessState.Create();
             try
             {
-                bw.Write(0U); // Dummy length to be rewritten later
                 bw.Write(stateHolder.State.Token);
                 bw.Write(flags);
                 bw.Write(workingDirectory);
@@ -86,13 +86,22 @@ namespace Asmichi.Utilities.ProcessManagement
                     }
                 }
 
-                bw.RewritePrefixedLength();
-
                 var subchannel = _helperProcess.RentSubchannelAsync(default).AsTask().GetAwaiter().GetResult();
 
                 try
                 {
-                    subchannel.SendExactBytesAndFds(bw.GetBuffer(), fds.Slice(0, handleCount));
+                    // Work around https://github.com/microsoft/WSL/issues/6490
+                    // On WSL 1, if you call recvmsg multiple times to fully receive data sent with sendmsg,
+                    // the fds will be duplicated for each recvmsg call.
+                    // Send only fixed length of of data with the fds and receive that much data with one recvmsg call.
+                    // That will be safer anyway.
+                    Span<byte> lengthHeader = stackalloc byte[sizeof(int)];
+                    if (!BitConverter.TryWriteBytes(lengthHeader, bw.Length))
+                    {
+                        Debug.Fail("Should never fail.");
+                    }
+                    subchannel.SendExactBytesAndFds(lengthHeader, fds.Slice(0, handleCount));
+                    subchannel.SendExactBytes(bw.GetBuffer());
                     GC.KeepAlive(stdIn);
                     GC.KeepAlive(stdOut);
                     GC.KeepAlive(stdErr);

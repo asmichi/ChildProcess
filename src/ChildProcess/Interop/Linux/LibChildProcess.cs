@@ -62,6 +62,12 @@ namespace Asmichi.Utilities.Interop.Linux
             [In] UIntPtr len);
 
         [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        public static extern unsafe bool SubchannelSendExactBytes(
+            [In] SafeSocketHandle subchannelFd,
+            [In] void* buf,
+            [In] UIntPtr len);
+
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
         public static extern unsafe bool SubchannelSendExactBytesAndFds(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,

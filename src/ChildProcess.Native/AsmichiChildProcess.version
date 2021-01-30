@@ -12,6 +12,7 @@
         SubchannelCreate;
         SubchannelDestroy;
         SubchannelRecvExactBytes;
+        SubchannelSendExactBytes;
         SubchannelSendExactBytesAndFds;
     local:
         *;

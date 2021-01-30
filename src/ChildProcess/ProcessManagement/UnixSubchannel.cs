@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Asmichi.Utilities.Interop.Linux;
@@ -22,6 +23,19 @@ namespace Asmichi.Utilities.ProcessManagement
             _handle.Dispose();
         }
 
+        public unsafe void SendExactBytes(ReadOnlySpan<byte> buffer)
+        {
+            fixed (byte* pBuffer = buffer)
+            {
+                if (!LibChildProcess.SubchannelSendExactBytes(
+                    _handle, pBuffer, new UIntPtr((uint)buffer.Length)))
+                {
+                    var err = Marshal.GetLastWin32Error();
+                    ThrowFatalCommnicationError(err);
+                }
+            }
+        }
+
         public unsafe void SendExactBytesAndFds(ReadOnlySpan<byte> buffer, ReadOnlySpan<int> fds)
         {
             fixed (byte* pBuffer = buffer)
@@ -32,15 +46,7 @@ namespace Asmichi.Utilities.ProcessManagement
                         _handle, pBuffer, new UIntPtr((uint)buffer.Length), pFds, new UIntPtr((uint)fds.Length)))
                     {
                         var err = Marshal.GetLastWin32Error();
-                        if (err == 0)
-                        {
-                            // TODO: handle helper crash or internal communication error
-                            throw new AsmichiChildProcessLibraryCrashedException("Process cannot be created: Connection reset.");
-                        }
-                        else
-                        {
-                            throw new Win32Exception(err);
-                        }
+                        ThrowFatalCommnicationError(err);
                     }
                 }
             }
@@ -54,18 +60,24 @@ namespace Asmichi.Utilities.ProcessManagement
                 if (!LibChildProcess.SubchannelRecvExactBytes(_handle, pBuf, new UIntPtr(ResponseInts * sizeof(int))))
                 {
                     var err = Marshal.GetLastWin32Error();
-                    if (err == 0)
-                    {
-                        // TODO: handle helper crash or internal communication error
-                        throw new AsmichiChildProcessLibraryCrashedException("Process cannot be created: Connection reset.");
-                    }
-                    else
-                    {
-                        throw new Win32Exception(err);
-                    }
+                    ThrowFatalCommnicationError(err);
                 }
 
                 return (pBuf[0], pBuf[1]);
+            }
+        }
+
+        [DoesNotReturn]
+        private static void ThrowFatalCommnicationError(int err)
+        {
+            if (err == 0)
+            {
+                // TODO: handle helper crash or internal communication error
+                throw new AsmichiChildProcessLibraryCrashedException("Process cannot be created: Connection reset.");
+            }
+            else
+            {
+                throw new Win32Exception(err);
             }
         }
     }
