@@ -3,6 +3,8 @@
 #include "Service.hpp"
 #include "AncillaryDataSocket.hpp"
 #include "Base.hpp"
+#include "ChildProcessState.hpp"
+#include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "SignalHandler.hpp"
 #include "SocketHelpers.hpp"
@@ -34,33 +36,24 @@ namespace
 
     static_assert(sizeof(pid_t) == sizeof(int));
 
-    struct ChildCreationNotification
-    {
-        int Pid;
-        std::int64_t Token;
-    };
-
-    struct ChildProcessData
-    {
-        ChildCreationNotification CCN;
-        siginfo_t SigInfo;
-    };
-
+    // The signal handler writes signal numbers here (except SIGCHLD, which will be written to g_ReapRequestPipeWriteEnd).
     int g_SignalDataPipeReadEnd;
     int g_SignalDataPipeWriteEnd;
-    int g_ChildCreationPipeReadEnd;
-    int g_ChildCreationPipeWriteEnd;
+
+    // Subchannels will write a dummy byte here to request the service to reap children. SIGCHLD will also be written here.
+    int g_ReapRequestPipeReadEnd;
+    int g_ReapRequestPipeWriteEnd;
+
     std::unique_ptr<AncillaryDataSocket> g_MainChannel;
-    std::unordered_map<int, ChildProcessData> g_ChildProcesses;
 } // namespace
 
 void SetupService(int mainChannelFd);
 [[nodiscard]] bool HandleSignalDataPipeInput();
-[[nodiscard]] bool HandleSigchld();
-[[nodiscard]] bool HandleChildCreationPipeInput();
+[[nodiscard]] bool HandleReapRequestPipeInput();
+[[nodiscard]] bool HandleReapRequest();
 [[nodiscard]] bool HandleMainChannelInput();
 [[nodiscard]] bool HandleMainChannelOutput();
-[[nodiscard]] bool NotifyChildExited(std::unordered_map<int, ChildProcessData>::iterator it);
+[[nodiscard]] bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
 
 void SetupService(int mainChannelFd)
 {
@@ -73,8 +66,8 @@ void SetupService(int mainChannelFd)
             FatalErrorAbort(errno, "pipe2");
         }
 
-        g_ChildCreationPipeReadEnd = maybePipe->ReadEnd.Release();
-        g_ChildCreationPipeWriteEnd = maybePipe->WriteEnd.Release();
+        g_ReapRequestPipeReadEnd = maybePipe->ReadEnd.Release();
+        g_ReapRequestPipeWriteEnd = maybePipe->WriteEnd.Release();
     }
 
     {
@@ -91,22 +84,33 @@ void SetupService(int mainChannelFd)
     SetupSignalHandlers();
 }
 
-void WriteToSignalDataPipe(const void* buf, size_t len)
+void NotifyServiceOfSignal(int signum)
 {
-    if (!WriteExactBytes(g_SignalDataPipeWriteEnd, buf, len)
-        && errno != EPIPE)
+    if (signum == SIGCHLD)
     {
-        // Just abort; almost nothing can be done in a signal handler.
-        abort();
+        std::byte dummy{};
+        if (!WriteExactBytes(g_ReapRequestPipeWriteEnd, &dummy, 1)
+            && errno != EPIPE)
+        {
+            // Just abort; almost nothing can be done in a signal handler.
+            abort();
+        }
+    }
+    else
+    {
+        if (!WriteExactBytes(g_SignalDataPipeWriteEnd, &signum, sizeof(signum))
+            && errno != EPIPE)
+        {
+            // Just abort; almost nothing can be done in a signal handler.
+            abort();
+        }
     }
 }
 
-[[nodiscard]] bool WriteToChildCreationPipe(int pid, int64_t token)
+[[nodiscard]] bool NotifyServiceOfChildRegistration()
 {
-    ChildCreationNotification ccn{};
-    ccn.Pid = pid;
-    ccn.Token = token;
-    if (!WriteExactBytes(g_ChildCreationPipeWriteEnd, &ccn, sizeof(ccn)))
+    std::uint8_t dummy = 0;
+    if (!WriteExactBytes(g_ReapRequestPipeWriteEnd, &dummy, 1))
     {
         // Pretend successful on EPIPE. The data will not be read anyway because the service is shutting down.
         return errno == EPIPE;
@@ -122,7 +126,7 @@ int ServiceMain(int mainChannelFd)
     // Main service loop
     pollfd fds[PollFdCount]{};
     fds[PollIndexSignalData].fd = g_SignalDataPipeReadEnd;
-    fds[PollIndexChildCreation].fd = g_ChildCreationPipeReadEnd;
+    fds[PollIndexChildCreation].fd = g_ReapRequestPipeReadEnd;
     fds[PollIndexMainChannel].fd = g_MainChannel->GetFd();
 
     while (true)
@@ -147,7 +151,7 @@ int ServiceMain(int mainChannelFd)
 
         if (fds[PollIndexChildCreation].revents & POLLIN)
         {
-            if (!HandleChildCreationPipeInput())
+            if (!HandleReapRequestPipeInput())
             {
                 return 1;
             }
@@ -196,7 +200,9 @@ bool HandleSignalDataPipeInput()
         return false;
 
     case SIGCHLD:
-        return HandleSigchld();
+        // SIGCHLD must be sent as a reap request.
+        assert(false);
+        break;
 
     default:
         // Ignored
@@ -206,7 +212,19 @@ bool HandleSignalDataPipeInput()
     return true;
 }
 
-bool HandleSigchld()
+bool HandleReapRequestPipeInput()
+{
+    // Drain data from the pipe. If we have more than 256 bytes of pending data, we just re-poll and reexecute this.
+    std::byte buf[256];
+    if (read_restarting(g_ReapRequestPipeReadEnd, buf, sizeof(buf)) == -1)
+    {
+        FatalErrorAbort(errno, "read");
+    }
+
+    return HandleReapRequest();
+}
+
+bool HandleReapRequest()
 {
     // Because SIGCHLD is a standard signal, only one SIGCHLD signal can be queued.
     // If the queue already has an instance, further SIGCHLD signals will be "lost".
@@ -215,7 +233,9 @@ bool HandleSigchld()
     {
         siginfo_t siginfo{};
         assert(siginfo.si_pid == 0);
-        int ret = waitid(P_ALL, 0, &siginfo, WEXITED | WNOHANG);
+
+        // Peek a waitable child.
+        int ret = waitid(P_ALL, 0, &siginfo, WEXITED | WNOHANG | WNOWAIT);
         if (ret < 0)
         {
             if (errno == ECHILD)
@@ -231,49 +251,27 @@ bool HandleSigchld()
         const auto pid = siginfo.si_pid;
         if (pid == 0)
         {
+            // No waitable child.
             return true;
         }
 
-        auto it = g_ChildProcesses.find(pid);
-        if (it == g_ChildProcesses.end())
+        auto pState = g_ChildProcessStateMap.GetByPid(pid);
+        if (!pState)
         {
-            // Delay termination handling until we receive the creation notification.
-            ChildProcessData childProcess{};
-            childProcess.SigInfo = siginfo;
-            g_ChildProcesses.insert(std::pair{pid, childProcess});
+            // This child process was killed before we register it to the map.
+            // Delay the reaping process until we register it and send a reap request.
+            return true;
         }
-        else
+
+        if (!NotifyClientOfExitedChild(pState.get(), siginfo))
         {
-            it->second.SigInfo = siginfo;
-            if (!NotifyChildExited(it))
-            {
-                return false;
-            }
+            return false;
         }
-    }
-}
 
-bool HandleChildCreationPipeInput()
-{
-    ChildCreationNotification ccn;
-    if (!ReadExactBytes(g_ChildCreationPipeReadEnd, &ccn, sizeof(ccn)))
-    {
-        FatalErrorAbort(errno, "read");
-    }
+        g_ChildProcessStateMap.Delete(pState.get());
 
-    auto it = g_ChildProcesses.find(ccn.Pid);
-    if (it == g_ChildProcesses.end())
-    {
-        ChildProcessData data{};
-        data.CCN = ccn;
-        g_ChildProcesses.insert(std::pair{ccn.Pid, data});
-        return true;
-    }
-    else
-    {
-        // Handle delayed termination notification.
-        it->second.CCN = ccn;
-        return NotifyChildExited(it);
+        // We have updated our data and are ready for recycling of the PID. Reap the child.
+        pState->Reap();
     }
 }
 
@@ -310,17 +308,13 @@ bool HandleMainChannelOutput()
     return true;
 }
 
-bool NotifyChildExited(std::unordered_map<int, ChildProcessData>::iterator it)
+bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
 {
-    const auto data = it->second;
-
-    g_ChildProcesses.erase(it);
-
     ChildExitNotification cen{};
-    cen.Token = data.CCN.Token;
-    cen.ProcessID = data.SigInfo.si_pid;
-    cen.Code = data.SigInfo.si_code;
-    cen.Status = data.SigInfo.si_status;
+    cen.Token = pState->GetToken();
+    cen.ProcessID = pState->GetPid();
+    cen.Code = siginfo.si_code;
+    cen.Status = siginfo.si_status;
     if (!g_MainChannel->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: send %d\n", errno);

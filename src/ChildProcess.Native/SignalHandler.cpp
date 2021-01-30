@@ -14,7 +14,6 @@
 bool IsSignalIgnored(int signum);
 void SetSignalAction(int signum, int extraFlags);
 void SignalHandler(int signum, siginfo_t* siginfo, void* context);
-void WriteToSignalDataPipe(const void* buf, size_t len);
 
 void SetupSignalHandlers()
 {
@@ -65,7 +64,7 @@ void SignalHandler(int signum, siginfo_t* siginfo, void* context)
     case SIGCHLD:
     {
         const int err = errno;
-        WriteToSignalDataPipe(&signum, sizeof(signum));
+        NotifyServiceOfSignal(signum);
         errno = err;
         break;
     }

@@ -80,7 +80,7 @@ ssize_t SendWithFd(int fd, const void* buf, std::size_t len, const int* fds, std
 
     iov.iov_base = const_cast<void*>(buf);
     iov.iov_len = len;
-    msg.msg_name = NULL;
+    msg.msg_name = nullptr;
     msg.msg_namelen = 0;
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;

@@ -128,7 +128,7 @@ ssize_t AncillaryDataSocket::Recv(void* buf, std::size_t len, BlockingFlag block
 
     iov.iov_base = buf;
     iov.iov_len = len;
-    msg.msg_name = NULL;
+    msg.msg_name = nullptr;
     msg.msg_namelen = 0;
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;

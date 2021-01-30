@@ -19,6 +19,12 @@ void PutFatalError(int err, const char* str) noexcept
     perror(str);
 }
 
+void FatalErrorAbort(const char* str) noexcept
+{
+    PutFatalError(str);
+    std::abort();
+}
+
 void FatalErrorAbort(int err, const char* str) noexcept
 {
     PutFatalError(err, str);

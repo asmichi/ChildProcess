@@ -22,6 +22,8 @@ find_package(Threads REQUIRED)
 set(libSources
     AncillaryDataSocket.cpp
     Base.cpp
+    ChildProcessState.cpp
+    Globals.cpp
     Exports.cpp
     HelperMain.cpp
     MiscHelpers.cpp

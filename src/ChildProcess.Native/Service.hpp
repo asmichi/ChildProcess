@@ -8,7 +8,7 @@
 
 struct ChildExitNotification
 {
-    int64_t Token;
+    uint64_t Token;
     // ProcessID
     int32_t ProcessID;
     // Exit status or signal number
@@ -19,5 +19,7 @@ struct ChildExitNotification
 };
 
 [[nodiscard]] int ServiceMain(int mainChannelFd);
-[[nodiscard]] bool WriteToChildCreationPipe(int pid, int64_t token);
-void WriteToSignalDataPipe(const void* buf, size_t len);
+[[nodiscard]] bool NotifyServiceOfChildRegistration();
+
+// Interface for the signal handler.
+void NotifyServiceOfSignal(int signum);

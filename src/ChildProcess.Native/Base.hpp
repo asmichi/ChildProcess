@@ -25,6 +25,7 @@ enum class BlockingFlag : bool
 
 void PutFatalError(const char* str) noexcept;
 void PutFatalError(int err, const char* str) noexcept;
+[[noreturn]] void FatalErrorAbort(const char* str) noexcept;
 [[noreturn]] void FatalErrorAbort(int err, const char* str) noexcept;
 [[noreturn]] void FatalErrorExit(int err, const char* str) noexcept;
 

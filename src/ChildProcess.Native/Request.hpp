@@ -22,7 +22,7 @@ enum RequestFlags
 struct Request final
 {
     std::unique_ptr<const std::byte[]> Data;
-    std::int64_t Token;
+    std::uint64_t Token;
     std::uint32_t Flags;
     const char* WorkingDirectory;
     const char* ExecutablePath;

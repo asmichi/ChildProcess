@@ -4,7 +4,9 @@
 #include "AncillaryDataSocket.hpp"
 #include "Base.hpp"
 #include "BinaryReader.hpp"
+#include "ChildProcessState.hpp"
 #include "ErrnoExceptions.hpp"
+#include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "Request.hpp"
 #include "Service.hpp"
@@ -15,6 +17,7 @@
 #include <cstdio>
 #include <cstring>
 #include <memory>
+#include <poll.h>
 #include <unistd.h>
 #include <vector>
 
@@ -148,21 +151,31 @@ void Subchannel::ReadRequest(Request* r)
     }
     if (sock_.ReceivedFdCount() != 0)
     {
-        TRACE_ERROR("Too many fds in a request.\n");
+        TRACE_ERROR("Too many fds in a request. Flags=%x, %zu fds remaining.\n", r->Flags, sock_.ReceivedFdCount());
         throw BadRequestError(EINVAL);
     }
 }
 
 void Subchannel::HandleRequest(const Request& r)
 {
-    auto maybePipe = CreatePipe();
-    if (!maybePipe)
+    auto maybeOutPipe = CreatePipe();
+    if (!maybeOutPipe)
+    {
+        SendResponse(errno, 0);
+        return;
+    }
+    auto maybeInPipe = CreatePipe();
+    if (!maybeInPipe)
     {
         SendResponse(errno, 0);
         return;
     }
 
-    auto pipe = std::move(*maybePipe);
+    // NOTE: These fds may be inherited by multiple forked processes.
+    // parent -> child : To signal "the parent is ready; perform exec"
+    auto outPipe = std::move(*maybeOutPipe);
+    // child -> parent : To signal exec error (or no write on success)
+    auto inPipe = std::move(*maybeInPipe);
 
     int childPid = fork();
     if (childPid == -1)
@@ -172,6 +185,9 @@ void Subchannel::HandleRequest(const Request& r)
     else if (childPid == 0)
     {
         // child
+        outPipe.WriteEnd.Reset();
+        inPipe.ReadEnd.Reset();
+
         auto dup2OrFail = [](const UniqueFd& writeEnd, const UniqueFd& src, int dst) {
             if (src.IsValid())
             {
@@ -188,32 +204,58 @@ void Subchannel::HandleRequest(const Request& r)
             static_cast<void>(WriteExactBytes(fd, &err, sizeof(err)));
         };
 
-        dup2OrFail(pipe.WriteEnd, r.StdinFd, STDIN_FILENO);
-        dup2OrFail(pipe.WriteEnd, r.StdoutFd, STDOUT_FILENO);
-        dup2OrFail(pipe.WriteEnd, r.StderrFd, STDERR_FILENO);
+        dup2OrFail(inPipe.WriteEnd, r.StdinFd, STDIN_FILENO);
+        dup2OrFail(inPipe.WriteEnd, r.StdoutFd, STDOUT_FILENO);
+        dup2OrFail(inPipe.WriteEnd, r.StderrFd, STDERR_FILENO);
 
         if (r.WorkingDirectory != nullptr)
         {
             if (chdir_restarting(r.WorkingDirectory) == -1)
             {
-                reportError(pipe.WriteEnd.Get(), errno);
+                reportError(inPipe.WriteEnd.Get(), errno);
                 _exit(1);
             }
+        }
+
+        // Wait for the parent to be ready
+        char c;
+        if (!ReadExactBytes(outPipe.ReadEnd.Get(), &c, 1))
+        {
+            // The parent has been killed; no point in continuing.
+            _exit(1);
         }
 
         // NOTE: POSIX specifies execve shall not modify argv and envp.
         execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
 
-        reportError(pipe.WriteEnd.Get(), errno);
+        reportError(inPipe.WriteEnd.Get(), errno);
         _exit(1);
     }
     else
     {
         // parent
-        pipe.WriteEnd.Reset();
+        outPipe.ReadEnd.Reset();
+        inPipe.WriteEnd.Reset();
+
+        // Register the child before the child performs exec.
+        g_ChildProcessStateMap.Allocate(childPid, r.Token);
+
+        // Send a reap request in case the child has already been killed and we have delayed reaping.
+        if (!NotifyServiceOfChildRegistration())
+        {
+            FatalErrorAbort(errno, "write");
+        }
+
+        // Make the child to perform exec.
+        if (!WriteExactBytes(outPipe.WriteEnd.Get(), "", 1))
+        {
+            // The child has already been killed.
+            SendResponse(errno, 0);
+            return;
+        }
 
         int err = 0;
-        const bool execSuccessful = !ReadExactBytes(pipe.ReadEnd.Get(), &err, sizeof(err));
+        const bool execSuccessful = !ReadExactBytes(inPipe.ReadEnd.Get(), &err, sizeof(err));
         if (execSuccessful)
         {
             SendResponse(0, childPid);
@@ -222,11 +264,6 @@ void Subchannel::HandleRequest(const Request& r)
         {
             // Failed to execute the program: failed to dup2 or execve.
             SendResponse(err, 0);
-        }
-
-        if (!WriteToChildCreationPipe(childPid, r.Token))
-        {
-            FatalErrorAbort(errno, "write");
         }
     }
 }
