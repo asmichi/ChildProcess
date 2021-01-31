@@ -50,4 +50,4 @@ void PutFatalError(int err, const char* str) noexcept;
 #define TRACE_ERROR(format, ...) static_cast<void>(0)
 #endif
 
-#define TRACE_FATAL(format, ...) static_cast<void>(std::fprintf(stderr, "[ChildProcess] fatal error:" format, ##__VA_ARGS__))
+#define TRACE_FATAL(format, ...) static_cast<void>(std::fprintf(stderr, "[ChildProcess] fatal error: " format, ##__VA_ARGS__))
