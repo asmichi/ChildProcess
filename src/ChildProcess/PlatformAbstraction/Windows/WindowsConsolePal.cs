@@ -19,7 +19,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
         /// <summary>
         /// Returns the std* handle of the current process that can be inherited by a child process.
         /// This handle can only be used if the child process share the same console with the current process
-        /// (that is, <see cref="ChildProcessFlags.CreateNewConsole"/> is not set and the current process
+        /// (that is, <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is set and the current process
         /// is attached to a console).
         /// </summary>
         /// <returns>The std* handle of the current process. <see langword="null"/> if the current process does not have any. </returns>

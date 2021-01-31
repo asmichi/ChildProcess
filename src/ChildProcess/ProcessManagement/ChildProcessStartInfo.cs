@@ -37,26 +37,29 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <see cref="ChildProcessStartInfo.CodePage"/>. If it is not set, newly created consoles will use
         /// the system default code page.
         /// </para>
-        /// <para>Requires <see cref="CreateNewConsole"/>.</para>
+        /// <para>Cannot be combined with <see cref="AttachToCurrentConsole"/>.</para>
         /// </summary>
         UseCustomCodePage = 0x0004,
 
         /// <summary>
         /// <para>
-        /// Specifies that the child process should be attached to a new pseudo console / session.
-        /// If it is set, the child process will be attached to a new console / session.
-        /// If it is not set, the child process will be attached the current console / session
+        /// Specifies that the child process should be attached to the current console / session.
+        /// If it is set, the child process will be attached the current console / session
         /// and you cannot send the Ctrl+C / SIGINT signal to the process.
+        /// If it is not set, the child process will be attached to a new console / session.
         /// </para>
         /// <para>
-        /// (Windows-specific) If it is not set and the current process is not attached to a console,
+        /// Avoid this flag if you need to be fully cross-platform; instead always redirect stdin/stdout/stderr of a child process.
+        /// This flag is inherently not cross-platform. The behavior of an "attached" process varies between platforms.
+        /// </para>
+        /// <para>
+        /// (Windows-specific) If it is set and the current process is not attached to a console,
         /// the child process will be attached to a pseudo console.
         /// You still cannot send the Ctrl+C signal to the process.
         /// </para>
         /// <para>(Non-Windows-specific) Session creation not implemented yet.</para>
         /// </summary>
-        // TODO: In order to express this level of difference, a separate interface (IDetachedChildProcess?) should be introduced, maybe?
-        CreateNewConsole = 0x0008,
+        AttachToCurrentConsole = 0x0008,
 
         /// <summary>
         /// (Windows-specific) Specifies that <see cref="ChildProcessStartInfo.Arguments"/> should not be
@@ -75,7 +78,7 @@ namespace Asmichi.Utilities.ProcessManagement
         public static bool HasIgnoreSearchPath(this ChildProcessFlags flags) => (flags & ChildProcessFlags.IgnoreSearchPath) != 0;
         public static bool HasAllowRelativeFileName(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AllowRelativeFileName) != 0;
         public static bool HasUseCustomCodePage(this ChildProcessFlags flags) => (flags & ChildProcessFlags.UseCustomCodePage) != 0;
-        public static bool HasCreateNewConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.CreateNewConsole) != 0;
+        public static bool HasAttachToCurrentConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AttachToCurrentConsole) != 0;
         public static bool HasDisableArgumentQuoting(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableArgumentQuoting) != 0;
     }
 
@@ -123,7 +126,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <para>Redirected to the stdout of the current process.</para>
         /// <para>
         /// (Windows-specific) If the stdout is not redirected and the child process is not attached to the current console,
-        /// redirected to the null device instead.
+        /// redirected to the null device instead. Note that <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is unset by default.
         /// </para>
         /// </summary>
         ParentOutput,
@@ -132,7 +135,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <para>Redirected to the stderr of the current process.</para>
         /// <para>
         /// (Windows-specific) If the stderr is not redirected and the child process is not attached to the current console,
-        /// redirected to the null device instead.
+        /// redirected to the null device instead. Note that <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is unset by default.
         /// </para>
         /// </summary>
         ParentError,

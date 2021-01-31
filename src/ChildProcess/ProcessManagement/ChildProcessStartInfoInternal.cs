@@ -55,7 +55,7 @@ namespace Asmichi.Utilities.ProcessManagement
             StdErrorHandle = startInfo.StdErrorHandle;
 
             // Additional parameters
-            CreateNewConsole = Flags.HasCreateNewConsole() || !ConsolePal.HasConsoleWindow();
+            CreateNewConsole = !Flags.HasAttachToCurrentConsole() || !ConsolePal.HasConsoleWindow();
         }
     }
 }

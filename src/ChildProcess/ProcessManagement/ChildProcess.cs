@@ -34,10 +34,10 @@ namespace Asmichi.Utilities.ProcessManagement
             _ = startInfoInternal.Arguments ?? throw new ArgumentException("ChildProcessStartInfo.Arguments must not be null.", nameof(startInfo));
 
             var flags = startInfoInternal.Flags;
-            if (flags.HasUseCustomCodePage() && !flags.HasCreateNewConsole())
+            if (flags.HasUseCustomCodePage() && flags.HasAttachToCurrentConsole())
             {
                 throw new ArgumentException(
-                    $"{nameof(ChildProcessFlags.UseCustomCodePage)} requires {nameof(ChildProcessFlags.CreateNewConsole)}.", nameof(startInfo));
+                    $"{nameof(ChildProcessFlags.UseCustomCodePage)} cannot be combined with {nameof(ChildProcessFlags.AttachToCurrentConsole)}.", nameof(startInfo));
             }
 
             var resolvedPath = ResolveExecutablePath(startInfoInternal.FileName, startInfoInternal.Flags);

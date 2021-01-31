@@ -33,6 +33,7 @@ namespace Asmichi.Utilities
             var si = new ChildProcessStartInfo("sh", "-c", "echo foo")
             {
                 StdOutputRedirection = OutputRedirection.OutputPipe,
+                StdErrorRedirection = OutputRedirection.OutputPipe,
             };
 
             using var p = ChildProcess.Start(si);
@@ -53,7 +54,9 @@ namespace Asmichi.Utilities
             var si = new ChildProcessStartInfo("ls", "/")
             {
                 StdOutputRedirection = OutputRedirection.File,
+                StdErrorRedirection = OutputRedirection.File,
                 StdOutputFile = tempFile,
+                StdErrorFile = tempFile,
             };
 
             using (var p = ChildProcess.Start(si))
@@ -93,12 +96,7 @@ namespace Asmichi.Utilities
 
             static async Task SpawnCmdAsync()
             {
-                var si = new ChildProcessStartInfo("sleep", "3s")
-                {
-                    StdInputRedirection = InputRedirection.ParentInput,
-                    StdOutputRedirection = OutputRedirection.NullDevice,
-                };
-
+                var si = new ChildProcessStartInfo("sleep", "3s");
                 using var p = ChildProcess.Start(si);
                 await p.WaitForExitAsync();
             }

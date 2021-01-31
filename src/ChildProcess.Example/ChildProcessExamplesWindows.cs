@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Asmichi.Utilities.ProcessManagement;
 
@@ -33,6 +34,7 @@ namespace Asmichi.Utilities
             var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
             {
                 StdOutputRedirection = OutputRedirection.OutputPipe,
+                StdErrorRedirection = OutputRedirection.OutputPipe,
             };
 
             using var p = ChildProcess.Start(si);
@@ -53,7 +55,11 @@ namespace Asmichi.Utilities
             var si = new ChildProcessStartInfo("cmd", "/C", "set")
             {
                 StdOutputRedirection = OutputRedirection.File,
+                StdErrorRedirection = OutputRedirection.File,
                 StdOutputFile = tempFile,
+                StdErrorFile = tempFile,
+                Flags = ChildProcessFlags.UseCustomCodePage,
+                CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
             };
 
             using (var p = ChildProcess.Start(si))
@@ -103,6 +109,7 @@ namespace Asmichi.Utilities
                 {
                     StdInputRedirection = InputRedirection.ParentInput,
                     StdOutputRedirection = OutputRedirection.NullDevice,
+                    Flags = ChildProcessFlags.AttachToCurrentConsole,
                 };
 
                 using var p = ChildProcess.Start(si);
