@@ -14,7 +14,7 @@ namespace Asmichi.Utilities.ProcessManagement
     public interface IChildProcess : IDisposable
     {
         /// <summary>
-        /// Gets if the exit code of the process is 0.
+        /// Gets a value indicating whether the exit code of the process is 0.
         /// </summary>
         /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
         bool IsSuccessful { get; }
@@ -26,22 +26,37 @@ namespace Asmichi.Utilities.ProcessManagement
         int ExitCode { get; }
 
         /// <summary>
-        /// A stream associated to the pipe that writes to the stdin of the process, if any.
-        /// If no such pipe has been crated, null.
+        /// Gets a value indicating whether <see cref="StandardInput"/> has a value.
         /// </summary>
-        Stream? StandardInput { get; }
+        bool HasStandardInput { get; }
 
         /// <summary>
-        /// A stream associated to the pipe that reads from the stdout of the process, if any.
-        /// If no such pipe has been crated, null.
+        /// Gets a value indicating whether <see cref="StandardOutput"/> has a value.
         /// </summary>
-        Stream? StandardOutput { get; }
+        bool HasStandardOutput { get; }
 
         /// <summary>
-        /// A stream associated to the pipe that reads from the stderr of the process, if any.
-        /// If no such pipe has been crated, null.
+        /// Gets a value indicating whether <see cref="StandardError"/> has a value.
         /// </summary>
-        Stream? StandardError { get; }
+        bool HasStandardError { get; }
+
+        /// <summary>
+        /// A stream associated to the pipe that writes to the stdin of the process.
+        /// If no such pipe has been created (<see cref="HasStandardInput"/> is <see langword="false"/>), throws <see cref="InvalidOperationException"/>.
+        /// </summary>
+        Stream StandardInput { get; }
+
+        /// <summary>
+        /// A stream associated to the pipe that reads from the stdout of the process.
+        /// If no such pipe has been created (<see cref="HasStandardOutput"/> is <see langword="false"/>), throws <see cref="InvalidOperationException"/>.
+        /// </summary>
+        Stream StandardOutput { get; }
+
+        /// <summary>
+        /// Gets a stream associated to the pipe that reads from the stderr of the process.
+        /// If no such pipe has been created (<see cref="HasStandardError"/> is <see langword="false"/>), throws <see cref="InvalidOperationException"/>.
+        /// </summary>
+        Stream StandardError { get; }
 
         /// <summary>
         /// Waits indefinitely for the process to exit.

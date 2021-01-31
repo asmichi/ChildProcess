@@ -51,24 +51,45 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// If created with <see cref="ChildProcessStartInfo.StdInputRedirection"/> set to <see cref="InputRedirection.InputPipe"/>,
-        /// a stream assosiated to that pipe.
-        /// Otherwise null.
+        /// <see langword="true"/>.
+        /// Otherwise <see langword="false"/>.
         /// </summary>
-        public Stream? StandardInput => _standardInput;
+        public bool HasStandardInput => _standardInput is { };
+
+        /// <summary>
+        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
+        /// set to <see cref="OutputRedirection.OutputPipe"/>, <see langword="true"/>.
+        /// Otherwise <see langword="false"/>.
+        /// </summary>
+        public bool HasStandardOutput => _standardOutput is { };
+
+        /// <summary>
+        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
+        /// set to <see cref="OutputRedirection.ErrorPipe"/>, <see langword="true"/>.
+        /// Otherwise <see langword="false"/>.
+        /// </summary>
+        public bool HasStandardError => _standardError is { };
+
+        /// <summary>
+        /// If created with <see cref="ChildProcessStartInfo.StdInputRedirection"/> set to <see cref="InputRedirection.InputPipe"/>,
+        /// a stream assosiated to that pipe.
+        /// Otherwise throws <see cref="InvalidOperationException"/>.
+        /// </summary>
+        public Stream StandardInput => _standardInput ?? throw new InvalidOperationException("No StandardInput associated.");
 
         /// <summary>
         /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
         /// set to <see cref="OutputRedirection.OutputPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise null.
+        /// Otherwise throws <see cref="InvalidOperationException"/>.
         /// </summary>
-        public Stream? StandardOutput => _standardOutput;
+        public Stream StandardOutput => _standardOutput ?? throw new InvalidOperationException("No StandardOutput associated.");
 
         /// <summary>
         /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
         /// set to <see cref="OutputRedirection.ErrorPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise null.
+        /// Otherwise throws <see cref="InvalidOperationException"/>.
         /// </summary>
-        public Stream? StandardError => _standardError;
+        public Stream StandardError => _standardError ?? throw new InvalidOperationException("No StandardError associated.");
 
         /// <summary>
         /// (For tests.) Tests use this to wait for the child process without caching its status.

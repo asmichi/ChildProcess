@@ -36,7 +36,7 @@ namespace Asmichi.Utilities
             };
 
             using var p = ChildProcess.Start(si);
-            using (var sr = new StreamReader(p.StandardOutput!))
+            using (var sr = new StreamReader(p.StandardOutput))
             {
                 // "foo"
                 Console.Write(await sr.ReadToEndAsync());
