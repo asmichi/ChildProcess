@@ -49,6 +49,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
+        public bool IsSuccessful => ExitCode == 0;
         public bool HasStandardInput => _standardInput is { };
         public bool HasStandardOutput => _standardOutput is { };
         public bool HasStandardError => _standardError is { };
@@ -119,8 +120,6 @@ namespace Asmichi.Utilities.ProcessManagement
             return operation.Completion;
         }
 
-        public bool IsSuccessful => ExitCode == 0;
-
         public int ExitCode
         {
             get
@@ -132,11 +131,51 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
+        public bool CanSignal
+        {
+            get
+            {
+                CheckNotDisposed();
+                return _stateHolder.State.CanSignal;
+            }
+        }
+
+        public void SignalInterrupt()
+        {
+            CheckNotDisposed();
+            CheckCanSignal();
+
+            _stateHolder.State.SignalInterrupt();
+        }
+
+        public void SignalTermination()
+        {
+            CheckNotDisposed();
+            CheckCanSignal();
+
+            _stateHolder.State.SignalTermination();
+        }
+
+        public void Kill()
+        {
+            CheckNotDisposed();
+
+            _stateHolder.State.Kill();
+        }
+
         private void CheckNotDisposed()
         {
             if (_isDisposed)
             {
                 throw new ObjectDisposedException(nameof(ChildProcessImpl));
+            }
+        }
+
+        private void CheckCanSignal()
+        {
+            if (!_stateHolder.State.CanSignal)
+            {
+                throw new InvalidOperationException("This instance does not support sending signals.");
             }
         }
 

@@ -16,6 +16,14 @@ const std::uint32_t MaxStringArrayCount = 64 * 1024;
 enum class RequestCommand : std::uint32_t
 {
     SpawnProcess = 0,
+    SendSignal = 1,
+};
+
+enum class AbstractSignal : std::uint32_t
+{
+    Interrupt = 2,
+    Kill = 9,
+    Termination = 15,
 };
 
 enum SpawnProcessRequestFlags
@@ -39,5 +47,12 @@ struct SpawnProcessRequest final
     UniqueFd StderrFd;
 };
 
+struct SendSignalRequest final
+{
+    std::uint64_t Token;
+    AbstractSignal Signal;
+};
+
 // NOTE: DeserializeSpawnProcessRequest does not set fds.
 void DeserializeSpawnProcessRequest(SpawnProcessRequest* r, std::unique_ptr<const std::byte[]> data, std::size_t length);
+void DeserializeSendSignalRequest(SendSignalRequest* r, std::unique_ptr<const std::byte[]> data, std::size_t length);

@@ -21,6 +21,7 @@ namespace Asmichi.Utilities.ProcessManagement
     internal enum UnixHelperProcessCommand : uint
     {
         SpawnProcess = 0,
+        SignalProcess = 1,
     }
 
     // NOTE: Make sure to sync with the helper.
@@ -28,6 +29,14 @@ namespace Asmichi.Utilities.ProcessManagement
     {
         InvalidRequest = -1,
         RequestTooBig = -2,
+    }
+
+    // NOTE: Make sure to sync with the helper.
+    internal enum UnixHelperProcessSignalNumber : uint
+    {
+        Interrupt = 2,
+        Kill = 9,
+        Termination = 15,
     }
 
     internal sealed class UnixHelperProcess : IDisposable

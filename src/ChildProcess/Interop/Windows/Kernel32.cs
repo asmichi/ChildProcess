@@ -51,6 +51,19 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] IntPtr hTemplateFile);
 
         [DllImport(DllName, SetLastError = true)]
+        public static extern unsafe bool WriteFile(
+            [In] SafeFileHandle hFile, // We pass only the current process to this.
+            [In] void* lpBuffer,
+            [In] int nNumberOfBytesToWrite, // We pass only the current process to this.
+            [Out] out int lpNumberOfBytesWritten,
+            [In] void* lpOverlapped);
+
+        [DllImport(DllName, SetLastError = true)]
+        public static extern bool TerminateProcess(
+            SafeProcessHandle hProcess,
+            int uExitCode);
+
+        [DllImport(DllName, SetLastError = true)]
         public static extern int GetFileType([In] SafeHandle hFile);
 
         [DllImport(DllName, SetLastError = true)]

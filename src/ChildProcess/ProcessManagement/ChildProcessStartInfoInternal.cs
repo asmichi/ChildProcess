@@ -57,5 +57,7 @@ namespace Asmichi.Utilities.ProcessManagement
             // Additional parameters
             CreateNewConsole = !Flags.HasAttachToCurrentConsole() || !ConsolePal.HasConsoleWindow();
         }
+
+        public bool CanSignal => !Flags.HasAttachToCurrentConsole();
     }
 }

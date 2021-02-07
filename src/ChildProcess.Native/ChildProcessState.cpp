@@ -96,8 +96,7 @@ bool ChildProcessState::SendSignal(int sig)
     const std::lock_guard<std::mutex> guard(mutex_);
     if (isReaped_)
     {
-        errno = ESRCH;
-        return false;
+        return true;
     }
 
     int ret = kill(pid_, sig);

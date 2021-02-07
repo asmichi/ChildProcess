@@ -43,6 +43,9 @@ private:
     void ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
     void HandleProcessCreationRequest(const SpawnProcessRequest& r);
 
+    void HandleSendSignalCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
+    std::optional<int> ToNativeSignal(AbstractSignal abstractSignal) noexcept;
+
     void RecvRawRequest(RawRequest* r);
     void SendSuccess(std::int32_t data);
     void SendError(int err);
@@ -108,6 +111,10 @@ void Subchannel::MainLoop()
             {
             case RequestCommand::SpawnProcess:
                 HandleProcessCreationCommand(std::move(rawRequest.Body), rawRequest.BodyLength);
+                break;
+
+            case RequestCommand::SendSignal:
+                HandleSendSignalCommand(std::move(rawRequest.Body), rawRequest.BodyLength);
                 break;
 
             default:
@@ -272,6 +279,63 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
             // Failed to execute the program: failed to dup2 or execve.
             SendResponse(err, 0);
         }
+    }
+}
+
+void Subchannel::HandleSendSignalCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength)
+{
+    SendSignalRequest r;
+    DeserializeSendSignalRequest(&r, std::move(body), bodyLength);
+
+    auto nativeSignal = ToNativeSignal(r.Signal);
+    if (!nativeSignal)
+    {
+        throw BadRequestError(ErrorCode::InvalidRequest);
+    }
+
+    auto pState = g_ChildProcessStateMap.GetByToken(r.Token);
+    if (!pState)
+    {
+        // The process has already been reaped.
+        SendSuccess(0);
+    }
+    else if (pState->SendSignal(nativeSignal.value()))
+    {
+        if (r.Signal == AbstractSignal::Termination)
+        {
+            // Also send SIGCONT to ensure termination.
+            static_cast<void>(pState->SendSignal(SIGCONT));
+        }
+
+        // Sent a signal.
+        SendSuccess(0);
+    }
+    else if (errno == ESRCH)
+    {
+        // The process has already been reaped.
+        SendSuccess(0);
+    }
+    else
+    {
+        SendError(errno);
+    }
+}
+
+std::optional<int> Subchannel::ToNativeSignal(AbstractSignal abstractSignal) noexcept
+{
+    switch (abstractSignal)
+    {
+    case AbstractSignal::Interrupt:
+        return SIGINT;
+
+    case AbstractSignal::Kill:
+        return SIGKILL;
+
+    case AbstractSignal::Termination:
+        return SIGTERM;
+
+    default:
+        return std::nullopt;
     }
 }
 

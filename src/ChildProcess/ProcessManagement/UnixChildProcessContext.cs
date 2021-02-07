@@ -58,7 +58,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             using var bw = new MyBinaryWriter(InitialBufferCapacity);
-            var stateHolder = UnixChildProcessState.Create();
+            var stateHolder = UnixChildProcessState.Create(this, startInfo.CanSignal);
             try
             {
                 bw.Write(stateHolder.State.Token);
@@ -86,21 +86,22 @@ namespace Asmichi.Utilities.ProcessManagement
                     }
                 }
 
+                // Work around https://github.com/microsoft/WSL/issues/6490
+                // On WSL 1, if you call recvmsg multiple times to fully receive data sent with sendmsg,
+                // the fds will be duplicated for each recvmsg call.
+                // Send only fixed length of of data with the fds and receive that much data with one recvmsg call.
+                // That will be safer anyway.
+                Span<byte> header = stackalloc byte[sizeof(uint) * 2];
+                if (!BitConverter.TryWriteBytes(header, (uint)UnixHelperProcessCommand.SpawnProcess)
+                    || !BitConverter.TryWriteBytes(header.Slice(sizeof(uint)), bw.Length))
+                {
+                    Debug.Fail("Should never fail.");
+                }
+
                 var subchannel = _helperProcess.RentSubchannelAsync(default).AsTask().GetAwaiter().GetResult();
 
                 try
                 {
-                    // Work around https://github.com/microsoft/WSL/issues/6490
-                    // On WSL 1, if you call recvmsg multiple times to fully receive data sent with sendmsg,
-                    // the fds will be duplicated for each recvmsg call.
-                    // Send only fixed length of of data with the fds and receive that much data with one recvmsg call.
-                    // That will be safer anyway.
-                    Span<byte> header = stackalloc byte[sizeof(uint) * 2];
-                    if (!BitConverter.TryWriteBytes(header, (uint)UnixHelperProcessCommand.SpawnProcess)
-                        || !BitConverter.TryWriteBytes(header.Slice(sizeof(uint)), bw.Length))
-                    {
-                        Debug.Fail("Should never fail.");
-                    }
                     subchannel.SendExactBytesAndFds(header, fds.Slice(0, handleCount));
 
                     subchannel.SendExactBytes(bw.GetBuffer());
@@ -132,6 +133,39 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 stateHolder.Dispose();
                 throw;
+            }
+        }
+
+        public void SendSignal(long token, UnixHelperProcessSignalNumber signalNumber)
+        {
+            Span<byte> request = stackalloc byte[4 + 4 + 8 + 4];
+            if (!BitConverter.TryWriteBytes(request, (uint)UnixHelperProcessCommand.SignalProcess)
+                || !BitConverter.TryWriteBytes(request.Slice(4), 8 + 4)
+                || !BitConverter.TryWriteBytes(request.Slice(4 + 4), token)
+                || !BitConverter.TryWriteBytes(request.Slice(4 + 4 + 8), (uint)signalNumber))
+            {
+                Debug.Fail("Should never fail.");
+            }
+
+            var subchannel = _helperProcess.RentSubchannelAsync(default).AsTask().GetAwaiter().GetResult();
+            try
+            {
+                subchannel.SendExactBytes(request);
+
+                var (error, pid) = subchannel.ReceiveCommonResponse();
+                if (error > 0)
+                {
+                    throw new Win32Exception(error);
+                }
+                else if (error < 0)
+                {
+                    throw new AsmichiChildProcessInternalLogicErrorException(
+                        string.Format(CultureInfo.InvariantCulture, "Internal logic error: Bad request {0}.", error));
+                }
+            }
+            finally
+            {
+                _helperProcess.ReturnSubchannel(subchannel);
             }
         }
     }

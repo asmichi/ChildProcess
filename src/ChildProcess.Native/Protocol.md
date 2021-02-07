@@ -52,3 +52,21 @@ Response:
 
 - Error code (32)
 - pid (32)
+
+#### Signal (Command 1)
+
+Request body:
+
+- Process token (64)
+- Signal (32)
+
+Response:
+
+- Error code (32)
+
+Signal:
+
+- 2: SIGINT
+- 9: SIGKILL
+- 15: SIGTERM
+

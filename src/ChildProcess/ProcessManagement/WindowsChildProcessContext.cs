@@ -74,7 +74,7 @@ namespace Asmichi.Utilities.ProcessManagement
                         childStdErr,
                         attr);
 
-                    return new WindowsChildProcessState(processHandle, pseudoConsole);
+                    return new WindowsChildProcessState(processHandle, pseudoConsole, startInfo.CanSignal);
                 }
             }
             catch

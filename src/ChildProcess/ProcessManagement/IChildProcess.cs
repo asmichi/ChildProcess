@@ -84,5 +84,36 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous wait operation. true if the process has exited. Otherwise false.</returns>
         Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a value indicating whether this instance supports sending signals (was created without <see cref="ChildProcessFlags.AttachToCurrentConsole"/>).
+        /// </summary>
+        bool CanSignal { get; }
+
+        /// <summary>
+        /// <para>Sends the interrupt signal to the process. Succeeds if the process has already exited.</para>
+        /// <para>(Windows-specific) Sends Ctrl+C to the pseudo console.</para>
+        /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">This instance does not support sending signals (<see cref="CanSignal"/> is <see langword="false"/>).</exception>
+        void SignalInterrupt();
+
+        /// <summary>
+        /// <para>Sends the termination signal to the process. Succeeds if the process has already exited.</para>
+        /// <para>
+        /// (Windows-specific) Closes the pseudo console and the process will receive the CTRL_CLOSE_EVENT event.
+        /// Non-console processes are not currenyly supported.
+        /// </para>
+        /// <para>(Non-Windows-specific) Sends SIGTERM to the process group.</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">This instance does not support sending signals (<see cref="CanSignal"/> is <see langword="false"/>).</exception>
+        void SignalTermination();
+
+        /// <summary>
+        /// <para>Forcibly kill the process. Succeeds if the process has already exited.</para>
+        /// <para>(Windows-specific) Calls TerminateProcess on the process with exit code -1.</para>
+        /// <para>(Non-Windows-specific) Sends SIGKILL to the process or the process group.</para>
+        /// </summary>
+        void Kill();
     }
 }

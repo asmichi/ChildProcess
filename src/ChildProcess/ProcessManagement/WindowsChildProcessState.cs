@@ -10,16 +10,29 @@ namespace Asmichi.Utilities.ProcessManagement
 {
     internal class WindowsChildProcessState : IChildProcessStateHolder, IChildProcessState
     {
+        // The exit code to be passed to TerminateProcess.
+        private const int TerminateProcessExitCode = -1;
+        // ASCII code of Ctrl+C: 'C' - 0x40
+        private const int CtrlCCharacter = 0x03;
+
         private readonly SafeProcessHandle _processHandle;
         private readonly InputWriterOnlyPseudoConsole? _pseudoConsole;
+        private readonly bool _canSignal;
         private readonly WaitHandle _exitedWaitHandle;
         private int _exitCode = -1;
         private bool _hasExitCode;
+        private bool _isPseudoConsoleDisposed;
 
-        public WindowsChildProcessState(SafeProcessHandle processHandle, InputWriterOnlyPseudoConsole? pseudoConsole)
+        public WindowsChildProcessState(
+            SafeProcessHandle processHandle,
+            InputWriterOnlyPseudoConsole? pseudoConsole,
+            bool canSignal)
         {
+            Debug.Assert(!(canSignal && pseudoConsole is null));
+
             _processHandle = processHandle;
             _pseudoConsole = pseudoConsole;
+            _canSignal = canSignal;
             _exitedWaitHandle = new WindowsProcessWaitHandle(_processHandle);
         }
 
@@ -27,7 +40,12 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             _processHandle.Dispose();
             _exitedWaitHandle.Dispose();
-            _pseudoConsole?.Dispose();
+
+            if (!_isPseudoConsoleDisposed)
+            {
+                _pseudoConsole?.Dispose();
+                _isPseudoConsoleDisposed = true;
+            }
         }
 
         public IChildProcessState State => this;
@@ -52,6 +70,50 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             Debug.Assert(_hasExitCode);
             return _exitCode;
+        }
+
+        public bool CanSignal => _canSignal;
+
+        public unsafe void SignalInterrupt()
+        {
+            Debug.Assert(_canSignal);
+            Debug.Assert(_pseudoConsole is { });
+
+            if (_isPseudoConsoleDisposed)
+            {
+                return;
+            }
+
+            fixed (byte* pCtrlC = stackalloc byte[1])
+            {
+                *pCtrlC = CtrlCCharacter;
+                if (!Kernel32.WriteFile(_pseudoConsole.ConsoleInputWriter, pCtrlC, sizeof(byte), out int bytesWritten, null))
+                {
+                    throw new Win32Exception();
+                }
+            }
+        }
+
+        public void SignalTermination()
+        {
+            Debug.Assert(_canSignal);
+            Debug.Assert(_pseudoConsole is { });
+
+            if (_isPseudoConsoleDisposed)
+            {
+                return;
+            }
+
+            _pseudoConsole.Dispose();
+            _isPseudoConsoleDisposed = true;
+        }
+
+        public void Kill()
+        {
+            if (!Kernel32.TerminateProcess(_processHandle, TerminateProcessExitCode))
+            {
+                throw new Win32Exception();
+            }
         }
     }
 }

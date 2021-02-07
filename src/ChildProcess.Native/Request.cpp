@@ -55,3 +55,18 @@ void DeserializeSpawnProcessRequest(SpawnProcessRequest* r, std::unique_ptr<cons
         throw BadRequestError(ErrorCode::InvalidRequest);
     }
 }
+
+void DeserializeSendSignalRequest(SendSignalRequest* r, std::unique_ptr<const std::byte[]> data, std::size_t length)
+{
+    try
+    {
+        BinaryReader br{data.get(), length};
+        r->Token = br.Read<std::uint64_t>();
+        r->Signal = static_cast<AbstractSignal>(br.Read<std::uint32_t>());
+    }
+    catch ([[maybe_unused]] const BadBinaryError& exn)
+    {
+        TRACE_ERROR("BadBinaryError: %s\n", exn.what());
+        throw BadRequestError(ErrorCode::InvalidRequest);
+    }
+}

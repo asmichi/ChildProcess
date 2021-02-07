@@ -16,6 +16,7 @@ namespace Asmichi.Utilities.ProcessManagement
     /// <summary>
     /// Represents the state associated to one process.
     /// </summary>
+    // NOTE: A pipe to a process itself is not a part of the state of a child process (but of ours).
     internal interface IChildProcessState
     {
         int ExitCode { get; }
@@ -24,5 +25,10 @@ namespace Asmichi.Utilities.ProcessManagement
 
         // Pre: The process has exited
         void DangerousRetrieveExitCode();
+
+        bool CanSignal { get; }
+        void SignalInterrupt();
+        void SignalTermination();
+        void Kill();
     }
 }

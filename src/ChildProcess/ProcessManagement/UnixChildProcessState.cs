@@ -50,15 +50,19 @@ namespace Asmichi.Utilities.ProcessManagement
     {
         private readonly object _lock = new object();
         private readonly ManualResetEvent _exitedEvent = new ManualResetEvent(false);
+        private readonly UnixChildProcessContext _context;
         private readonly long _token;
+        private readonly bool _canSignal;
         private int _refCount = 1;
         private bool _hasExited;
         private int _pid = -1;
         private int _exitCode = -1;
 
-        private UnixChildProcessState(long token)
+        private UnixChildProcessState(UnixChildProcessContext context, long token, bool canSignal)
         {
+            _context = context;
             _token = token;
+            _canSignal = canSignal;
         }
 
         public int ExitCode => GetExitCode();
@@ -77,9 +81,9 @@ namespace Asmichi.Utilities.ProcessManagement
         /// Creates a <see cref="UnixChildProcessState"/> with a new process token (an identifier unique within the current AssemblyLoadContext).
         /// </summary>
         /// <returns>A <see cref="UnixChildProcessStateHolder"/> that wraps the created <see cref="UnixChildProcessState"/>.</returns>
-        public static UnixChildProcessStateHolder Create()
+        public static UnixChildProcessStateHolder Create(UnixChildProcessContext context, bool canSignal)
         {
-            var state = ChildProcessStateCollection.Create();
+            var state = ChildProcessStateCollection.Create(context, canSignal);
             return new UnixChildProcessStateHolder(state);
         }
 
@@ -211,16 +215,35 @@ namespace Asmichi.Utilities.ProcessManagement
             // SetExited has already set the exit code.
         }
 
+        public bool CanSignal => _canSignal;
+
+        public void SignalInterrupt()
+        {
+            Debug.Assert(_canSignal);
+            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Interrupt);
+        }
+
+        public void SignalTermination()
+        {
+            Debug.Assert(_canSignal);
+            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Termination);
+        }
+
+        public void Kill()
+        {
+            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Kill);
+        }
+
         private static class ChildProcessStateCollection
         {
             // AssemblyLoadContext-global because our signal handler would be process-global anyway if we could move our signal handler into the current process.
             private static readonly Dictionary<long, UnixChildProcessState> ChildProcessState = new Dictionary<long, UnixChildProcessState>();
             private static long _prevToken;
 
-            public static UnixChildProcessState Create()
+            public static UnixChildProcessState Create(UnixChildProcessContext context, bool canSignal)
             {
                 var token = IssueProcessToken();
-                var state = new UnixChildProcessState(token);
+                var state = new UnixChildProcessState(context, token, canSignal);
                 lock (ChildProcessState)
                 {
                     ChildProcessState.Add(token, state);
