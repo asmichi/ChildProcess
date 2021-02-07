@@ -23,6 +23,16 @@ namespace Asmichi.Utilities.ProcessManagement
             _handle.Dispose();
         }
 
+        public unsafe (int error, int data) ReceiveCommonResponse()
+        {
+            const int ResponseInts = 2;
+            fixed (int* pBuffer = stackalloc int[ResponseInts])
+            {
+                RecvExactBytes(pBuffer, ResponseInts * sizeof(int));
+                return (pBuffer[0], pBuffer[1]);
+            }
+        }
+
         public unsafe void SendExactBytes(ReadOnlySpan<byte> buffer)
         {
             fixed (byte* pBuffer = buffer)
@@ -52,18 +62,12 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
-        public unsafe (int error, int pid) ReadResponse()
+        private unsafe void RecvExactBytes(void* pBuf, uint length)
         {
-            const int ResponseInts = 2;
-            fixed (int* pBuf = stackalloc int[ResponseInts])
+            if (!LibChildProcess.SubchannelRecvExactBytes(_handle, pBuf, new UIntPtr(length)))
             {
-                if (!LibChildProcess.SubchannelRecvExactBytes(_handle, pBuf, new UIntPtr(ResponseInts * sizeof(int))))
-                {
-                    var err = Marshal.GetLastWin32Error();
-                    ThrowFatalCommnicationError(err);
-                }
-
-                return (pBuf[0], pBuf[1]);
+                var err = Marshal.GetLastWin32Error();
+                ThrowFatalCommnicationError(err);
             }
         }
 

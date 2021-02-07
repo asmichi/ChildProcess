@@ -12,14 +12,20 @@
 const std::uint32_t MaxMessageLength = 2 * 1024 * 1024;
 const std::uint32_t MaxStringArrayCount = 64 * 1024;
 
-enum RequestFlags
+// NOTE: Make sure to sync with the client.
+enum class RequestCommand : std::uint32_t
+{
+    SpawnProcess = 0,
+};
+
+enum SpawnProcessRequestFlags
 {
     RequestFlagsRedirectStdin = 1 << 0,
     RequestFlagsRedirectStdout = 1 << 1,
     RequestFlagsRedirectStderr = 1 << 2,
 };
 
-struct Request final
+struct SpawnProcessRequest final
 {
     std::unique_ptr<const std::byte[]> Data;
     std::uint64_t Token;
@@ -33,5 +39,5 @@ struct Request final
     UniqueFd StderrFd;
 };
 
-// NOTE: DeserializeRequest does not set fds.
-void DeserializeRequest(Request* r, std::unique_ptr<const std::byte[]> data, std::size_t length);
+// NOTE: DeserializeSpawnProcessRequest does not set fds.
+void DeserializeSpawnProcessRequest(SpawnProcessRequest* r, std::unique_ptr<const std::byte[]> data, std::size_t length);

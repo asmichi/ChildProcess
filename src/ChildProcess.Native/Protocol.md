@@ -23,13 +23,21 @@ For each child process that has exited, a ChildExitNotification struct shall be 
 
 ### C) Subchannel, full-duplex
 
-Upon creation, the server shall send `errno` as the response.
+Every request shall be prefixed with two 32-bit integer. The first specifies a command number.
+The second specifies the length of the request body.
+
+The error code is defined as follows:
+
+- 0: Success
+- -1: Invalid request
+- Positive: errno
+
+#### Spawn Process (Command 0)
 
 `execve` semantics.
 
-Request:
+Request body:
 
-- Message body length (32)
 - Process token (64)
 - flags (32) (NOTE: fds must be sent in this order).
     - Redirect stdin (1)
@@ -42,6 +50,5 @@ Request:
 
 Response:
 
-- errno (32)
-    - 0 on success
+- Error code (32)
 - pid (32)

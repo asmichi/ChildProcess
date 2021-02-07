@@ -5,7 +5,7 @@
 #include "Base.hpp"
 #include "BinaryReader.hpp"
 #include "ChildProcessState.hpp"
-#include "ErrnoExceptions.hpp"
+#include "ErrorCodeExceptions.hpp"
 #include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "Request.hpp"
@@ -21,6 +21,13 @@
 #include <unistd.h>
 #include <vector>
 
+struct RawRequest final
+{
+    RequestCommand Command;
+    uint32_t BodyLength;
+    std::unique_ptr<std::byte[]> Body;
+};
+
 class Subchannel final
 {
 public:
@@ -31,11 +38,15 @@ public:
 private:
     static void* ThreadFunc(void* arg);
     void MainLoop();
-    void ReadRequest(Request* r);
-    void HandleRequest(const Request& r);
-    void SendSuccess(std::uint32_t pid);
+
+    void HandleProcessCreationCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
+    void ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
+    void HandleProcessCreationRequest(const SpawnProcessRequest& r);
+
+    void RecvRawRequest(RawRequest* r);
+    void SendSuccess(std::int32_t data);
     void SendError(int err);
-    void SendResponse(int err, std::uint32_t pid);
+    void SendResponse(int err, std::int32_t data);
 
     AncillaryDataSocket sock_;
 };
@@ -70,6 +81,7 @@ void* Subchannel::ThreadFunc(void* arg)
     }
     catch ([[maybe_unused]] const CommunicationError& exn)
     {
+        // NOTE: Orderly shutdown (errno=0) also reaches here.
         TRACE_INFO("Subchannel %d disconnected: %d\n", sockFd, exn.GetError());
     }
     return nullptr;
@@ -87,52 +99,47 @@ void Subchannel::MainLoop()
 
     while (true)
     {
-        Request r;
         try
         {
-            ReadRequest(&r);
+            RawRequest rawRequest;
+            RecvRawRequest(&rawRequest);
+
+            switch (rawRequest.Command)
+            {
+            case RequestCommand::SpawnProcess:
+                HandleProcessCreationCommand(std::move(rawRequest.Body), rawRequest.BodyLength);
+                break;
+
+            default:
+                TRACE_ERROR("Unknown command: %u\n", static_cast<std::uint32_t>(rawRequest.Command));
+                static_cast<void>(SendError(ErrorCode::InvalidRequest));
+                break;
+            }
         }
         catch (const BadRequestError& exn)
         {
-            // TODO: More explicitly distinguish BadRequest (logic error) from other errors.
-            static_cast<void>(SendError(-exn.GetError()));
-            return;
+            static_cast<void>(SendError(exn.GetError()));
         }
-
-        HandleRequest(r);
     }
 }
 
-void Subchannel::ReadRequest(Request* r)
+void Subchannel::HandleProcessCreationCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength)
 {
-    std::uint32_t length;
-    if (!sock_.RecvExactBytes(&length, sizeof(length)))
-    {
-        // Throws even for a normal shutdown (errno = 0).
-        throw CommunicationError(errno);
-    }
+    SpawnProcessRequest r;
+    ToProcessCreationRequest(&r, std::move(body), bodyLength);
+    HandleProcessCreationRequest(r);
+}
 
-    if (length > MaxReqeuestLength)
-    {
-        TRACE_ERROR("Request too big: %u\n", static_cast<unsigned int>(length));
-        throw BadRequestError(E2BIG);
-    }
-
-    auto buf = std::make_unique<std::byte[]>(length);
-    if (!sock_.RecvExactBytes(&buf[0], length))
-    {
-        // Throws even for a normal shutdown (errno = 0).
-        throw CommunicationError(errno);
-    }
-
-    DeserializeRequest(r, std::move(buf), length);
+void Subchannel::ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength)
+{
+    DeserializeSpawnProcessRequest(r, std::move(body), bodyLength);
 
     auto popOrThrow = [this] {
         auto maybeFd = sock_.PopReceivedFd();
         if (!maybeFd)
         {
             TRACE_ERROR("Insufficient fds in a request.\n");
-            throw BadRequestError(EINVAL);
+            throw BadRequestError(ErrorCode::InvalidRequest);
         }
         return std::move(*maybeFd);
     };
@@ -152,11 +159,11 @@ void Subchannel::ReadRequest(Request* r)
     if (sock_.ReceivedFdCount() != 0)
     {
         TRACE_ERROR("Too many fds in a request. Flags=%x, %zu fds remaining.\n", r->Flags, sock_.ReceivedFdCount());
-        throw BadRequestError(EINVAL);
+        throw BadRequestError(ErrorCode::InvalidRequest);
     }
 }
 
-void Subchannel::HandleRequest(const Request& r)
+void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
 {
     auto maybeOutPipe = CreatePipe();
     if (!maybeOutPipe)
@@ -268,9 +275,55 @@ void Subchannel::HandleRequest(const Request& r)
     }
 }
 
-void Subchannel::SendSuccess(std::uint32_t pid)
+void Subchannel::RecvRawRequest(RawRequest* r)
 {
-    SendResponse(0, pid);
+    std::uint32_t commandAndLength[2];
+    if (!sock_.RecvExactBytes(&commandAndLength, sizeof(commandAndLength)))
+    {
+        // Throws even for a normal shutdown (errno = 0).
+        throw CommunicationError(errno);
+    }
+
+    const RequestCommand command = static_cast<RequestCommand>(commandAndLength[0]);
+    const std::uint32_t bodyLength = commandAndLength[1];
+
+    if (bodyLength > MaxReqeuestLength)
+    {
+        TRACE_ERROR("Request too big: %u\n", static_cast<unsigned int>(bodyLength));
+
+        // Discard the request body.
+        const size_t BufSize = 64 * 1024;
+        auto buf = std::make_unique<std::byte[]>(BufSize);
+        size_t totalReceivedBytes = 0;
+        while (totalReceivedBytes < bodyLength)
+        {
+            std::size_t bytesToReceive = std::min(BufSize, bodyLength - totalReceivedBytes);
+            ssize_t receivedBytes = sock_.Recv(buf.get(), bytesToReceive, BlockingFlag::Blocking);
+            if (receivedBytes <= 0)
+            {
+                throw new CommunicationError(errno);
+            }
+            totalReceivedBytes += receivedBytes;
+        }
+
+        throw BadRequestError(E2BIG);
+    }
+
+    auto body = std::make_unique<std::byte[]>(bodyLength);
+    if (!sock_.RecvExactBytes(&body[0], bodyLength))
+    {
+        // Throws even for a normal shutdown (errno = 0).
+        throw CommunicationError(errno);
+    }
+
+    r->BodyLength = bodyLength;
+    r->Body = std::move(body);
+    r->Command = command;
+}
+
+void Subchannel::SendSuccess(std::int32_t data)
+{
+    SendResponse(0, data);
 }
 
 void Subchannel::SendError(int err)
@@ -278,13 +331,13 @@ void Subchannel::SendError(int err)
     SendResponse(err, 0);
 }
 
-void Subchannel::SendResponse(int err, std::uint32_t pid)
+void Subchannel::SendResponse(int err, std::int32_t data)
 {
     static_assert(sizeof(int) == 4);
 
     std::byte buf[8];
     std::memcpy(&buf[0], &err, 4);
-    std::memcpy(&buf[4], &pid, 4);
+    std::memcpy(&buf[4], &data, 4);
     if (!sock_.SendExactBytes(buf, 8))
     {
         throw CommunicationError(errno);

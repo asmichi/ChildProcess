@@ -95,18 +95,20 @@ namespace Asmichi.Utilities.ProcessManagement
                     // the fds will be duplicated for each recvmsg call.
                     // Send only fixed length of of data with the fds and receive that much data with one recvmsg call.
                     // That will be safer anyway.
-                    Span<byte> lengthHeader = stackalloc byte[sizeof(int)];
-                    if (!BitConverter.TryWriteBytes(lengthHeader, bw.Length))
+                    Span<byte> header = stackalloc byte[sizeof(uint) * 2];
+                    if (!BitConverter.TryWriteBytes(header, (uint)UnixHelperProcessCommand.SpawnProcess)
+                        || !BitConverter.TryWriteBytes(header.Slice(sizeof(uint)), bw.Length))
                     {
                         Debug.Fail("Should never fail.");
                     }
-                    subchannel.SendExactBytesAndFds(lengthHeader, fds.Slice(0, handleCount));
+                    subchannel.SendExactBytesAndFds(header, fds.Slice(0, handleCount));
+
                     subchannel.SendExactBytes(bw.GetBuffer());
                     GC.KeepAlive(stdIn);
                     GC.KeepAlive(stdOut);
                     GC.KeepAlive(stdErr);
 
-                    var (error, pid) = subchannel.ReadResponse();
+                    var (error, pid) = subchannel.ReceiveCommonResponse();
                     if (error > 0)
                     {
                         throw new Win32Exception(error);
@@ -114,7 +116,7 @@ namespace Asmichi.Utilities.ProcessManagement
                     else if (error < 0)
                     {
                         throw new AsmichiChildProcessInternalLogicErrorException(
-                            string.Format(CultureInfo.InvariantCulture, "Internal logic error: Bad request {0}.", -error));
+                            string.Format(CultureInfo.InvariantCulture, "Internal logic error: Bad request {0}.", error));
                     }
 
                     stateHolder.State.SetPid(pid);

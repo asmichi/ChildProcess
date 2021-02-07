@@ -2,7 +2,7 @@
 
 #include "Request.hpp"
 #include "BinaryReader.hpp"
-#include "ErrnoExceptions.hpp"
+#include "ErrorCodeExceptions.hpp"
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -27,7 +27,7 @@ namespace
     }
 } // namespace
 
-void DeserializeRequest(Request* r, std::unique_ptr<const std::byte[]> data, std::size_t length)
+void DeserializeSpawnProcessRequest(SpawnProcessRequest* r, std::unique_ptr<const std::byte[]> data, std::size_t length)
 {
     try
     {
@@ -46,12 +46,12 @@ void DeserializeRequest(Request* r, std::unique_ptr<const std::byte[]> data, std
         if (r->ExecutablePath == nullptr)
         {
             TRACE_ERROR("ExecutablePath was nullptr.\n");
-            throw BadRequestError(EINVAL);
+            throw BadRequestError(ErrorCode::InvalidRequest);
         }
     }
     catch ([[maybe_unused]] const BadBinaryError& exn)
     {
         TRACE_ERROR("BadBinaryError: %s\n", exn.what());
-        throw BadRequestError(EINVAL);
+        throw BadRequestError(ErrorCode::InvalidRequest);
     }
 }

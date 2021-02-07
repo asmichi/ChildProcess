@@ -17,6 +17,19 @@ using static System.FormattableString;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
+    // NOTE: Make sure to sync with the helper.
+    internal enum UnixHelperProcessCommand : uint
+    {
+        SpawnProcess = 0,
+    }
+
+    // NOTE: Make sure to sync with the helper.
+    internal enum UnixHelperProcessErrorCode : int
+    {
+        InvalidRequest = -1,
+        RequestTooBig = -2,
+    }
+
     internal sealed class UnixHelperProcess : IDisposable
     {
         private const string HelperFileName = "AsmichiChildProcessHelper";
