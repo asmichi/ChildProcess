@@ -91,7 +91,7 @@ namespace Asmichi.Utilities.ProcessManagement
         bool CanSignal { get; }
 
         /// <summary>
-        /// <para>Sends the interrupt signal to the process. Succeeds if the process has already exited.</para>
+        /// <para>Sends the interrupt signal to the process group. Succeeds if the process has already exited.</para>
         /// <para>(Windows-specific) Sends Ctrl+C to the pseudo console.</para>
         /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
         /// </summary>
@@ -99,7 +99,7 @@ namespace Asmichi.Utilities.ProcessManagement
         void SignalInterrupt();
 
         /// <summary>
-        /// <para>Sends the termination signal to the process. Succeeds if the process has already exited.</para>
+        /// <para>Sends the termination signal to the process group. Succeeds if the process has already exited.</para>
         /// <para>
         /// (Windows-specific) Closes the pseudo console and the process will receive the CTRL_CLOSE_EVENT event.
         /// Non-console processes are not currenyly supported.
@@ -110,9 +110,9 @@ namespace Asmichi.Utilities.ProcessManagement
         void SignalTermination();
 
         /// <summary>
-        /// <para>Forcibly kill the process. Succeeds if the process has already exited.</para>
+        /// <para>Forcibly kill the process group. Succeeds if the process has already exited.</para>
         /// <para>(Windows-specific) Calls TerminateProcess on the process with exit code -1.</para>
-        /// <para>(Non-Windows-specific) Sends SIGKILL to the process or the process group.</para>
+        /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
         /// </summary>
         void Kill();
     }

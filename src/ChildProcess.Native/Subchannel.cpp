@@ -239,6 +239,8 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
             _exit(1);
         }
 
+        // Always create a new process group.
+        setpgid(0, 0);
         // NOTE: POSIX specifies execve shall not modify argv and envp.
         execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
 

@@ -99,6 +99,7 @@ bool ChildProcessState::SendSignal(int sig)
         return true;
     }
 
-    int ret = kill(pid_, sig);
+    // We always attach a child process to a new process group.
+    int ret = kill(-pid_, sig);
     return ret == 0;
 }
