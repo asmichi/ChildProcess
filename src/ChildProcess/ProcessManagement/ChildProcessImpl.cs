@@ -49,46 +49,12 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdInputRedirection"/> set to <see cref="InputRedirection.InputPipe"/>,
-        /// <see langword="true"/>.
-        /// Otherwise <see langword="false"/>.
-        /// </summary>
         public bool HasStandardInput => _standardInput is { };
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.OutputPipe"/>, <see langword="true"/>.
-        /// Otherwise <see langword="false"/>.
-        /// </summary>
         public bool HasStandardOutput => _standardOutput is { };
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.ErrorPipe"/>, <see langword="true"/>.
-        /// Otherwise <see langword="false"/>.
-        /// </summary>
         public bool HasStandardError => _standardError is { };
 
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdInputRedirection"/> set to <see cref="InputRedirection.InputPipe"/>,
-        /// a stream assosiated to that pipe.
-        /// Otherwise throws <see cref="InvalidOperationException"/>.
-        /// </summary>
         public Stream StandardInput => _standardInput ?? throw new InvalidOperationException("No StandardInput associated.");
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.OutputPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise throws <see cref="InvalidOperationException"/>.
-        /// </summary>
         public Stream StandardOutput => _standardOutput ?? throw new InvalidOperationException("No StandardOutput associated.");
-
-        /// <summary>
-        /// If created with <see cref="ChildProcessStartInfo.StdOutputRedirection"/> and/or <see cref="ChildProcessStartInfo.StdErrorRedirection"/>
-        /// set to <see cref="OutputRedirection.ErrorPipe"/>, a stream assosiated to that pipe.
-        /// Otherwise throws <see cref="InvalidOperationException"/>.
-        /// </summary>
         public Stream StandardError => _standardError ?? throw new InvalidOperationException("No StandardError associated.");
 
         /// <summary>
@@ -96,16 +62,8 @@ namespace Asmichi.Utilities.ProcessManagement
         /// </summary>
         internal WaitHandle ExitedWaitHandle => _stateHolder.State.ExitedWaitHandle;
 
-        /// <summary>
-        /// Waits indefinitely for the process to exit.
-        /// </summary>
         public void WaitForExit() => WaitForExit(Timeout.Infinite);
 
-        /// <summary>
-        /// Waits <paramref name="millisecondsTimeout"/> milliseconds for the process to exit.
-        /// </summary>
-        /// <param name="millisecondsTimeout">The amount of time in milliseconds to wait for the process to exit. <see cref="Timeout.Infinite"/> means infinite amount of time.</param>
-        /// <returns>true if the process has exited. Otherwise false.</returns>
         public bool WaitForExit(int millisecondsTimeout)
         {
             ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
@@ -127,20 +85,9 @@ namespace Asmichi.Utilities.ProcessManagement
             return true;
         }
 
-        /// <summary>
-        /// Asynchronously waits indefinitely for the process to exit.
-        /// </summary>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous wait operation.</returns>
         public Task WaitForExitAsync(CancellationToken cancellationToken = default) =>
             WaitForExitAsync(Timeout.Infinite, cancellationToken);
 
-        /// <summary>
-        /// Asynchronously waits <paramref name="millisecondsTimeout"/> milliseconds for the process to exit.
-        /// </summary>
-        /// <param name="millisecondsTimeout">The amount of time in milliseconds to wait for the process to exit. <see cref="Timeout.Infinite"/> means infinite amount of time.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous wait operation. true if the process has exited. Otherwise false.</returns>
         public Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default)
         {
             ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
@@ -172,16 +119,8 @@ namespace Asmichi.Utilities.ProcessManagement
             return operation.Completion;
         }
 
-        /// <summary>
-        /// Gets if the exit code of the process is 0.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
         public bool IsSuccessful => ExitCode == 0;
 
-        /// <summary>
-        /// Gets the exit code of the process.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
         public int ExitCode
         {
             get
