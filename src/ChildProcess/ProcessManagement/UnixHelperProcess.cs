@@ -124,25 +124,20 @@ namespace Asmichi.Utilities.ProcessManagement
                 }
                 else
                 {
-                    // TODO: Status may be a signal number.
                     holder.State.SetExited(notification.Status);
                 }
             }
         }
 
-        // 24B
+        // 16B
         [StructLayout(LayoutKind.Sequential)]
         private struct ChildExitNotification
         {
-            public const int Size = 24;
+            public const int Size = 16;
 
             public long Token;
             public int ProcessID;
-            // Exit status on CLD_EXITED; signal number on CLD_KILLED and CLD_DUMPED.
             public int Status;
-            // Code : CLD_EXITED, CLD_KILLED, CLD_DUMPED
-            public int Code;
-            public int Padding1;
         }
 
         public ValueTask<UnixSubchannel> RentSubchannelAsync(CancellationToken cancellationToken)

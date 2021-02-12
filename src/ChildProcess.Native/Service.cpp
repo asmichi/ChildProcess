@@ -313,8 +313,8 @@ bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
     ChildExitNotification cen{};
     cen.Token = pState->GetToken();
     cen.ProcessID = pState->GetPid();
-    cen.Code = siginfo.si_code;
-    cen.Status = siginfo.si_status;
+    cen.Status = siginfo.si_code == CLD_EXITED ? siginfo.si_status : -siginfo.si_status;
+
     if (!g_MainChannel->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: send %d\n", errno);

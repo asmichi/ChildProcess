@@ -20,7 +20,8 @@ namespace Asmichi.Utilities.ProcessManagement
         bool IsSuccessful { get; }
 
         /// <summary>
-        /// Gets the exit code of the process.
+        /// <para>Gets the exit code of the process.</para>
+        /// <para>(Non-Windows-Specific) If the process was terminated by signal N, the exit code will be -N.</para>
         /// </summary>
         /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
         int ExitCode { get; }
