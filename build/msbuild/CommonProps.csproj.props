@@ -32,6 +32,9 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <NoWarn>1591;1701;1702</NoWarn>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup>
