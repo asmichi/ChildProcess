@@ -52,17 +52,17 @@ namespace Asmichi.Utilities.ProcessManagement
         private readonly ManualResetEvent _exitedEvent = new ManualResetEvent(false);
         private readonly UnixChildProcessContext _context;
         private readonly long _token;
-        private readonly bool _canSignal;
+        private readonly bool _allowSignal;
         private int _refCount = 1;
         private bool _hasExited;
         private int _pid = -1;
         private int _exitCode = -1;
 
-        private UnixChildProcessState(UnixChildProcessContext context, long token, bool canSignal)
+        private UnixChildProcessState(UnixChildProcessContext context, long token, bool allowSignal)
         {
             _context = context;
             _token = token;
-            _canSignal = canSignal;
+            _allowSignal = allowSignal;
         }
 
         public int ExitCode => GetExitCode();
@@ -81,9 +81,9 @@ namespace Asmichi.Utilities.ProcessManagement
         /// Creates a <see cref="UnixChildProcessState"/> with a new process token (an identifier unique within the current AssemblyLoadContext).
         /// </summary>
         /// <returns>A <see cref="UnixChildProcessStateHolder"/> that wraps the created <see cref="UnixChildProcessState"/>.</returns>
-        public static UnixChildProcessStateHolder Create(UnixChildProcessContext context, bool canSignal)
+        public static UnixChildProcessStateHolder Create(UnixChildProcessContext context, bool allowSignal)
         {
-            var state = ChildProcessStateCollection.Create(context, canSignal);
+            var state = ChildProcessStateCollection.Create(context, allowSignal);
             return new UnixChildProcessStateHolder(state);
         }
 
@@ -215,17 +215,17 @@ namespace Asmichi.Utilities.ProcessManagement
             // SetExited has already set the exit code.
         }
 
-        public bool CanSignal => _canSignal;
+        public bool CanSignal => _allowSignal;
 
         public void SignalInterrupt()
         {
-            Debug.Assert(_canSignal);
+            Debug.Assert(_allowSignal);
             _context.SendSignal(_token, UnixHelperProcessSignalNumber.Interrupt);
         }
 
         public void SignalTermination()
         {
-            Debug.Assert(_canSignal);
+            Debug.Assert(_allowSignal);
             _context.SendSignal(_token, UnixHelperProcessSignalNumber.Termination);
         }
 
@@ -240,10 +240,10 @@ namespace Asmichi.Utilities.ProcessManagement
             private static readonly Dictionary<long, UnixChildProcessState> ChildProcessState = new Dictionary<long, UnixChildProcessState>();
             private static long _prevToken;
 
-            public static UnixChildProcessState Create(UnixChildProcessContext context, bool canSignal)
+            public static UnixChildProcessState Create(UnixChildProcessContext context, bool allowSignal)
             {
                 var token = IssueProcessToken();
-                var state = new UnixChildProcessState(context, token, canSignal);
+                var state = new UnixChildProcessState(context, token, allowSignal);
                 lock (ChildProcessState)
                 {
                     ChildProcessState.Add(token, state);

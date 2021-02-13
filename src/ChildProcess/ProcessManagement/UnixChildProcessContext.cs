@@ -58,7 +58,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
 
             using var bw = new MyBinaryWriter(InitialBufferCapacity);
-            var stateHolder = UnixChildProcessState.Create(this, startInfo.CanSignal);
+            var stateHolder = UnixChildProcessState.Create(this, startInfo.AllowSignal);
             try
             {
                 bw.Write(stateHolder.State.Token);

@@ -17,7 +17,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private readonly SafeProcessHandle _processHandle;
         private readonly InputWriterOnlyPseudoConsole? _pseudoConsole;
-        private readonly bool _canSignal;
+        private readonly bool _allowSignal;
         private readonly WaitHandle _exitedWaitHandle;
         private int _exitCode = -1;
         private bool _hasExitCode;
@@ -26,13 +26,13 @@ namespace Asmichi.Utilities.ProcessManagement
         public WindowsChildProcessState(
             SafeProcessHandle processHandle,
             InputWriterOnlyPseudoConsole? pseudoConsole,
-            bool canSignal)
+            bool allowSignal)
         {
-            Debug.Assert(!(canSignal && pseudoConsole is null));
+            Debug.Assert(!(allowSignal && pseudoConsole is null));
 
             _processHandle = processHandle;
             _pseudoConsole = pseudoConsole;
-            _canSignal = canSignal;
+            _allowSignal = allowSignal;
             _exitedWaitHandle = new WindowsProcessWaitHandle(_processHandle);
         }
 
@@ -72,11 +72,11 @@ namespace Asmichi.Utilities.ProcessManagement
             return _exitCode;
         }
 
-        public bool CanSignal => _canSignal;
+        public bool CanSignal => _allowSignal;
 
         public unsafe void SignalInterrupt()
         {
-            Debug.Assert(_canSignal);
+            Debug.Assert(_allowSignal);
             Debug.Assert(_pseudoConsole is { });
 
             if (_isPseudoConsoleDisposed)
@@ -96,7 +96,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public void SignalTermination()
         {
-            Debug.Assert(_canSignal);
+            Debug.Assert(_allowSignal);
             Debug.Assert(_pseudoConsole is { });
 
             if (_isPseudoConsoleDisposed)
