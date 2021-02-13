@@ -29,13 +29,15 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 
 - .NET Core 3.1 or later
 
-OS:
+RIDs:
 
-- `win10-x86` (1803 or later)
+- `win10-x86` (Not tested)
 - `win10-x64` (1803 or later)
+- `win10-arm` (Not tested)
+- `win10-arm64` (Not tested)
 - `linux-x64`
 - `linux-arm` (Not tested)
-- `linux-aarch64` (Not tested)
+- `linux-arm64` (Not tested)
 
 NOTE: On Linux, the system must have GLIBC 2.x.y or later and LIBSTDCXX 3.x.y or later. Musl-based Linux (Alpine, etc.) is not currently supported.
 
