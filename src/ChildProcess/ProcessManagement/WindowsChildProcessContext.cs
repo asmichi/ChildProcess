@@ -36,14 +36,22 @@ namespace Asmichi.Utilities.ProcessManagement
 
             var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>(), !flags.HasDisableArgumentQuoting());
             var environmentBlock = environmentVariables != null ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables) : null;
-            var pseudoConsole = startInfo.CreateNewConsole ? InputWriterOnlyPseudoConsole.Create() : null;
+
+            // Objects that need cleanup
+            InputWriterOnlyPseudoConsole? pseudoConsole = null;
+            SafeJobObjectHandle? jobObjectHandle = null;
+            SafeProcessHandle? processHandle = null;
+            SafeThreadHandle? threadHandle = null;
 
             try
             {
+                pseudoConsole = startInfo.CreateNewConsole ? InputWriterOnlyPseudoConsole.Create() : null;
                 if (pseudoConsole is not null && flags.HasUseCustomCodePage())
                 {
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }
+
+                jobObjectHandle = CreateJobObject();
 
                 using var inheritableHandleStore = new InheritableHandleStore(3);
                 var childStdIn = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
@@ -61,12 +69,15 @@ namespace Asmichi.Utilities.ProcessManagement
                     }
                     attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
 
-                    // Support for attached child processes temporarily removed.
-                    int creationFlags = Kernel32.CREATE_UNICODE_ENVIRONMENT | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
+                    // Create the process suspended so that it will not create a grandchild process before we assign it to the job object.
+                    const int CreationFlags =
+                        Kernel32.CREATE_UNICODE_ENVIRONMENT
+                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT
+                        | Kernel32.CREATE_SUSPENDED;
 
-                    var processHandle = InvokeCreateProcess(
+                    (processHandle, threadHandle) = InvokeCreateProcess(
                         commandLine,
-                        creationFlags,
+                        CreationFlags,
                         environmentBlock,
                         workingDirectory,
                         childStdIn,
@@ -74,13 +85,35 @@ namespace Asmichi.Utilities.ProcessManagement
                         childStdErr,
                         attr);
 
-                    return new WindowsChildProcessState(processHandle, pseudoConsole, startInfo.AllowSignal);
+                    if (!Kernel32.AssignProcessToJobObject(jobObjectHandle, processHandle))
+                    {
+                        // Normally this will not fail...
+                        throw new Win32Exception();
+                    }
+
+                    if (Kernel32.ResumeThread(threadHandle) == -1)
+                    {
+                        // Normally this will not fail...
+                        throw new Win32Exception();
+                    }
+
+                    return new WindowsChildProcessState(processHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal);
                 }
             }
             catch
             {
+                if (processHandle is not null)
+                {
+                    Kernel32.TerminateProcess(processHandle, -1);
+                    processHandle.Dispose();
+                }
                 pseudoConsole?.Dispose();
+                jobObjectHandle?.Dispose();
                 throw;
+            }
+            finally
+            {
+                threadHandle?.Dispose();
             }
         }
 
@@ -112,17 +145,21 @@ namespace Asmichi.Utilities.ProcessManagement
                     attr.UpdatePseudoConsole(pseudoConsole.Handle.DangerousGetHandle());
                     attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
 
-                    const int creationFlags = Kernel32.CREATE_UNICODE_ENVIRONMENT | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
+                    const int CreationFlags =
+                        Kernel32.CREATE_UNICODE_ENVIRONMENT
+                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
 
-                    processHandle = InvokeCreateProcess(
+                    SafeThreadHandle threadHandle;
+                    (processHandle, threadHandle) = InvokeCreateProcess(
                         commandLine,
-                        creationFlags,
+                        CreationFlags,
                         null,
                         workingDirectory,
                         childStdIn,
                         childStdOut,
                         childStdErr,
                         attr);
+                    threadHandle.Dispose();
                 }
 
                 using var waitHandle = new WindowsProcessWaitHandle(processHandle);
@@ -144,7 +181,37 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
-        private static unsafe SafeProcessHandle InvokeCreateProcess(
+        private static unsafe SafeJobObjectHandle CreateJobObject()
+        {
+            var jobObjectHandle = Kernel32.CreateJobObject(IntPtr.Zero, null);
+            try
+            {
+                if (jobObjectHandle.IsInvalid)
+                {
+                    throw new Win32Exception();
+                }
+
+                var extendedLimitInformation = default(Kernel32.JOBOBJECT_EXTENDED_LIMIT_INFORMATION);
+                extendedLimitInformation.BasicLimitInformation.LimitFlags = Kernel32.JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+                if (!Kernel32.SetInformationJobObject(
+                    jobObjectHandle,
+                    Kernel32.JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation,
+                    &extendedLimitInformation,
+                    sizeof(Kernel32.JOBOBJECT_EXTENDED_LIMIT_INFORMATION)))
+                {
+                    throw new Win32Exception();
+                }
+
+                return jobObjectHandle;
+            }
+            catch
+            {
+                jobObjectHandle.Dispose();
+                throw;
+            }
+        }
+
+        private static unsafe (SafeProcessHandle processHandle, SafeThreadHandle threadHandle) InvokeCreateProcess(
             StringBuilder commandLine,
             int creationFlags,
             char[]? environmentBlock,
@@ -181,8 +248,7 @@ namespace Asmichi.Utilities.ProcessManagement
                     throw new Win32Exception();
                 }
 
-                Kernel32.CloseHandle(pi.hThread);
-                return new SafeProcessHandle(pi.hProcess, true);
+                return (new SafeProcessHandle(pi.hProcess, true), new SafeThreadHandle(pi.hThread, true));
             }
         }
     }

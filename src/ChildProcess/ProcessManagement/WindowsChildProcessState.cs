@@ -16,6 +16,7 @@ namespace Asmichi.Utilities.ProcessManagement
         private const int CtrlCCharacter = 0x03;
 
         private readonly SafeProcessHandle _processHandle;
+        private readonly SafeJobObjectHandle _jobObjectHandle;
         private readonly InputWriterOnlyPseudoConsole? _pseudoConsole;
         private readonly bool _allowSignal;
         private readonly WaitHandle _exitedWaitHandle;
@@ -25,12 +26,14 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public WindowsChildProcessState(
             SafeProcessHandle processHandle,
+            SafeJobObjectHandle jobObjectHandle,
             InputWriterOnlyPseudoConsole? pseudoConsole,
             bool allowSignal)
         {
             Debug.Assert(!(allowSignal && pseudoConsole is null));
 
             _processHandle = processHandle;
+            _jobObjectHandle = jobObjectHandle;
             _pseudoConsole = pseudoConsole;
             _allowSignal = allowSignal;
             _exitedWaitHandle = new WindowsProcessWaitHandle(_processHandle);
@@ -110,7 +113,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public void Kill()
         {
-            if (!Kernel32.TerminateProcess(_processHandle, TerminateProcessExitCode))
+            if (!Kernel32.TerminateJobObject(_jobObjectHandle, TerminateProcessExitCode))
             {
                 throw new Win32Exception();
             }

@@ -112,7 +112,10 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// <para>Forcibly kill the process group. Succeeds if the process has already exited.</para>
-        /// <para>(Windows-specific) Calls TerminateProcess on the process with exit code -1.</para>
+        /// <para>
+        /// (Windows-specific) Calls TerminateJobObject with exit code -1 on the job object associated to the process tree,
+        /// which kills each process in the process tree unless it broke away from the job object using CREATE_BREAKAWAY_FROM_JOB.
+        /// </para>
         /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
         /// </summary>
         void Kill();

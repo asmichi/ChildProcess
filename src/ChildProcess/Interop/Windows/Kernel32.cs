@@ -59,11 +59,6 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] void* lpOverlapped);
 
         [DllImport(DllName, SetLastError = true)]
-        public static extern bool TerminateProcess(
-            SafeProcessHandle hProcess,
-            int uExitCode);
-
-        [DllImport(DllName, SetLastError = true)]
         public static extern int GetFileType([In] SafeHandle hFile);
 
         [DllImport(DllName, SetLastError = true)]
@@ -98,10 +93,18 @@ namespace Asmichi.Utilities.Interop.Windows
         [DllImport(DllName)]
         public static extern uint GetCurrentProcessId();
 
-        [DllImport(DllName)]
+        [DllImport(DllName, SetLastError = true)]
         public static extern bool GetExitCodeProcess(
             [In] SafeProcessHandle hProcess,
             [Out] out int lpExitCode);
+
+        [DllImport(DllName, SetLastError = true)]
+        public static extern bool TerminateProcess(
+            SafeProcessHandle hProcess,
+            int uExitCode);
+
+        [DllImport(DllName, SetLastError = true)]
+        public static extern int ResumeThread([In] SafeThreadHandle hThread);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct COORD
