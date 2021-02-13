@@ -103,7 +103,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Unix
         {
             var candidate = NamedPipeUtil.MakePipePathPrefix(Path.GetTempPath(), (uint)LibChildProcess.GetPid());
             const int maxBodyLength = 11;
-            if ((ulong)(candidate.Length + maxBodyLength) > LibChildProcess.GetMaxSocketPathLength().ToUInt64())
+            if ((nuint)candidate.Length + maxBodyLength > LibChildProcess.GetMaxSocketPathLength())
             {
                 throw new PathTooLongException("Path to the temporary directory is too long to accomodate a socket file.");
             }

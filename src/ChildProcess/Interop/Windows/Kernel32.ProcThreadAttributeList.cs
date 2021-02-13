@@ -18,7 +18,7 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] IntPtr lpAttributeList,
             [In] int dwAttributeCount,
             [In] int dwFlags,
-            [In][Out] ref IntPtr lpSize);
+            [In][Out] ref nint lpSize);
 
         [DllImport(DllName, SetLastError = true)]
         public static extern void DeleteProcThreadAttributeList(
@@ -30,7 +30,7 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] int dwFlags,
             [In] IntPtr Attribute,
             [In] void* lpValue,
-            [In] IntPtr cbSize,
+            [In] nint cbSize,
             [In] IntPtr lpPreviousValue,
             [In] IntPtr lpReturnSize);
     }

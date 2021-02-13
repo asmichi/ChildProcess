@@ -31,7 +31,7 @@ namespace Asmichi.Utilities.Interop.Windows
                 0,
                 Kernel32.PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
                 handles,
-                new IntPtr(sizeof(IntPtr) * count),
+                sizeof(IntPtr) * count,
                 IntPtr.Zero,
                 IntPtr.Zero))
             {
@@ -46,7 +46,7 @@ namespace Asmichi.Utilities.Interop.Windows
                 0,
                 Kernel32.PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE,
                 hPC.ToPointer(),
-                new IntPtr(sizeof(IntPtr)),
+                sizeof(IntPtr),
                 IntPtr.Zero,
                 IntPtr.Zero))
             {

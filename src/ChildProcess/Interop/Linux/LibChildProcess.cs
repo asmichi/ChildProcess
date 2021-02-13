@@ -39,7 +39,7 @@ namespace Asmichi.Utilities.Interop.Linux
         public static extern int GetENOENT();
 
         [DllImport(DllName, SetLastError = false)]
-        public static extern UIntPtr GetMaxSocketPathLength();
+        public static extern nuint GetMaxSocketPathLength();
 
         [DllImport(DllName)]
         public static extern int GetPid();
@@ -59,20 +59,20 @@ namespace Asmichi.Utilities.Interop.Linux
         public static extern unsafe bool SubchannelRecvExactBytes(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,
-            [In] UIntPtr len);
+            [In] nuint len);
 
         [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern unsafe bool SubchannelSendExactBytes(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,
-            [In] UIntPtr len);
+            [In] nuint len);
 
         [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern unsafe bool SubchannelSendExactBytesAndFds(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,
-            [In] UIntPtr len,
+            [In] nuint len,
             [In] int* fds,
-            [In] UIntPtr fdCount);
+            [In] nuint fdCount);
     }
 }

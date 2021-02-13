@@ -30,11 +30,11 @@ namespace Asmichi.Utilities.Interop.Windows
 
         public static SafeUnmanagedProcThreadAttributeList Create(int attributeCount)
         {
-            var size = IntPtr.Zero;
+            nint size = 0;
 
             Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, attributeCount, 0, ref size);
 
-            var buffer = Marshal.AllocHGlobal(size.ToInt32());
+            var buffer = Marshal.AllocHGlobal(checked((int)size));
 
             if (!Kernel32.InitializeProcThreadAttributeList(buffer, attributeCount, 0, ref size))
             {

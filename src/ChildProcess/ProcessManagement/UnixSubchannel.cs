@@ -38,7 +38,7 @@ namespace Asmichi.Utilities.ProcessManagement
             fixed (byte* pBuffer = buffer)
             {
                 if (!LibChildProcess.SubchannelSendExactBytes(
-                    _handle, pBuffer, new UIntPtr((uint)buffer.Length)))
+                    _handle, pBuffer, (uint)buffer.Length))
                 {
                     var err = Marshal.GetLastWin32Error();
                     ThrowFatalCommnicationError(err);
@@ -53,7 +53,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 fixed (int* pFds = fds)
                 {
                     if (!LibChildProcess.SubchannelSendExactBytesAndFds(
-                        _handle, pBuffer, new UIntPtr((uint)buffer.Length), pFds, new UIntPtr((uint)fds.Length)))
+                        _handle, pBuffer, (uint)buffer.Length, pFds, (uint)fds.Length))
                     {
                         var err = Marshal.GetLastWin32Error();
                         ThrowFatalCommnicationError(err);
@@ -64,7 +64,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private unsafe void RecvExactBytes(void* pBuf, uint length)
         {
-            if (!LibChildProcess.SubchannelRecvExactBytes(_handle, pBuf, new UIntPtr(length)))
+            if (!LibChildProcess.SubchannelRecvExactBytes(_handle, pBuf, length))
             {
                 var err = Marshal.GetLastWin32Error();
                 ThrowFatalCommnicationError(err);
