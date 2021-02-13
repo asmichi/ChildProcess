@@ -77,7 +77,7 @@ namespace Asmichi.Utilities.ProcessManagement
         public unsafe void SignalInterrupt()
         {
             Debug.Assert(_allowSignal);
-            Debug.Assert(_pseudoConsole is { });
+            Debug.Assert(_pseudoConsole is not null);
 
             if (_isPseudoConsoleDisposed)
             {
@@ -97,7 +97,7 @@ namespace Asmichi.Utilities.ProcessManagement
         public void SignalTermination()
         {
             Debug.Assert(_allowSignal);
-            Debug.Assert(_pseudoConsole is { });
+            Debug.Assert(_pseudoConsole is not null);
 
             if (_isPseudoConsoleDisposed)
             {

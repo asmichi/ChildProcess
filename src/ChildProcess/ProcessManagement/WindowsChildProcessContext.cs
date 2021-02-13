@@ -40,7 +40,7 @@ namespace Asmichi.Utilities.ProcessManagement
 
             try
             {
-                if (pseudoConsole is { } && flags.HasUseCustomCodePage())
+                if (pseudoConsole is not null && flags.HasUseCustomCodePage())
                 {
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }
@@ -55,7 +55,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 fixed (IntPtr* pInheritableHandles = inheritableHandles)
                 {
                     using var attr = new ProcThreadAttributeList(2);
-                    if (pseudoConsole is { })
+                    if (pseudoConsole is not null)
                     {
                         attr.UpdatePseudoConsole(pseudoConsole.Handle.DangerousGetHandle());
                     }

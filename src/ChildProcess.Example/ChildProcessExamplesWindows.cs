@@ -96,7 +96,7 @@ namespace Asmichi.Utilities
             Console.WriteLine("The {0} processes have exited.", N);
             Console.WriteLine("Elapsed Time: {0} ms", stopWatch.ElapsedMilliseconds);
 
-            async Task SpawnCmdAsync()
+            static async Task SpawnCmdAsync()
             {
                 // Using timeout because Windows does not have a handy sleep command.
                 // (`powershell -NoProfile -Command Sleep 3` is not an option because

@@ -50,9 +50,9 @@ namespace Asmichi.Utilities.ProcessManagement
         }
 
         public bool IsSuccessful => ExitCode == 0;
-        public bool HasStandardInput => _standardInput is { };
-        public bool HasStandardOutput => _standardOutput is { };
-        public bool HasStandardError => _standardError is { };
+        public bool HasStandardInput => _standardInput is not null;
+        public bool HasStandardOutput => _standardOutput is not null;
+        public bool HasStandardError => _standardError is not null;
 
         public Stream StandardInput => _standardInput ?? throw new InvalidOperationException("No StandardInput associated.");
         public Stream StandardOutput => _standardOutput ?? throw new InvalidOperationException("No StandardOutput associated.");
