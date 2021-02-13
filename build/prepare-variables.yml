@@ -8,9 +8,3 @@ steps:
       failOnStderr: true
       filePath: '$(Build.SourcesDirectory)/build/SetAzurePipelineVariables.ps1'
       arguments: '-CommitHash $(Build.SourceVersion) -BranchName $(Build.SourceBranchName) -AllowRetailRelease'
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.103'
-    inputs:
-      packageType: sdk
-      version: 5.0.103

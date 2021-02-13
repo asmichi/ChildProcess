@@ -46,7 +46,8 @@ jobs:
     vmImage: 'ubuntu-18.04'
 
   steps:
-  - template: 'build/prepare-job.yml'
+  - template: 'build/prepare-variables.yml'
+  - template: 'build/prepare-dotnet.yml'
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -72,7 +73,8 @@ jobs:
     vmImage: 'windows-2019'
 
   steps:
-  - template: 'build/prepare-job.yml'
+  - template: 'build/prepare-variables.yml'
+  - template: 'build/prepare-dotnet.yml'
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -85,9 +87,9 @@ jobs:
       platform: win
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 5.7.0'
+    displayName: 'Use NuGet 5.8.1'
     inputs:
-      versionSpec: 5.7.0
+      versionSpec: 5.8.1
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet pack'
