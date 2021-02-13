@@ -15,7 +15,7 @@ namespace Asmichi.Utilities.Interop.Linux
         public const int FileAccessRead = 1;
         public const int FileAccessWrite = 2;
 
-        [DllImport(DllName, SetLastError = false, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        [DllImport(DllName, SetLastError = false, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern bool ConnectToUnixSocket(
             [In] string path,
             [Out] out SafeFileHandle sock);
@@ -30,7 +30,7 @@ namespace Asmichi.Utilities.Interop.Linux
             [Out] out SafeFileHandle sock1,
             [Out] out SafeFileHandle sock2);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern int GetDllPath(
             [Out] StringBuilder? buf,
             [In] int len);
@@ -55,19 +55,19 @@ namespace Asmichi.Utilities.Interop.Linux
         public static extern bool SubchannelDestroy(
             [In] IntPtr subchannelFd);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern unsafe bool SubchannelRecvExactBytes(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,
             [In] UIntPtr len);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern unsafe bool SubchannelSendExactBytes(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,
             [In] UIntPtr len);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false)]
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern unsafe bool SubchannelSendExactBytesAndFds(
             [In] SafeSocketHandle subchannelFd,
             [In] void* buf,

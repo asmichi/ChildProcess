@@ -27,7 +27,7 @@ namespace Asmichi.Utilities.Interop.Windows
             [In] IntPtr lpPipeAttributes,
             [In] int nSize);
 
-        [DllImport(DllName, EntryPoint = "CreateNamedPipeW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
+        [DllImport(DllName, EntryPoint = "CreateNamedPipeW", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeFileHandle CreateNamedPipe(
             [In] string lpName,
             [In] uint dwOpenMode,

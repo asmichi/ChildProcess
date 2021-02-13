@@ -40,7 +40,7 @@ namespace Asmichi.Utilities.Interop.Windows
 
         public static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
 
-        [DllImport(DllName, EntryPoint = "CreateFileW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
+        [DllImport(DllName, EntryPoint = "CreateFileW", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeFileHandle CreateFile(
             [In] string lpFileName,
             [In] uint dwDesiredAccess,

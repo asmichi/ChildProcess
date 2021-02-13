@@ -16,7 +16,7 @@ namespace Asmichi.Utilities.Interop.Windows
         public const int STARTF_USESTDHANDLES = 0x00000100;
         public const int CREATE_NO_WINDOW = 0x08000000;
 
-        [DllImport(DllName, EntryPoint = "CreateProcessW", SetLastError = true, CharSet = CharSet.Unicode, BestFitMapping = false)]
+        [DllImport(DllName, EntryPoint = "CreateProcessW", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern unsafe bool CreateProcess(
             [In] string? lpApplicationName,
             [In] StringBuilder lpCommandLine,
