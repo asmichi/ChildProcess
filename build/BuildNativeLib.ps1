@@ -20,6 +20,7 @@ $ErrorActionPreference = "Stop"
 $worktreeRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
 $linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20201102.1"
+$linuxContainerName = "${NamePrefix}-buildnativelib-linux"
 $buildVolumeName = "${NamePrefix}-buildnativelib-linux"
 
 # Prepare the output directory.
@@ -67,10 +68,23 @@ if ($Rebuild) {
     catch {}
 }
 
+try {
+    docker rm $linuxContainerName 2>&1 | Out-Null
+}
+catch {}
+
 docker volume create $buildVolumeName | Out-Null
 docker run `
+    --name $linuxContainerName `
     --mount "type=bind,readonly,source=${worktreeRoot}/src/ChildProcess.Native,target=/proj/src" `
     --mount "type=volume,src=${buildVolumeName},dst=/proj/build" `
-    --mount "type=bind,source=${binDir},target=/proj/bin" `
-    --rm $linuxImageName `
-    /bin/bash /proj/src/Subbuild-linux.sh /proj
+    $linuxImageName /bin/bash /proj/src/Subbuild-linux.sh /proj
+
+# If the container mounts and writes directly to a host directory, generated files will have 
+# NTFS extended attributes (EAs) $LXUID/$LXGID/$LXMOD. There is no way to remove NTFS EAs via Win32 APIs.
+# Even worse, NTFS EAs will be copied by CopyFile. (We can of course effectively remove NTFS EAs by creating a new file
+# and copying only the file data to it). 
+#
+# Avoid mouting a host directory and do docker cp.
+docker cp "${linuxContainerName}:/proj/bin/." "${worktreeRoot}/bin/ChildProcess.Native"
+docker rm $linuxContainerName | Out-Null
