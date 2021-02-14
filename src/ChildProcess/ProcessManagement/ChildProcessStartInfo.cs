@@ -43,10 +43,10 @@ namespace Asmichi.Utilities.ProcessManagement
 
         /// <summary>
         /// <para>
-        /// Specifies that the child process should be attached to the current console / session.
-        /// If it is set, the child process will be attached the current console / session
-        /// and you cannot send the Ctrl+C / SIGINT signal to the process.
-        /// If it is not set, the child process will be attached to a new console / session.
+        /// Specifies that the child process should be attached to the current console.
+        /// If it is set, the child process will be attached the current console
+        /// and you cannot send any signals to the process (except SIGKILL).
+        /// If it is not set, the child process will be attached to a new console.
         /// </para>
         /// <para>
         /// Avoid this flag if you need to be fully cross-platform; instead always redirect stdin/stdout/stderr of a child process.
@@ -57,7 +57,6 @@ namespace Asmichi.Utilities.ProcessManagement
         /// the child process will be attached to a pseudo console.
         /// You still cannot send the Ctrl+C signal to the process.
         /// </para>
-        /// <para>(Non-Windows-specific) Session creation not implemented yet.</para>
         /// </summary>
         AttachToCurrentConsole = 0x0008,
 
@@ -204,6 +203,9 @@ namespace Asmichi.Utilities.ProcessManagement
         /// The executable is searched for in the following order:
         /// <list type="number">
         /// <item>
+        /// If <see cref="FileName"/> is an absolute path, it is used as is.
+        /// </item>
+        /// <item>
         /// If <see cref="ChildProcessFlags.AllowRelativeFileName"/> is set, <see cref="FileName"/> is
         /// treated as a path relative to the current directory.
         /// </item>
@@ -247,9 +249,12 @@ namespace Asmichi.Utilities.ProcessManagement
         public ChildProcessFlags Flags { get; set; }
 
         /// <summary>
+        /// <para>
         /// (Windows-specific) If <see cref="ChildProcessFlags.UseCustomCodePage"/> is set,
         /// specifies the code page that should be used by newly created consoles (if any).
-        /// The default value is 65001 (UTF-8).
+        /// Otherwise not used.
+        /// </para>
+        /// <para>The default value is 65001 (UTF-8).</para>
         /// </summary>
         public int CodePage { get; set; } = 65001;
 
