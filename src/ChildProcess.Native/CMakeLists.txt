@@ -41,60 +41,84 @@ set(helperSources
     HelperExecutable.cpp
 )
 
-set(testChildSources
-    TestChildMain.cpp
-)
+if(WIN32)
 
-add_compile_options(
-    -Wextra
-    -Wswitch
-    $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-O3>
-    $<$<CONFIG:Debug>:-O1>
-    $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
-    $<$<CONFIG:Debug>:-DENABLE_TRACE_DEBUG>
-    $<$<CONFIG:Debug>:-DENABLE_TRACE_INFO>
-    $<$<CONFIG:Debug>:-DENABLE_TRACE_ERROR>
-)
+    # Assume MSVC
+    add_compile_options(
+        /W3
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:/O2>
+        $<$<CONFIG:Debug>:/Od>
+        $<$<CONFIG:Debug>:/DENABLE_TRACE_DEBUG>
+        $<$<CONFIG:Debug>:/DENABLE_TRACE_INFO>
+        $<$<CONFIG:Debug>:/DENABLE_TRACE_ERROR>
+    )
 
-#
-# An intermediate object library to allow tests to reference nonexported symbols by statically linking these objects.
-#
-add_library(${objlibName} OBJECT ${objlibSources})
-target_compile_features(${objlibName} PRIVATE cxx_std_17)
-# These objects are primarily used for producing a shared library, hence POSITION_INDEPENDENT_CODE.
-set_property(TARGET ${objlibName} PROPERTY POSITION_INDEPENDENT_CODE 1)
+    #
+    # The helper executable for tests.
+    #
+    set(testChildSources
+        TestChildMain.win32.cpp
+    )
+    add_executable(${testChildName} ${testChildSources}>)
+    target_compile_features(${testChildName} PRIVATE cxx_std_17)
+    target_link_libraries(${testChildName})
 
-#
-# The shared library used by both the C# implementation and the helper.
-#
-add_library(${libName} SHARED $<TARGET_OBJECTS:${objlibName}>)
-target_compile_features(${libName} PRIVATE cxx_std_17)
-target_link_libraries(${libName}
-    Threads::Threads
-    ${CMAKE_DL_LIBS}
-)
-set_target_properties(${libName} PROPERTIES LINK_DEPENDS ${versionScript})
-set_target_properties(${libName} PROPERTIES LINK_FLAGS
-    "-Wl,--version-script=${versionScript} -Wl,--no-undefined"
-)
+else(WIN32)
 
-#
-# The helper process.
-#
-add_executable(${helperName} ${helperSources})
-target_compile_features(${helperName} PRIVATE cxx_std_17)
-target_link_libraries(${helperName}
-    ${libName}
-    Threads::Threads
-    ${CMAKE_DL_LIBS}
-)
+    add_compile_options(
+        -Wextra
+        -Wswitch
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-O3>
+        $<$<CONFIG:Debug>:-O1>
+        $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
+        $<$<CONFIG:Debug>:-DENABLE_TRACE_DEBUG>
+        $<$<CONFIG:Debug>:-DENABLE_TRACE_INFO>
+        $<$<CONFIG:Debug>:-DENABLE_TRACE_ERROR>
+    )
 
-#
-# The helper executable for tests.
-#
-add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
-target_compile_features(${testChildName} PRIVATE cxx_std_17)
-target_link_libraries(${testChildName}
-    Threads::Threads
-    ${CMAKE_DL_LIBS}
-)
+    #
+    # An intermediate object library to allow tests to reference nonexported symbols by statically linking these objects.
+    #
+    add_library(${objlibName} OBJECT ${objlibSources})
+    target_compile_features(${objlibName} PRIVATE cxx_std_17)
+    # These objects are primarily used for producing a shared library, hence POSITION_INDEPENDENT_CODE.
+    set_property(TARGET ${objlibName} PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+    #
+    # The shared library used by both the C# implementation and the helper.
+    #
+    add_library(${libName} SHARED $<TARGET_OBJECTS:${objlibName}>)
+    target_compile_features(${libName} PRIVATE cxx_std_17)
+    target_link_libraries(${libName}
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+    )
+    set_target_properties(${libName} PROPERTIES LINK_DEPENDS ${versionScript})
+    set_target_properties(${libName} PROPERTIES LINK_FLAGS
+        "-Wl,--version-script=${versionScript} -Wl,--no-undefined"
+    )
+
+    #
+    # The helper process.
+    #
+    add_executable(${helperName} ${helperSources})
+    target_compile_features(${helperName} PRIVATE cxx_std_17)
+    target_link_libraries(${helperName}
+        ${libName}
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+    )
+
+    #
+    # The helper executable for tests.
+    #
+    set(testChildSources
+        TestChildMain.unix.cpp
+    )
+    add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
+    target_compile_features(${testChildName} PRIVATE cxx_std_17)
+    target_link_libraries(${testChildName}
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+    )
+endif(WIN32)
