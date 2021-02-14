@@ -8,8 +8,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project("AsmichiChildProcessNative" CXX)
 
+set(objlibName "objlib")
 set(libName "AsmichiChildProcess")
 set(helperName "AsmichiChildProcessHelper")
+set(testChildName "TestChildNative")
 set(versionScript "${CMAKE_CURRENT_SOURCE_DIR}/AsmichiChildProcess.version")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -19,7 +21,7 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 find_package(Threads REQUIRED)
 
-set(libSources
+set(objlibSources
     AncillaryDataSocket.cpp
     Base.cpp
     ChildProcessState.cpp
@@ -39,6 +41,10 @@ set(helperSources
     HelperExecutable.cpp
 )
 
+set(testChildSources
+    TestChildMain.cpp
+)
+
 add_compile_options(
     -Wextra
     -Wswitch
@@ -50,7 +56,18 @@ add_compile_options(
     $<$<CONFIG:Debug>:-DENABLE_TRACE_ERROR>
 )
 
-add_library(${libName} SHARED ${libSources})
+#
+# An intermediate object library to allow tests to reference nonexported symbols by statically linking these objects.
+#
+add_library(${objlibName} OBJECT ${objlibSources})
+target_compile_features(${objlibName} PRIVATE cxx_std_17)
+# These objects are primarily used for producing a shared library, hence POSITION_INDEPENDENT_CODE.
+set_property(TARGET ${objlibName} PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+#
+# The shared library used by both the C# implementation and the helper.
+#
+add_library(${libName} SHARED $<TARGET_OBJECTS:${objlibName}>)
 target_compile_features(${libName} PRIVATE cxx_std_17)
 target_link_libraries(${libName}
     Threads::Threads
@@ -61,10 +78,23 @@ set_target_properties(${libName} PROPERTIES LINK_FLAGS
     "-Wl,--version-script=${versionScript} -Wl,--no-undefined"
 )
 
+#
+# The helper process.
+#
 add_executable(${helperName} ${helperSources})
 target_compile_features(${helperName} PRIVATE cxx_std_17)
 target_link_libraries(${helperName}
     ${libName}
+    Threads::Threads
+    ${CMAKE_DL_LIBS}
+)
+
+#
+# The helper executable for tests.
+#
+add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
+target_compile_features(${testChildName} PRIVATE cxx_std_17)
+target_link_libraries(${testChildName}
     Threads::Threads
     ${CMAKE_DL_LIBS}
 )
