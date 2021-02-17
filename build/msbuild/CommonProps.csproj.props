@@ -64,7 +64,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>$(WorkTreeRoot)build\public.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(WorkTreeRoot)build\StrongNameKeyPair.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
