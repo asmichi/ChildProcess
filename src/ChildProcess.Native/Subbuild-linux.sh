@@ -24,9 +24,11 @@ function build()
     cp ${buildDir}/lib/* ${outDir}
 }
 
-build linux-x64 Debug
-build linux-x64 Release
-build linux-arm Debug ${LinuxArmToolchainFile}
-build linux-arm Release ${LinuxArmToolchainFile}
-build linux-arm64 Debug ${LinuxArm64ToolchainFile}
-build linux-arm64 Release ${LinuxArm64ToolchainFile}
+build linux-x64 Debug &
+build linux-x64 Release &
+build linux-arm Debug ${LinuxArmToolchainFile} &
+build linux-arm Release ${LinuxArmToolchainFile} &
+build linux-arm64 Debug ${LinuxArm64ToolchainFile} &
+build linux-arm64 Release ${LinuxArm64ToolchainFile} &
+
+wait

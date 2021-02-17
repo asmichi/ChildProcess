@@ -43,9 +43,11 @@ $subbuildWin = Join-Path $worktreeRoot "src/ChildProcess.Native/Subbuild-win.ps1
 $subbuildWinArgs = @(
     $worktreeRoot
 )
+
+$winJob = $null
 if (Test-Path Env:VCToolsInstallDir) {
     # Already within VsDevCmd
-    & $pwsh $subbuildWin @subbuildWinArgs
+    $winJob = Start-ThreadJob -ScriptBlock { & $using:pwsh $using:subbuildWin @using:subbuildWinArgs }
 }
 else {
     $invokeCommandInVsDevCmd = Join-Path $worktreeRoot "build/Invoke-CommandInVsDevCmd.cmd"
@@ -57,7 +59,7 @@ else {
     }
     $vsDevCmd = Join-Path $vs2019.installationPath "Common7/Tools/VsDevCmd.bat"
 
-    & $invokeCommandInVsDevCmd $vsDevCmd $pwsh $subbuildWin @subbuildWinArgs
+    $winJob = Start-ThreadJob -ScriptBlock { & $using:invokeCommandInVsDevCmd $using:vsDevCmd $using:pwsh $using:subbuildWin @using:subbuildWinArgs }
 }
 
 # Build Linux binaries.
@@ -88,3 +90,8 @@ docker run `
 # Avoid mouting a host directory and do docker cp.
 docker cp "${linuxContainerName}:/proj/bin/." "${worktreeRoot}/bin/ChildProcess.Native"
 docker rm $linuxContainerName | Out-Null
+
+if ($null -ne $winJob)
+{
+    Receive-Job -Wait -AutoRemoveJob $winJob
+}
