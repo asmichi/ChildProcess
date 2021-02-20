@@ -4,3 +4,6 @@
 
 class ChildProcessStateMap;
 extern ChildProcessStateMap g_ChildProcessStateMap;
+
+class Service;
+extern Service g_Service;

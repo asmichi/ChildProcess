@@ -257,7 +257,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         g_ChildProcessStateMap.Allocate(childPid, r.Token);
 
         // Send a reap request in case the child has already been killed and we have delayed reaping.
-        if (!NotifyServiceOfChildRegistration())
+        if (!g_Service.NotifyChildRegistration())
         {
             FatalErrorAbort(errno, "write");
         }

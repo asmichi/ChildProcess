@@ -2,5 +2,7 @@
 
 #include "Globals.hpp"
 #include "ChildProcessState.hpp"
+#include "Service.hpp"
 
 ChildProcessStateMap g_ChildProcessStateMap;
+Service g_Service;

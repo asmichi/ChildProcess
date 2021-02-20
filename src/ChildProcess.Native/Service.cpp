@@ -34,30 +34,11 @@ namespace
     };
     const int PollFdCount = 3;
 
-    static_assert(sizeof(pid_t) == sizeof(int));
-
-    // The signal handler writes signal numbers here (except SIGCHLD, which will be written to g_ReapRequestPipeWriteEnd).
-    int g_SignalDataPipeReadEnd;
-    int g_SignalDataPipeWriteEnd;
-
-    // Subchannels will write a dummy byte here to request the service to reap children. SIGCHLD will also be written here.
-    int g_ReapRequestPipeReadEnd;
-    int g_ReapRequestPipeWriteEnd;
-
-    std::unique_ptr<AncillaryDataSocket> g_MainChannel;
 } // namespace
 
-void SetupService(int mainChannelFd);
-[[nodiscard]] bool HandleSignalDataPipeInput();
-[[nodiscard]] bool HandleReapRequestPipeInput();
-[[nodiscard]] bool HandleReapRequest();
-[[nodiscard]] bool HandleMainChannelInput();
-[[nodiscard]] bool HandleMainChannelOutput();
-[[nodiscard]] bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
-
-void SetupService(int mainChannelFd)
+void Service::Initialize(int mainChannelFd)
 {
-    g_MainChannel = std::make_unique<AncillaryDataSocket>(mainChannelFd);
+    mainChannel_ = std::make_unique<AncillaryDataSocket>(mainChannelFd);
 
     {
         auto maybePipe = CreatePipe();
@@ -66,8 +47,8 @@ void SetupService(int mainChannelFd)
             FatalErrorAbort(errno, "pipe2");
         }
 
-        g_ReapRequestPipeReadEnd = maybePipe->ReadEnd.Release();
-        g_ReapRequestPipeWriteEnd = maybePipe->WriteEnd.Release();
+        reapRequestPipeReadEnd_ = maybePipe->ReadEnd.Release();
+        reapRequestPipeWriteEnd_ = maybePipe->WriteEnd.Release();
     }
 
     {
@@ -77,19 +58,19 @@ void SetupService(int mainChannelFd)
             FatalErrorAbort(errno, "pipe2");
         }
 
-        g_SignalDataPipeReadEnd = maybePipe->ReadEnd.Release();
-        g_SignalDataPipeWriteEnd = maybePipe->WriteEnd.Release();
+        signalDataPipeReadEnd_ = maybePipe->ReadEnd.Release();
+        signalDataPipeWriteEnd_ = maybePipe->WriteEnd.Release();
     }
 
     SetupSignalHandlers();
 }
 
-void NotifyServiceOfSignal(int signum)
+void Service::NotifySignal(int signum)
 {
     if (signum == SIGCHLD)
     {
         std::byte dummy{};
-        if (!WriteExactBytes(g_ReapRequestPipeWriteEnd, &dummy, 1)
+        if (!WriteExactBytes(reapRequestPipeWriteEnd_, &dummy, 1)
             && errno != EPIPE)
         {
             // Just abort; almost nothing can be done in a signal handler.
@@ -98,7 +79,7 @@ void NotifyServiceOfSignal(int signum)
     }
     else
     {
-        if (!WriteExactBytes(g_SignalDataPipeWriteEnd, &signum, sizeof(signum))
+        if (!WriteExactBytes(signalDataPipeWriteEnd_, &signum, sizeof(signum))
             && errno != EPIPE)
         {
             // Just abort; almost nothing can be done in a signal handler.
@@ -107,10 +88,10 @@ void NotifyServiceOfSignal(int signum)
     }
 }
 
-[[nodiscard]] bool NotifyServiceOfChildRegistration()
+[[nodiscard]] bool Service::NotifyChildRegistration()
 {
     std::uint8_t dummy = 0;
-    if (!WriteExactBytes(g_ReapRequestPipeWriteEnd, &dummy, 1))
+    if (!WriteExactBytes(reapRequestPipeWriteEnd_, &dummy, 1))
     {
         // Pretend successful on EPIPE. The data will not be read anyway because the service is shutting down.
         return errno == EPIPE;
@@ -119,21 +100,21 @@ void NotifyServiceOfSignal(int signum)
     return true;
 }
 
-int ServiceMain(int mainChannelFd)
+int Service::MainLoop(int mainChannelFd)
 {
-    SetupService(mainChannelFd);
+    Initialize(mainChannelFd);
 
     // Main service loop
     pollfd fds[PollFdCount]{};
-    fds[PollIndexSignalData].fd = g_SignalDataPipeReadEnd;
-    fds[PollIndexChildCreation].fd = g_ReapRequestPipeReadEnd;
-    fds[PollIndexMainChannel].fd = g_MainChannel->GetFd();
+    fds[PollIndexSignalData].fd = signalDataPipeReadEnd_;
+    fds[PollIndexChildCreation].fd = reapRequestPipeReadEnd_;
+    fds[PollIndexMainChannel].fd = mainChannel_->GetFd();
 
     while (true)
     {
         fds[PollIndexSignalData].events = POLLIN;
         fds[PollIndexChildCreation].events = POLLIN;
-        fds[PollIndexMainChannel].events = POLLIN | (g_MainChannel->HasPendingData() ? POLLOUT : 0);
+        fds[PollIndexMainChannel].events = POLLIN | (mainChannel_->HasPendingData() ? POLLOUT : 0);
 
         int count = poll_restarting(fds, PollFdCount, -1);
         if (count == -1)
@@ -181,12 +162,12 @@ int ServiceMain(int mainChannelFd)
     }
 }
 
-bool HandleSignalDataPipeInput()
+bool Service::HandleSignalDataPipeInput()
 {
     int signum;
     ssize_t readBytes;
 
-    if (!ReadExactBytes(g_SignalDataPipeReadEnd, &signum, sizeof(int)))
+    if (!ReadExactBytes(signalDataPipeReadEnd_, &signum, sizeof(int)))
     {
         FatalErrorAbort(errno, "read");
     }
@@ -212,11 +193,11 @@ bool HandleSignalDataPipeInput()
     return true;
 }
 
-bool HandleReapRequestPipeInput()
+bool Service::HandleReapRequestPipeInput()
 {
     // Drain data from the pipe. If we have more than 256 bytes of pending data, we just re-poll and reexecute this.
     std::byte buf[256];
-    if (read_restarting(g_ReapRequestPipeReadEnd, buf, sizeof(buf)) == -1)
+    if (read_restarting(reapRequestPipeReadEnd_, buf, sizeof(buf)) == -1)
     {
         FatalErrorAbort(errno, "read");
     }
@@ -224,7 +205,7 @@ bool HandleReapRequestPipeInput()
     return HandleReapRequest();
 }
 
-bool HandleReapRequest()
+bool Service::HandleReapRequest()
 {
     // Because SIGCHLD is a standard signal, only one SIGCHLD signal can be queued.
     // If the queue already has an instance, further SIGCHLD signals will be "lost".
@@ -275,10 +256,10 @@ bool HandleReapRequest()
     }
 }
 
-bool HandleMainChannelInput()
+bool Service::HandleMainChannelInput()
 {
     std::byte dummy;
-    const ssize_t bytesReceived = g_MainChannel->Recv(&dummy, 1, BlockingFlag::Blocking);
+    const ssize_t bytesReceived = mainChannel_->Recv(&dummy, 1, BlockingFlag::Blocking);
     if (!HandleRecvResult(BlockingFlag::Blocking, "recvmsg", bytesReceived, errno))
     {
         // Connection closed.
@@ -286,7 +267,7 @@ bool HandleMainChannelInput()
         return false;
     }
 
-    auto maybeSubchannelFd = g_MainChannel->PopReceivedFd();
+    auto maybeSubchannelFd = mainChannel_->PopReceivedFd();
     if (!maybeSubchannelFd)
     {
         TRACE_FATAL("The counterpart sent a subchannel creation request but dit not send any fd.\n");
@@ -297,9 +278,9 @@ bool HandleMainChannelInput()
     return true;
 }
 
-bool HandleMainChannelOutput()
+bool Service::HandleMainChannelOutput()
 {
-    if (!g_MainChannel->Flush(BlockingFlag::NonBlocking))
+    if (!mainChannel_->Flush(BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: fflush %d\n", errno);
         return false;
@@ -308,14 +289,14 @@ bool HandleMainChannelOutput()
     return true;
 }
 
-bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
+bool Service::NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
 {
     ChildExitNotification cen{};
     cen.Token = pState->GetToken();
     cen.ProcessID = pState->GetPid();
     cen.Status = siginfo.si_code == CLD_EXITED ? siginfo.si_status : -siginfo.si_status;
 
-    if (!g_MainChannel->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
+    if (!mainChannel_->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: send %d\n", errno);
         return false;

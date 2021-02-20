@@ -2,6 +2,7 @@
 
 #include "SignalHandler.hpp"
 #include "Base.hpp"
+#include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "Service.hpp"
 #include "UniqueResource.hpp"
@@ -64,7 +65,7 @@ void SignalHandler(int signum, siginfo_t* siginfo, void* context)
     case SIGCHLD:
     {
         const int err = errno;
-        NotifyServiceOfSignal(signum);
+        g_Service.NotifySignal(signum);
         errno = err;
         break;
     }

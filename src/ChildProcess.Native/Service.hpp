@@ -2,9 +2,12 @@
 
 #pragma once
 
+#include "AncillaryDataSocket.hpp"
+#include "ChildProcessState.hpp"
 #include "UniqueResource.hpp"
 #include <cstdint>
 #include <pthread.h>
+#include <signal.h>
 
 struct ChildExitNotification
 {
@@ -16,8 +19,36 @@ struct ChildExitNotification
 };
 static_assert(sizeof(ChildExitNotification) == 16);
 
-[[nodiscard]] int ServiceMain(int mainChannelFd);
-[[nodiscard]] bool NotifyServiceOfChildRegistration();
+class Service final
+{
+public:
+    // Delayed initialization.
+    void Initialize(int mainChannelFd);
 
-// Interface for the signal handler.
-void NotifyServiceOfSignal(int signum);
+    // Interface for main.
+    [[nodiscard]] int MainLoop(int mainChannelFd);
+
+    // Interface for subchannels.
+    [[nodiscard]] bool NotifyChildRegistration();
+
+    // Interface for the signal handler.
+    void NotifySignal(int signum);
+
+private:
+    [[nodiscard]] bool HandleSignalDataPipeInput();
+    [[nodiscard]] bool HandleReapRequestPipeInput();
+    [[nodiscard]] bool HandleReapRequest();
+    [[nodiscard]] bool HandleMainChannelInput();
+    [[nodiscard]] bool HandleMainChannelOutput();
+    [[nodiscard]] bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
+
+    // The signal handler writes signal numbers here (except SIGCHLD, which will be written to reapRequestPipeWriteEnd_).
+    int signalDataPipeReadEnd_;
+    int signalDataPipeWriteEnd_;
+
+    // Subchannels will write a dummy byte here to request the service to reap children. SIGCHLD will also be written here.
+    int reapRequestPipeReadEnd_;
+    int reapRequestPipeWriteEnd_;
+
+    std::unique_ptr<AncillaryDataSocket> mainChannel_;
+};

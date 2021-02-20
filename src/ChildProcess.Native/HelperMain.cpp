@@ -2,6 +2,7 @@
 
 #include "Base.hpp"
 #include "ExactBytesIO.hpp"
+#include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "Service.hpp"
 #include "SocketHelpers.hpp"
@@ -66,7 +67,7 @@ extern "C" int HelperMain(int argc, const char** argv)
 
     close(STDIN_FILENO);
 
-    const int exitCode = ServiceMain(sock);
+    const int exitCode = g_Service.MainLoop(sock);
     TRACE_INFO("Helper exiting: %d\n", exitCode);
     return exitCode;
 }
