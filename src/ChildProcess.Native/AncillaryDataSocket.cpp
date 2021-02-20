@@ -130,6 +130,7 @@ ssize_t AncillaryDataSocket::Recv(void* buf, std::size_t len, BlockingFlag block
     {
         // Cancellation requested.
         Shutdown();
+        errno = ECONNRESET;
         return 0;
     }
 

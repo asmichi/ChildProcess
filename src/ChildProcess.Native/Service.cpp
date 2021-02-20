@@ -315,7 +315,7 @@ void Service::HandleMainChannelInput()
     if (!HandleRecvResult(BlockingFlag::Blocking, "recvmsg", bytesReceived, errno))
     {
         // Connection closed.
-        TRACE_INFO("Main channel disconnected: recv %d\n", errno);
+        TRACE_INFO("Main channel disconnected: recv (%zd, %d)\n", bytesReceived, errno);
         InitiateShutdown();
         return;
     }
