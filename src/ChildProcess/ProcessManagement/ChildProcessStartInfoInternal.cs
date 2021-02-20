@@ -31,7 +31,8 @@ namespace Asmichi.Utilities.ProcessManagement
         public SafeFileHandle? StdErrorHandle;
 
         /// <summary>
-        /// If the current process is not attached to a console, we automatically create a new pseudo console.
+        /// <para>Indicates whether a new pseudo console or a process group should be created.</para>
+        /// <para>(Windows-specific) If the current process is not attached to a console, we automatically create a new pseudo console.</para>
         /// </summary>
         public bool CreateNewConsole;
 

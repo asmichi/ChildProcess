@@ -2,7 +2,6 @@
 
 using System;
 using Asmichi.Utilities.Interop.Windows;
-using Asmichi.Utilities.ProcessManagement;
 using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.Utilities.PlatformAbstraction.Windows
@@ -18,11 +17,11 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
 
         /// <summary>
         /// Returns the std* handle of the current process that can be inherited by a child process.
-        /// This handle can only be used if the child process share the same console with the current process
-        /// (that is, <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is set and the current process
-        /// is attached to a console).
         /// </summary>
-        /// <returns>The std* handle of the current process. <see langword="null"/> if the current process does not have any. </returns>
+        /// <returns>
+        /// The std* handle of the current process.
+        /// <see langword="null"/> if the current process does not have any or if the handle cannot be inherited by a child process.
+        /// </returns>
         private static SafeFileHandle? GetStdHandleForChild(int kind, bool createNewConsole)
         {
             // GetStdHandle may return INVALID_HANDLE_VALUE on success because one can perform SetStdHandle(..., INVALID_HANDLE_VALUE).

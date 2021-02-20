@@ -10,9 +10,11 @@ namespace Asmichi.Utilities.ProcessManagement
 {
     internal sealed class UnixChildProcessContext : IChildProcessContext
     {
+        // NOTE: Make sure to sync with the helper.
         private const uint RequestFlagsRedirectStdin = 1U << 0;
         private const uint RequestFlagsRedirectStdout = 1U << 1;
         private const uint RequestFlagsRedirectStderr = 1U << 2;
+        private const uint RequestFlagsCreateNewProcessGroup = 1 << 3;
         private const int InitialBufferCapacity = 256; // Minimal capacity that every practical request will consume.
 
         private readonly UnixHelperProcess _helperProcess;
@@ -55,6 +57,15 @@ namespace Asmichi.Utilities.ProcessManagement
             {
                 fds[handleCount++] = stdErr.DangerousGetHandle().ToInt32();
                 flags |= RequestFlagsRedirectStderr;
+            }
+
+            if (startInfo.CreateNewConsole)
+            {
+                flags |= RequestFlagsCreateNewProcessGroup;
+            }
+            else
+            {
+                Debug.Assert(!startInfo.AllowSignal);
             }
 
             using var bw = new MyBinaryWriter(InitialBufferCapacity);

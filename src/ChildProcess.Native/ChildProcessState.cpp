@@ -11,9 +11,9 @@
 #include <unistd.h>
 #include <unordered_map>
 
-void ChildProcessStateMap::Allocate(int pid, std::uint64_t token)
+void ChildProcessStateMap::Allocate(int pid, std::uint64_t token, bool isNewProcessGroup)
 {
-    const auto pState = std::make_shared<ChildProcessState>(pid, token);
+    const auto pState = std::make_shared<ChildProcessState>(pid, token, isNewProcessGroup);
 
     const std::lock_guard<std::mutex> guard(mapMutex_);
 
@@ -99,7 +99,6 @@ bool ChildProcessState::SendSignal(int sig)
         return true;
     }
 
-    // We always attach a child process to a new process group.
-    int ret = kill(-pid_, sig);
+    int ret = kill(isNewProcessGroup_ ? -pid_ : pid_, sig);
     return ret == 0;
 }

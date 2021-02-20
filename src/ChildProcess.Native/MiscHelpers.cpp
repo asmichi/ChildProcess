@@ -120,6 +120,18 @@ std::optional<std::array<UniqueFd, 2>> CreateUnixStreamSocketPair() noexcept
     return std::array<UniqueFd, 2>{UniqueFd(socks[0]), UniqueFd(socks[1])};
 }
 
+std::optional<UniqueFd> DuplicateFd(int fd) noexcept
+{
+    // NOTE: Avoid dup3 because it is Linux-specific.
+    int newFd = fcntl(static_cast<int>(fd), F_DUPFD_CLOEXEC, 0);
+    if (newFd == -1)
+    {
+        return std::nullopt;
+    }
+
+    return UniqueFd(newFd);
+}
+
 std::optional<pthread_t> CreateThreadWithMyDefault(void* (*startRoutine)(void*), void* arg, int flags) noexcept
 {
     // glibc default

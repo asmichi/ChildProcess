@@ -3,6 +3,7 @@
         ConnectToUnixSocket;
         CreatePipe;
         CreateUnixStreamSocketPair;
+        DuplicateStdFileForChild;
         GetDllPath;
         GetENOENT;
         GetMaxSocketPathLength;

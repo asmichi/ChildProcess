@@ -89,7 +89,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// <para>Redirected to the stdin of the current process.</para>
         /// <para>
-        /// (Windows-specific) If the stdout is not redirected and the child process is not attached to the current console,
+        /// If the stdin is not redirected and the child process is not attached to the current console,
         /// redirected to the null device instead.
         /// </para>
         /// </summary>
@@ -124,7 +124,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// <para>Redirected to the stdout of the current process.</para>
         /// <para>
-        /// (Windows-specific) If the stdout is not redirected and the child process is not attached to the current console,
+        /// If the stdout is not redirected and the child process is not attached to the current console,
         /// redirected to the null device instead. Note that <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is unset by default.
         /// </para>
         /// </summary>
@@ -133,7 +133,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <summary>
         /// <para>Redirected to the stderr of the current process.</para>
         /// <para>
-        /// (Windows-specific) If the stderr is not redirected and the child process is not attached to the current console,
+        /// If the stderr is not redirected and the child process is not attached to the current console,
         /// redirected to the null device instead. Note that <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is unset by default.
         /// </para>
         /// </summary>

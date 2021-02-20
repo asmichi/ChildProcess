@@ -17,8 +17,8 @@
 class ChildProcessState final
 {
 public:
-    ChildProcessState(int pid, std::uint64_t token)
-        : token_(token), pid_(pid), isReaped_(false) {}
+    ChildProcessState(int pid, std::uint64_t token, bool isNewProcessGroup)
+        : token_(token), pid_(pid), isNewProcessGroup_(isNewProcessGroup), isReaped_(false) {}
 
     std::uint64_t GetToken() const { return token_; }
     int GetPid() const { return pid_; }
@@ -31,6 +31,7 @@ private:
     std::mutex mutex_;
     const std::uint64_t token_;
     const int pid_;
+    const bool isNewProcessGroup_;
     bool isReaped_;
 };
 
@@ -42,7 +43,7 @@ private:
 class ChildProcessStateMap final
 {
 public:
-    void Allocate(int pid, std::uint64_t token);
+    void Allocate(int pid, std::uint64_t token, bool isNewProcessGroup);
     [[nodiscard]] std::shared_ptr<ChildProcessState> GetByPid(int pid) const; // Used by the reaping process only.
     [[nodiscard]] std::shared_ptr<ChildProcessState> GetByToken(std::uint64_t token) const;
     void Delete(ChildProcessState* pState);

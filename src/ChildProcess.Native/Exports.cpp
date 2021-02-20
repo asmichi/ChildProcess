@@ -93,6 +93,45 @@ extern "C" bool CreateUnixStreamSocketPair(intptr_t* sock1, intptr_t* sock2)
     return true;
 }
 
+// Duplicate the std* handle of the current process if it will not cause SIGTTIN/SIGTTOU in the child process.
+extern "C" bool DuplicateStdFileForChild(int stdFd, bool createNewProcessGroup, intptr_t* outFd)
+{
+    if (stdFd != STDIN_FILENO && stdFd != STDOUT_FILENO && stdFd != STDERR_FILENO)
+    {
+        errno = EINVAL;
+        return false;
+    }
+
+    // First duplicate the fd since we do not own it and it can be replaced with another file description.
+    auto newFd = DuplicateFd(stdFd);
+    if (!newFd)
+    {
+        assert(errno == EBADF);
+        *outFd = -1;
+        return true;
+    }
+
+    if (!createNewProcessGroup)
+    {
+        // If the child process will be created within the current process group, this fd will not cause SIGTTIN/SIGTTOU.
+        *outFd = newFd->Release();
+        return true;
+    }
+
+    if (isatty(newFd->Get()))
+    {
+        // If the fd refers to a terminal, it will cause SIGTTIN/SIGTTOU if passed to another process group.
+        *outFd = -1;
+        return false;
+    }
+    else
+    {
+        assert(errno != EBADF);
+        *outFd = newFd->Release();
+        return true;
+    }
+}
+
 // Writes the path of this DLL to buf if buf has sufficient space.
 // On success, returns the length of the path (including NUL).
 // On error, returns -1.

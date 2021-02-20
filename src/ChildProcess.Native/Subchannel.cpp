@@ -157,6 +157,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
     // child -> parent : To signal exec error (or no write on success)
     auto inPipe = std::move(*maybeInPipe);
 
+    const bool shouldCreateNewProcessGroup = r.Flags & RequestFlagsCreateNewProcessGroup;
     int childPid = fork();
     if (childPid == -1)
     {
@@ -205,8 +206,12 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
             _exit(1);
         }
 
-        // Always create a new process group.
-        setpgid(0, 0);
+        
+        if (shouldCreateNewProcessGroup)
+        {
+            setpgid(0, 0);
+        }
+
         // NOTE: POSIX specifies execve shall not modify argv and envp.
         execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
 
@@ -220,7 +225,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         inPipe.WriteEnd.Reset();
 
         // Register the child before the child performs exec.
-        g_ChildProcessStateMap.Allocate(childPid, r.Token);
+        g_ChildProcessStateMap.Allocate(childPid, r.Token, shouldCreateNewProcessGroup);
 
         // Send a reap request in case the child has already been killed and we have delayed reaping.
         g_Service.NotifyChildRegistration();

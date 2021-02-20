@@ -32,6 +32,7 @@ struct PipeEnds
 
 [[nodiscard]] std::optional<PipeEnds> CreatePipe() noexcept;
 [[nodiscard]] std::optional<std::array<UniqueFd, 2>> CreateUnixStreamSocketPair() noexcept;
+[[nodiscard]] std::optional<UniqueFd> DuplicateFd(int fd) noexcept;
 
 // Wrappers with my default values.
 enum CreateThreadFlags : int

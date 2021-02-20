@@ -26,6 +26,12 @@ namespace Asmichi.Utilities.Interop.Linux
             [Out] out SafeFileHandle writePipe);
 
         [DllImport(DllName, SetLastError = true)]
+        public static extern bool DuplicateStdFileForChild(
+            [In] int stdFd,
+            [In] bool createNewProcessGroup,
+            [Out] out SafeFileHandle outFd);
+
+        [DllImport(DllName, SetLastError = true)]
         public static extern bool CreateUnixStreamSocketPair(
             [Out] out SafeFileHandle sock1,
             [Out] out SafeFileHandle sock2);
