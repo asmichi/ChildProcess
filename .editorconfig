@@ -224,12 +224,23 @@ dotnet_naming_symbols.constants.required_modifiers = const
 
 dotnet_naming_style.constant_style.capitalization = pascal_case
 
-# Instance fields are camelCase and start with _
+# Public instance fields are PascalCase
+dotnet_naming_rule.public_instance_fields_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.public_instance_fields_should_be_pascal_case.symbols = public_instance_fields
+dotnet_naming_rule.public_instance_fields_should_be_pascal_case.style = public_instance_field_style
+
+dotnet_naming_symbols.public_instance_fields.applicable_kinds = field
+dotnet_naming_symbols.public_instance_fields.applicable_accessibilities = public
+
+dotnet_naming_style.public_instance_field_style.capitalization = pascal_case
+
+# Non-public instance fields are camelCase and start with _
 dotnet_naming_rule.instance_fields_should_be_camel_case.severity = suggestion
 dotnet_naming_rule.instance_fields_should_be_camel_case.symbols = instance_fields
 dotnet_naming_rule.instance_fields_should_be_camel_case.style = instance_field_style
 
 dotnet_naming_symbols.instance_fields.applicable_kinds = field
+dotnet_naming_symbols.instance_fields.applicable_accessibilities = protected, internal, protected_internal, private_protected
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
 dotnet_naming_style.instance_field_style.required_prefix = _
