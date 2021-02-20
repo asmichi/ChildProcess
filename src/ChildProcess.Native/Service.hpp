@@ -4,8 +4,10 @@
 
 #include "AncillaryDataSocket.hpp"
 #include "ChildProcessState.hpp"
+#include "SubchannelCollection.hpp"
 #include "UniqueResource.hpp"
 #include <cstdint>
+#include <memory>
 #include <pthread.h>
 #include <signal.h>
 
@@ -29,6 +31,7 @@ public:
 
     // Interface for subchannels.
     [[nodiscard]] bool NotifyChildRegistration();
+    void NotifySubchannelClosed(Subchannel* pSubchannel);
 
     // Interface for the signal handler.
     void NotifySignal(int signum);
@@ -48,5 +51,6 @@ private:
     int notificationPipeReadEnd_;
     int notificationPipeWriteEnd_;
 
+    SubchannelCollection subchannelCollection_;
     std::unique_ptr<AncillaryDataSocket> mainChannel_;
 };

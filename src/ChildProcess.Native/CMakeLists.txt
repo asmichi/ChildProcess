@@ -33,6 +33,7 @@ set(objlibSources
     Service.cpp
     SignalHandler.cpp
     Subchannel.cpp
+    SubchannelCollection.cpp
     SocketHelpers.cpp
     WriteBuffer.cpp
 )

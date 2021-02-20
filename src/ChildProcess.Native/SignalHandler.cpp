@@ -5,7 +5,6 @@
 #include "Globals.hpp"
 #include "MiscHelpers.hpp"
 #include "Service.hpp"
-#include "UniqueResource.hpp"
 #include <cassert>
 #include <cstdint>
 #include <cstring>

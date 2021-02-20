@@ -21,76 +21,42 @@
 #include <unistd.h>
 #include <vector>
 
-struct RawRequest final
+// After StartCommunicationThread succeeds, this instance must not be manipulated outside the communication thread.
+bool Subchannel::StartCommunicationThread()
 {
-    RequestCommand Command;
-    uint32_t BodyLength;
-    std::unique_ptr<std::byte[]> Body;
-};
-
-class Subchannel final
-{
-public:
-    explicit Subchannel(UniqueFd sockFd) noexcept : sock_(std::move(sockFd)) {}
-
-    static void StartHandler(UniqueFd sockFd);
-
-private:
-    static void* ThreadFunc(void* arg);
-    void MainLoop();
-
-    void HandleProcessCreationCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
-    void ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
-    void HandleProcessCreationRequest(const SpawnProcessRequest& r);
-
-    void HandleSendSignalCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
-    std::optional<int> ToNativeSignal(AbstractSignal abstractSignal) noexcept;
-
-    void RecvRawRequest(RawRequest* r);
-    void SendSuccess(std::int32_t data);
-    void SendError(int err);
-    void SendResponse(int err, std::int32_t data);
-
-    AncillaryDataSocket sock_;
-};
-
-void StartSubchannelHandler(UniqueFd sockFd)
-{
-    Subchannel::StartHandler(std::move(sockFd));
-}
-
-void Subchannel::StartHandler(UniqueFd sockFd)
-{
-    auto maybeThread = CreateThreadWithMyDefault(Subchannel::ThreadFunc, reinterpret_cast<void*>(sockFd.Get()), CreateThreadFlagsDetached);
+    auto maybeThread = CreateThreadWithMyDefault(Subchannel::CommunicationThreadFunc, reinterpret_cast<void*>(this), CreateThreadFlagsDetached);
     if (!maybeThread)
     {
         const std::int32_t err = errno;
         perror("pthread_create");
-        static_cast<void>(WriteExactBytes(sockFd.Get(), &err, sizeof(err)));
-        return;
+        TRACE_ERROR("Failed to create a subchannel communication thread on %d.", sock_.GetFd());
+        static_cast<void>(WriteExactBytes(sock_.GetFd(), &err, sizeof(err)));
+        return false;
     }
 
-    // At this point, the thread owns the ownership of the fd.
-    static_cast<void>(sockFd.Release());
+    return true;
 }
 
-void* Subchannel::ThreadFunc(void* arg)
+void* Subchannel::CommunicationThreadFunc(void* arg)
 {
-    const int sockFd = static_cast<int>(reinterpret_cast<uintptr_t>(arg));
-    Subchannel subchannel{UniqueFd(sockFd)};
+    auto const pSubchannel = static_cast<Subchannel*>(arg);
+
     try
     {
-        subchannel.MainLoop();
+        pSubchannel->CommunicationLoop();
     }
     catch ([[maybe_unused]] const CommunicationError& exn)
     {
         // NOTE: Orderly shutdown (errno=0) also reaches here.
-        TRACE_INFO("Subchannel %d disconnected: %d\n", sockFd, exn.GetError());
+        TRACE_INFO("Subchannel %d disconnected: %d\n", pSubchannel->sock_.GetFd(), exn.GetError());
     }
+
+    g_Service.NotifySubchannelClosed(pSubchannel);
+
     return nullptr;
 }
 
-void Subchannel::MainLoop()
+void Subchannel::CommunicationLoop()
 {
     std::int32_t err = 0;
 

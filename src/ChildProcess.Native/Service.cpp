@@ -43,8 +43,8 @@ namespace
         PollIndexMainChannel = 1,
     };
     const int PollFdCount = 2;
-
 } // namespace
+
 
 void Service::Initialize(int mainChannelFd)
 {
@@ -106,6 +106,11 @@ bool Service::NotifyChildRegistration()
     }
 
     return true;
+}
+
+void Service::NotifySubchannelClosed(Subchannel* pSubchannel)
+{
+    subchannelCollection_.Delete(pSubchannel);
 }
 
 bool Service::WriteNotification(NotificationToService notification)
@@ -290,7 +295,12 @@ bool Service::HandleMainChannelInput()
         return false;
     }
 
-    StartSubchannelHandler(std::move(*maybeSubchannelFd));
+    auto pBorrowedSubchannel = subchannelCollection_.Add(std::make_unique<Subchannel>(std::move(*maybeSubchannelFd)));
+    if (!pBorrowedSubchannel->StartCommunicationThread())
+    {
+        subchannelCollection_.Delete(pBorrowedSubchannel);
+    }
+
     return true;
 }
 
