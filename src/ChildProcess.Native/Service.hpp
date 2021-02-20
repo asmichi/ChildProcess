@@ -26,8 +26,10 @@ enum class NotificationToService : std::uint8_t
 class Service final
 {
 public:
+    // Interface for main.
     // Delayed initialization.
-    void Initialize(int mainChannelFd);
+    void Initialize(UniqueFd mainChannelFd);
+    [[nodiscard]] int MainLoop();
 
     // Interface for subchannels.
     [[nodiscard]] bool NotifyChildRegistration();
@@ -35,9 +37,6 @@ public:
 
     // Interface for the signal handler.
     void NotifySignal(int signum);
-
-    // Interface for main.
-    [[nodiscard]] int MainLoop(int mainChannelFd);
 
 private:
     [[nodiscard]] bool WriteNotification(NotificationToService notification);
@@ -50,6 +49,10 @@ private:
     // Write to wake up the service thread.
     int notificationPipeReadEnd_;
     int notificationPipeWriteEnd_;
+
+    // Close the write end to cancel all current and future blocking send/recv.
+    int cancellationPipeWriteEnd_;
+    int cancellationPipeReadEnd_;
 
     SubchannelCollection subchannelCollection_;
     std::unique_ptr<AncillaryDataSocket> mainChannel_;

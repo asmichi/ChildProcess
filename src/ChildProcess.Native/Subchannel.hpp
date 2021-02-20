@@ -20,7 +20,7 @@ struct RawRequest final
 class Subchannel final
 {
 public:
-    explicit Subchannel(UniqueFd sockFd) noexcept : sock_(std::move(sockFd)) {}
+    explicit Subchannel(UniqueFd sockFd, int cancellationPipeReadEnd) noexcept : sock_(std::move(sockFd), cancellationPipeReadEnd) {}
 
     [[nodiscard]] bool StartCommunicationThread();
 

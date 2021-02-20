@@ -45,11 +45,8 @@ namespace
     const int PollFdCount = 2;
 } // namespace
 
-
-void Service::Initialize(int mainChannelFd)
+void Service::Initialize(UniqueFd mainChannelFd)
 {
-    mainChannel_ = std::make_unique<AncillaryDataSocket>(mainChannelFd);
-
     {
         auto maybePipe = CreatePipe();
         if (!maybePipe)
@@ -60,6 +57,19 @@ void Service::Initialize(int mainChannelFd)
         notificationPipeReadEnd_ = maybePipe->ReadEnd.Release();
         notificationPipeWriteEnd_ = maybePipe->WriteEnd.Release();
     }
+
+    {
+        auto maybePipe = CreatePipe();
+        if (!maybePipe)
+        {
+            FatalErrorAbort(errno, "pipe2");
+        }
+
+        cancellationPipeReadEnd_ = maybePipe->ReadEnd.Release();
+        cancellationPipeWriteEnd_ = maybePipe->WriteEnd.Release();
+    }
+
+    mainChannel_ = std::make_unique<AncillaryDataSocket>(std::move(mainChannelFd), cancellationPipeReadEnd_);
 
     SetupSignalHandlers();
 }
@@ -118,10 +128,8 @@ bool Service::WriteNotification(NotificationToService notification)
     return WriteExactBytes(notificationPipeWriteEnd_, &notification, sizeof(notification));
 }
 
-int Service::MainLoop(int mainChannelFd)
+int Service::MainLoop()
 {
-    Initialize(mainChannelFd);
-
     // Main service loop
     pollfd fds[PollFdCount]{};
     fds[PollIndexNotification].fd = notificationPipeReadEnd_;
@@ -295,7 +303,7 @@ bool Service::HandleMainChannelInput()
         return false;
     }
 
-    auto pBorrowedSubchannel = subchannelCollection_.Add(std::make_unique<Subchannel>(std::move(*maybeSubchannelFd)));
+    auto pBorrowedSubchannel = subchannelCollection_.Add(std::make_unique<Subchannel>(std::move(*maybeSubchannelFd), cancellationPipeReadEnd_));
     if (!pBorrowedSubchannel->StartCommunicationThread())
     {
         subchannelCollection_.Delete(pBorrowedSubchannel);

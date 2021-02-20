@@ -10,27 +10,24 @@
 #include <queue>
 #include <utility>
 
-// Sends/Receives fds via ancillary data on a unix domain socket. Employs a send buffer if nonblocking.
-//
-// SendWithFd may return EWOULDBLOCK because it need to send at least one byte to send fds.
+// Receives fds via ancillary data on a unix domain socket. Employs a send buffer if nonblocking.
 class AncillaryDataSocket final
 {
 public:
     static const constexpr int MaxFdsPerCall = 3;
 
-    // Owns sockFd.
-    AncillaryDataSocket(int sockFd) noexcept;
-    AncillaryDataSocket(UniqueFd&& sockFd) noexcept;
+    AncillaryDataSocket(UniqueFd&& sockFd, int cancellationPipeReadEnd) noexcept;
 
+    [[nodiscard]] ssize_t Send(const void* buf, std::size_t len, BlockingFlag blocking) noexcept;
     [[nodiscard]] bool SendExactBytes(const void* buf, std::size_t len) noexcept;
     [[nodiscard]] bool SendBuffered(const void* buf, std::size_t len, BlockingFlag blocking) noexcept;
-    [[nodiscard]] bool SendExactBytesWithFd(const void* buf, std::size_t len, const int* fds, std::size_t fdCount) noexcept;
-    [[nodiscard]] bool SendBufferedWithFd(const void* buf, std::size_t len, const int* fds, std::size_t fdCount, BlockingFlag blocking) noexcept;
     [[nodiscard]] bool Flush(BlockingFlag blocking) noexcept;
     [[nodiscard]] bool HasPendingData() noexcept { return sendBuffer_.HasPendingData(); }
 
     [[nodiscard]] ssize_t Recv(void* buf, std::size_t len, BlockingFlag blocking) noexcept;
     [[nodiscard]] bool RecvExactBytes(void* buf, std::size_t len) noexcept;
+
+    void Shutdown() noexcept;
 
     [[nodiscard]] int GetFd() const noexcept { return fd_.Get(); }
 
@@ -49,7 +46,15 @@ public:
     }
 
 private:
+    // true: won't block; false: cancellation requested.
+    bool PollForInput();
+    // true: won't block; false: cancellation requested.
+    bool PollForOutput();
+    bool PollFor(short event);
+
     UniqueFd fd_;
+    // Close the counterpart to cancel current and future blocking operations.
+    int cancellationPipeReadEnd_;
     std::queue<UniqueFd> receivedFds_;
     WriteBuffer sendBuffer_;
 };

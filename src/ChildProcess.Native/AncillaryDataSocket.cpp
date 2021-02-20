@@ -14,6 +14,7 @@
 #include <cstring>
 #include <memory>
 #include <optional>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <utility>
@@ -45,32 +46,31 @@ namespace
     }
 } // namespace
 
-AncillaryDataSocket::AncillaryDataSocket(UniqueFd&& sockFd) noexcept
-    : fd_(std::move(sockFd))
+AncillaryDataSocket::AncillaryDataSocket(UniqueFd&& sockFd, int cancellationPipeReadEnd) noexcept
+    : fd_(std::move(sockFd)), cancellationPipeReadEnd_(cancellationPipeReadEnd)
 {
 }
 
-AncillaryDataSocket::AncillaryDataSocket(int sockFd) noexcept
-    : AncillaryDataSocket(UniqueFd(sockFd))
+ssize_t AncillaryDataSocket::Send(const void* buf, std::size_t len, BlockingFlag blocking) noexcept
 {
+    if (blocking == BlockingFlag::Blocking && !PollForOutput())
+    {
+        // Cancellation requested.
+        Shutdown();
+        errno = EPIPE;
+        return -1;
+    }
+
+    return send_restarting(fd_.Get(), buf, len, MakeSockFlags(blocking));
 }
 
 bool AncillaryDataSocket::SendBuffered(const void* buf, std::size_t len, BlockingFlag blocking) noexcept
 {
-    ssize_t bytesSent = send_restarting(fd_.Get(), buf, len, MakeSockFlags(blocking));
+    ssize_t bytesSent = Send(buf, len, blocking);
     int err = errno;
     EnqueueRemainingBytes(sendBuffer_, buf, len, bytesSent, err);
     errno = err;
     return HandleSendResult(blocking, "send", bytesSent, err);
-}
-
-bool AncillaryDataSocket::SendBufferedWithFd(const void* buf, std::size_t len, const int* fds, std::size_t fdCount, BlockingFlag blocking) noexcept
-{
-    ssize_t bytesSent = ::SendWithFd(fd_.Get(), buf, len, fds, fdCount, blocking);
-    int err = errno;
-    EnqueueRemainingBytes(sendBuffer_, buf, len, bytesSent, err);
-    errno = err;
-    return HandleSendResult(blocking, "sendmsg", bytesSent, err);
 }
 
 bool AncillaryDataSocket::SendExactBytes(const void* buf, std::size_t len) noexcept
@@ -80,17 +80,13 @@ bool AncillaryDataSocket::SendExactBytes(const void* buf, std::size_t len) noexc
         return false;
     }
 
-    return ::SendExactBytes(fd_.Get(), buf, len);
-}
-
-bool AncillaryDataSocket::SendExactBytesWithFd(const void* buf, std::size_t len, const int* fds, std::size_t fdCount) noexcept
-{
-    if (!Flush(BlockingFlag::Blocking))
+    auto f = [this](const void* p, std::size_t partialLen) { return Send(p, partialLen, BlockingFlag::Blocking); };
+    if (!WriteExactBytes(f, buf, len))
     {
-        return false;
+        return HandleSendError(BlockingFlag::Blocking, "send", errno);
     }
 
-    return ::SendExactBytesWithFd(fd_.Get(), buf, len, fds, fdCount);
+    return true;
 }
 
 // Send data in sendBuffer_ until all data is sent or EWOULDBLOCK is returned.
@@ -98,6 +94,14 @@ bool AncillaryDataSocket::Flush(BlockingFlag blocking) noexcept
 {
     while (sendBuffer_.HasPendingData())
     {
+        if (blocking == BlockingFlag::Blocking && !PollForOutput())
+        {
+            // Cancellation requested.
+            Shutdown();
+            errno = EPIPE;
+            return false;
+        }
+
         std::byte* p;
         std::size_t len;
         std::tie(p, len) = sendBuffer_.GetPendingData();
@@ -122,6 +126,13 @@ bool AncillaryDataSocket::RecvExactBytes(void* buf, std::size_t len) noexcept
 
 ssize_t AncillaryDataSocket::Recv(void* buf, std::size_t len, BlockingFlag blocking) noexcept
 {
+    if (blocking == BlockingFlag::Blocking && !PollForInput())
+    {
+        // Cancellation requested.
+        Shutdown();
+        return 0;
+    }
+
     iovec iov;
     msghdr msg;
     CmsgFds cmsgFds;
@@ -175,4 +186,45 @@ ssize_t AncillaryDataSocket::Recv(void* buf, std::size_t len, BlockingFlag block
     }
 
     return receivedBytes;
+}
+
+void AncillaryDataSocket::Shutdown() noexcept
+{
+    shutdown(fd_.Get(), SHUT_RDWR);
+}
+
+bool AncillaryDataSocket::PollForInput()
+{
+    return PollFor(POLLIN);
+}
+
+bool AncillaryDataSocket::PollForOutput()
+{
+    return PollFor(POLLOUT);
+}
+
+bool AncillaryDataSocket::PollFor(short events)
+{
+    pollfd fds[2]{};
+    fds[0].fd = fd_.Get();
+    fds[0].events = events;
+    fds[1].fd = cancellationPipeReadEnd_;
+    fds[1].events = 0;
+
+    int count = poll_restarting(fds, 2, -1);
+    if (count == -1)
+    {
+        FatalErrorAbort(errno, "poll");
+    }
+
+    if (fds[1].revents & POLLHUP)
+    {
+        // Cancellation requested
+        return false;
+    }
+    else
+    {
+        assert(fds[0].revents & (events | POLLHUP));
+        return true;
+    }
 }

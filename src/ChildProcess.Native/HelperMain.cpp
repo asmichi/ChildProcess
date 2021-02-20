@@ -67,7 +67,8 @@ extern "C" int HelperMain(int argc, const char** argv)
 
     close(STDIN_FILENO);
 
-    const int exitCode = g_Service.MainLoop(sock);
+    g_Service.Initialize(UniqueFd{sock});
+    const int exitCode = g_Service.MainLoop();
     TRACE_INFO("Helper exiting: %d\n", exitCode);
     return exitCode;
 }
