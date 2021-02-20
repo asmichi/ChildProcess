@@ -129,7 +129,7 @@ namespace Asmichi.Utilities.ProcessManagement
             }
         }
 
-        // 16B
+        // NOTE: Make sure to sync with the server.
         [StructLayout(LayoutKind.Sequential)]
         private struct ChildExitNotification
         {

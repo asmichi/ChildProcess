@@ -9,15 +9,17 @@
 #include <pthread.h>
 #include <signal.h>
 
-struct ChildExitNotification
+enum class NotificationToService : std::uint8_t
 {
-    uint64_t Token;
-    // ProcessID
-    int32_t ProcessID;
-    // Exit status on CLD_EXITED; -N on CLD_KILLED and CLD_DUMPED where N is the signal number.
-    int32_t Status;
+    // SIGINT
+    Interrupt,
+    // SIGTERM
+    Termination,
+    // SIGQUIT
+    Quit,
+    // Request the service to reap children (SIGCHLD or "child process registered to g_ChildProcessStateMap")
+    ReapRequest
 };
-static_assert(sizeof(ChildExitNotification) == 16);
 
 class Service final
 {
@@ -25,30 +27,26 @@ public:
     // Delayed initialization.
     void Initialize(int mainChannelFd);
 
-    // Interface for main.
-    [[nodiscard]] int MainLoop(int mainChannelFd);
-
     // Interface for subchannels.
     [[nodiscard]] bool NotifyChildRegistration();
 
     // Interface for the signal handler.
     void NotifySignal(int signum);
 
+    // Interface for main.
+    [[nodiscard]] int MainLoop(int mainChannelFd);
+
 private:
-    [[nodiscard]] bool HandleSignalDataPipeInput();
-    [[nodiscard]] bool HandleReapRequestPipeInput();
+    [[nodiscard]] bool WriteNotification(NotificationToService notification);
+    [[nodiscard]] bool HandleNotificationPipeInput();
     [[nodiscard]] bool HandleReapRequest();
     [[nodiscard]] bool HandleMainChannelInput();
     [[nodiscard]] bool HandleMainChannelOutput();
     [[nodiscard]] bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
 
-    // The signal handler writes signal numbers here (except SIGCHLD, which will be written to reapRequestPipeWriteEnd_).
-    int signalDataPipeReadEnd_;
-    int signalDataPipeWriteEnd_;
-
-    // Subchannels will write a dummy byte here to request the service to reap children. SIGCHLD will also be written here.
-    int reapRequestPipeReadEnd_;
-    int reapRequestPipeWriteEnd_;
+    // Write to wake up the service thread.
+    int notificationPipeReadEnd_;
+    int notificationPipeWriteEnd_;
 
     std::unique_ptr<AncillaryDataSocket> mainChannel_;
 };

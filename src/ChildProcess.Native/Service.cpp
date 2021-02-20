@@ -26,13 +26,23 @@ static_assert(sizeof(pid_t) == sizeof(int32_t));
 
 namespace
 {
+    // NOTE: Make sure to sync with the client.
+    struct ChildExitNotification
+    {
+        uint64_t Token;
+        // ProcessID
+        int32_t ProcessID;
+        // Exit status on CLD_EXITED; -N on CLD_KILLED and CLD_DUMPED where N is the signal number.
+        int32_t Status;
+    };
+    static_assert(sizeof(ChildExitNotification) == 16);
+
     enum
     {
-        PollIndexSignalData = 0,
-        PollIndexChildCreation = 1,
-        PollIndexMainChannel = 2,
+        PollIndexNotification = 0,
+        PollIndexMainChannel = 1,
     };
-    const int PollFdCount = 3;
+    const int PollFdCount = 2;
 
 } // namespace
 
@@ -47,19 +57,8 @@ void Service::Initialize(int mainChannelFd)
             FatalErrorAbort(errno, "pipe2");
         }
 
-        reapRequestPipeReadEnd_ = maybePipe->ReadEnd.Release();
-        reapRequestPipeWriteEnd_ = maybePipe->WriteEnd.Release();
-    }
-
-    {
-        auto maybePipe = CreatePipe();
-        if (!maybePipe)
-        {
-            FatalErrorAbort(errno, "pipe2");
-        }
-
-        signalDataPipeReadEnd_ = maybePipe->ReadEnd.Release();
-        signalDataPipeWriteEnd_ = maybePipe->WriteEnd.Release();
+        notificationPipeReadEnd_ = maybePipe->ReadEnd.Release();
+        notificationPipeWriteEnd_ = maybePipe->WriteEnd.Release();
     }
 
     SetupSignalHandlers();
@@ -67,31 +66,40 @@ void Service::Initialize(int mainChannelFd)
 
 void Service::NotifySignal(int signum)
 {
-    if (signum == SIGCHLD)
+    NotificationToService n;
+
+    switch (signum)
     {
-        std::byte dummy{};
-        if (!WriteExactBytes(reapRequestPipeWriteEnd_, &dummy, 1)
-            && errno != EPIPE)
-        {
-            // Just abort; almost nothing can be done in a signal handler.
-            abort();
-        }
+    case SIGINT:
+        n = NotificationToService::Interrupt;
+        break;
+
+    case SIGQUIT:
+        n = NotificationToService::Quit;
+        break;
+
+    case SIGTERM:
+        n = NotificationToService::Termination;
+        break;
+
+    case SIGCHLD:
+        n = NotificationToService::ReapRequest;
+        break;
+
+    default:
+        return;
     }
-    else
+
+    if (!WriteNotification(n) && errno != EPIPE)
     {
-        if (!WriteExactBytes(signalDataPipeWriteEnd_, &signum, sizeof(signum))
-            && errno != EPIPE)
-        {
-            // Just abort; almost nothing can be done in a signal handler.
-            abort();
-        }
+        // Just abort; almost nothing can be done in a signal handler.
+        abort();
     }
 }
 
-[[nodiscard]] bool Service::NotifyChildRegistration()
+bool Service::NotifyChildRegistration()
 {
-    std::uint8_t dummy = 0;
-    if (!WriteExactBytes(reapRequestPipeWriteEnd_, &dummy, 1))
+    if (!WriteNotification(NotificationToService::ReapRequest))
     {
         // Pretend successful on EPIPE. The data will not be read anyway because the service is shutting down.
         return errno == EPIPE;
@@ -100,20 +108,23 @@ void Service::NotifySignal(int signum)
     return true;
 }
 
+bool Service::WriteNotification(NotificationToService notification)
+{
+    return WriteExactBytes(notificationPipeWriteEnd_, &notification, sizeof(notification));
+}
+
 int Service::MainLoop(int mainChannelFd)
 {
     Initialize(mainChannelFd);
 
     // Main service loop
     pollfd fds[PollFdCount]{};
-    fds[PollIndexSignalData].fd = signalDataPipeReadEnd_;
-    fds[PollIndexChildCreation].fd = reapRequestPipeReadEnd_;
+    fds[PollIndexNotification].fd = notificationPipeReadEnd_;
     fds[PollIndexMainChannel].fd = mainChannel_->GetFd();
 
     while (true)
     {
-        fds[PollIndexSignalData].events = POLLIN;
-        fds[PollIndexChildCreation].events = POLLIN;
+        fds[PollIndexNotification].events = POLLIN;
         fds[PollIndexMainChannel].events = POLLIN | (mainChannel_->HasPendingData() ? POLLOUT : 0);
 
         int count = poll_restarting(fds, PollFdCount, -1);
@@ -122,17 +133,9 @@ int Service::MainLoop(int mainChannelFd)
             FatalErrorAbort(errno, "poll");
         }
 
-        if (fds[PollIndexSignalData].revents & POLLIN)
+        if (fds[PollIndexNotification].revents & POLLIN)
         {
-            if (!HandleSignalDataPipeInput())
-            {
-                return 1;
-            }
-        }
-
-        if (fds[PollIndexChildCreation].revents & POLLIN)
-        {
-            if (!HandleReapRequestPipeInput())
+            if (!HandleNotificationPipeInput())
             {
                 return 1;
             }
@@ -162,47 +165,60 @@ int Service::MainLoop(int mainChannelFd)
     }
 }
 
-bool Service::HandleSignalDataPipeInput()
+bool Service::HandleNotificationPipeInput()
 {
-    int signum;
-    ssize_t readBytes;
+    // Drain data from the pipe. If we have more than 256 bytes of pending data, we just re-poll and reexecute this.
+    NotificationToService notifications[256];
+    ssize_t readSize;
 
-    if (!ReadExactBytes(signalDataPipeReadEnd_, &signum, sizeof(int)))
+    if ((readSize = read_restarting(notificationPipeReadEnd_, notifications, sizeof(notifications))) == -1)
     {
         FatalErrorAbort(errno, "read");
     }
 
-    switch (signum)
+    bool hasReapRequest = false;
+    for (ssize_t i = 0; i < readSize; i++)
     {
-    case SIGINT:
-    case SIGQUIT:
-        // Do some cleanup (if any) and exit.
-        TRACE_INFO("Caught signal %d\n", signum);
-        return false;
+        auto notification = notifications[i];
 
-    case SIGCHLD:
-        // SIGCHLD must be sent as a reap request.
-        assert(false);
-        break;
+        switch (notification)
+        {
+        case NotificationToService::Interrupt:
+            // TODO: Propagate SIGINT to children.
+            // NOTE: It's up to the client whether the service should exit on SIGINT. (The service will exit when the connection is closed.)
+            TRACE_INFO("Caught SIGINT.\n");
+            return false;
 
-    default:
-        // Ignored
-        break;
+        case NotificationToService::Termination:
+            // TODO: Propagate SIGTERM to children.
+            // NOTE: It's up to the client whether the service should exit on SIGTERM. (The service will exit when the connection is closed.)
+            TRACE_INFO("Caught SIGTERM).\n");
+            return false;
+
+        case NotificationToService::Quit:
+            // TODO: DO a minimal cleanup and reraise the signal to exit.
+            TRACE_INFO("Caught SIGQUIT.\n");
+            return false;
+
+        case NotificationToService::ReapRequest:
+            // PERF: We do not want to reap multiple times in one wake-up.
+            hasReapRequest = true;
+            break;
+
+        default:
+            FatalErrorAbort("Internal error");
+        }
+    }
+
+    if (hasReapRequest)
+    {
+        if (!HandleReapRequest())
+        {
+            return false;
+        }
     }
 
     return true;
-}
-
-bool Service::HandleReapRequestPipeInput()
-{
-    // Drain data from the pipe. If we have more than 256 bytes of pending data, we just re-poll and reexecute this.
-    std::byte buf[256];
-    if (read_restarting(reapRequestPipeReadEnd_, buf, sizeof(buf)) == -1)
-    {
-        FatalErrorAbort(errno, "read");
-    }
-
-    return HandleReapRequest();
 }
 
 bool Service::HandleReapRequest()
