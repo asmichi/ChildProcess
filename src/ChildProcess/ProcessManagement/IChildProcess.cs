@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 namespace Asmichi.Utilities.ProcessManagement
 {
     /// <summary>
+    /// <para>
     /// Provides methods for accessing a child-process-like object.
     /// All members are not thread safe and must not be called simultaneously by multiple threads.
+    /// </para>
+    /// <para>
+    /// If <see cref="CanSignal"/> is <see langword="true"/>, the process will eventually receive the termination signal after this instance has been disposed.
+    /// If <see cref="CanSignal"/> is <see langword="false"/>, the disposal behavior varies across platforms.
+    /// </para>
     /// </summary>
     public interface IChildProcess : IDisposable
     {
