@@ -6,3 +6,4 @@
 #include <sys/types.h>
 
 void SetupSignalHandlers();
+[[noreturn]] void RaiseQuitOnSelf();

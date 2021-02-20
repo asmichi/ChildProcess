@@ -142,15 +142,19 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public ValueTask<UnixSubchannel> RentSubchannelAsync(CancellationToken cancellationToken)
         {
+            // Check if a subchannel is available.
             if (_subchannels.Reader.TryRead(out var subchannel))
             {
                 return new ValueTask<UnixSubchannel>(subchannel);
             }
+
+            // Create one if we have not reached _maxSubchannelCount yet.
             if (TryAddSubchannel(out subchannel))
             {
                 return new ValueTask<UnixSubchannel>(subchannel);
             }
 
+            // If we have reached _maxSubchannelCount, wait for one to be returned.
             return _subchannels.Reader.ReadAsync(cancellationToken);
         }
 

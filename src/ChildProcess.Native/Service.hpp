@@ -20,7 +20,9 @@ enum class NotificationToService : std::uint8_t
     // SIGQUIT
     Quit,
     // Request the service to reap children (SIGCHLD or "child process registered to g_ChildProcessStateMap")
-    ReapRequest
+    ReapRequest,
+    // A subchannel is closed, indicating that we may be able to exit.
+    SubchannelClosed,
 };
 
 class Service final
@@ -29,10 +31,10 @@ public:
     // Interface for main.
     // Delayed initialization.
     void Initialize(UniqueFd mainChannelFd);
-    [[nodiscard]] int MainLoop();
+    [[nodiscard]] int Run();
 
     // Interface for subchannels.
-    [[nodiscard]] bool NotifyChildRegistration();
+    void NotifyChildRegistration();
     void NotifySubchannelClosed(Subchannel* pSubchannel);
 
     // Interface for the signal handler.
@@ -40,19 +42,23 @@ public:
 
 private:
     [[nodiscard]] bool WriteNotification(NotificationToService notification);
-    [[nodiscard]] bool HandleNotificationPipeInput();
-    [[nodiscard]] bool HandleReapRequest();
-    [[nodiscard]] bool HandleMainChannelInput();
-    [[nodiscard]] bool HandleMainChannelOutput();
-    [[nodiscard]] bool NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
+    void InitiateShutdown();
+    bool ShouldExit();
+    void HandleNotificationPipeInput();
+    void ReapAllExitedChildren();
+    void HandleMainChannelInput();
+    void HandleMainChannelOutput();
+    void NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo);
+
+    bool shuttingDown_ = false;
 
     // Write to wake up the service thread.
-    int notificationPipeReadEnd_;
-    int notificationPipeWriteEnd_;
+    int notificationPipeReadEnd_ = 0;
+    int notificationPipeWriteEnd_ = 0;
 
     // Close the write end to cancel all current and future blocking send/recv.
-    int cancellationPipeWriteEnd_;
-    int cancellationPipeReadEnd_;
+    int cancellationPipeWriteEnd_ = 0;
+    int cancellationPipeReadEnd_ = 0;
 
     SubchannelCollection subchannelCollection_;
     std::unique_ptr<AncillaryDataSocket> mainChannel_;

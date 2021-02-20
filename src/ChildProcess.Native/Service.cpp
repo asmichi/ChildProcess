@@ -107,20 +107,23 @@ void Service::NotifySignal(int signum)
     }
 }
 
-bool Service::NotifyChildRegistration()
+void Service::NotifyChildRegistration()
 {
     if (!WriteNotification(NotificationToService::ReapRequest))
     {
-        // Pretend successful on EPIPE. The data will not be read anyway because the service is shutting down.
-        return errno == EPIPE;
+        FatalErrorAbort("write");
     }
-
-    return true;
 }
 
 void Service::NotifySubchannelClosed(Subchannel* pSubchannel)
 {
     subchannelCollection_.Delete(pSubchannel);
+
+    // Wake up the main loop.
+    if (!WriteNotification(NotificationToService::SubchannelClosed))
+    {
+        FatalErrorAbort("write");
+    }
 }
 
 bool Service::WriteNotification(NotificationToService notification)
@@ -128,19 +131,21 @@ bool Service::WriteNotification(NotificationToService notification)
     return WriteExactBytes(notificationPipeWriteEnd_, &notification, sizeof(notification));
 }
 
-int Service::MainLoop()
+int Service::Run()
 {
     // Main service loop
     pollfd fds[PollFdCount]{};
     fds[PollIndexNotification].fd = notificationPipeReadEnd_;
     fds[PollIndexMainChannel].fd = mainChannel_->GetFd();
 
-    while (true)
+    while (!ShouldExit())
     {
         fds[PollIndexNotification].events = POLLIN;
         fds[PollIndexMainChannel].events = POLLIN | (mainChannel_->HasPendingData() ? POLLOUT : 0);
 
-        int count = poll_restarting(fds, PollFdCount, -1);
+        // Ignore the main channel while shutting down.
+        static_assert(PollIndexMainChannel == PollFdCount - 1);
+        int count = poll_restarting(fds, shuttingDown_ ? PollFdCount - 1 : PollFdCount, -1);
         if (count == -1)
         {
             FatalErrorAbort(errno, "poll");
@@ -148,37 +153,53 @@ int Service::MainLoop()
 
         if (fds[PollIndexNotification].revents & POLLIN)
         {
-            if (!HandleNotificationPipeInput())
-            {
-                return 1;
-            }
+            HandleNotificationPipeInput();
         }
 
-        if (fds[PollIndexMainChannel].revents & POLLIN)
+        if (!shuttingDown_)
         {
-            if (!HandleMainChannelInput())
+            if (fds[PollIndexMainChannel].revents & POLLIN)
             {
-                return 1;
+                HandleMainChannelInput();
             }
-        }
 
-        if (fds[PollIndexMainChannel].revents & POLLOUT)
-        {
-            if (!HandleMainChannelOutput())
+            if (fds[PollIndexMainChannel].revents & POLLOUT)
             {
-                return 1;
+                HandleMainChannelOutput();
             }
-        }
 
-        if ((fds[PollIndexMainChannel].revents & (POLLHUP | POLLIN)) == POLLHUP)
-        {
-            // Connection closed.
-            return 1;
+            if (fds[PollIndexMainChannel].revents & POLLHUP)
+            {
+                // Connection closed.
+                InitiateShutdown();
+            }
         }
     }
 }
 
-bool Service::HandleNotificationPipeInput()
+void Service::InitiateShutdown()
+{
+    if (!shuttingDown_)
+    {
+        shuttingDown_ = true;
+        mainChannel_->Shutdown();
+        close(cancellationPipeWriteEnd_);
+    }
+}
+
+bool Service::ShouldExit()
+{
+    if (!shuttingDown_)
+    {
+        return false;
+    }
+    else
+    {
+        return subchannelCollection_.Size() == 0;
+    }
+}
+
+void Service::HandleNotificationPipeInput()
 {
     // Drain data from the pipe. If we have more than 256 bytes of pending data, we just re-poll and reexecute this.
     NotificationToService notifications[256];
@@ -200,22 +221,27 @@ bool Service::HandleNotificationPipeInput()
             // TODO: Propagate SIGINT to children.
             // NOTE: It's up to the client whether the service should exit on SIGINT. (The service will exit when the connection is closed.)
             TRACE_INFO("Caught SIGINT.\n");
-            return false;
+            break;
 
         case NotificationToService::Termination:
             // TODO: Propagate SIGTERM to children.
             // NOTE: It's up to the client whether the service should exit on SIGTERM. (The service will exit when the connection is closed.)
             TRACE_INFO("Caught SIGTERM).\n");
-            return false;
+            break;
 
         case NotificationToService::Quit:
-            // TODO: DO a minimal cleanup and reraise the signal to exit.
-            TRACE_INFO("Caught SIGQUIT.\n");
-            return false;
+            TRACE_FATAL("Caught SIGQUIT.\n");
+            // We do not have any critical data to persist. Just quit by reraising the signal.
+            RaiseQuitOnSelf();
+            break;
 
         case NotificationToService::ReapRequest:
             // PERF: We do not want to reap multiple times in one wake-up.
             hasReapRequest = true;
+            break;
+
+        case NotificationToService::SubchannelClosed:
+            // Just for waking up the main loop.
             break;
 
         default:
@@ -225,16 +251,11 @@ bool Service::HandleNotificationPipeInput()
 
     if (hasReapRequest)
     {
-        if (!HandleReapRequest())
-        {
-            return false;
-        }
+        ReapAllExitedChildren();
     }
-
-    return true;
 }
 
-bool Service::HandleReapRequest()
+void Service::ReapAllExitedChildren()
 {
     // Because SIGCHLD is a standard signal, only one SIGCHLD signal can be queued.
     // If the queue already has an instance, further SIGCHLD signals will be "lost".
@@ -250,7 +271,7 @@ bool Service::HandleReapRequest()
         {
             if (errno == ECHILD)
             {
-                return true;
+                return;
             }
             else
             {
@@ -262,7 +283,7 @@ bool Service::HandleReapRequest()
         if (pid == 0)
         {
             // No waitable child.
-            return true;
+            return;
         }
 
         auto pState = g_ChildProcessStateMap.GetByPid(pid);
@@ -270,13 +291,10 @@ bool Service::HandleReapRequest()
         {
             // This child process was killed before we register it to the map.
             // Delay the reaping process until we register it and send a reap request.
-            return true;
+            return;
         }
 
-        if (!NotifyClientOfExitedChild(pState.get(), siginfo))
-        {
-            return false;
-        }
+        NotifyClientOfExitedChild(pState.get(), siginfo);
 
         g_ChildProcessStateMap.Delete(pState.get());
 
@@ -285,22 +303,29 @@ bool Service::HandleReapRequest()
     }
 }
 
-bool Service::HandleMainChannelInput()
+void Service::HandleMainChannelInput()
 {
+    if (shuttingDown_)
+    {
+        return;
+    }
+
     std::byte dummy;
     const ssize_t bytesReceived = mainChannel_->Recv(&dummy, 1, BlockingFlag::Blocking);
     if (!HandleRecvResult(BlockingFlag::Blocking, "recvmsg", bytesReceived, errno))
     {
         // Connection closed.
         TRACE_INFO("Main channel disconnected: recv %d\n", errno);
-        return false;
+        InitiateShutdown();
+        return;
     }
 
     auto maybeSubchannelFd = mainChannel_->PopReceivedFd();
     if (!maybeSubchannelFd)
     {
         TRACE_FATAL("The counterpart sent a subchannel creation request but dit not send any fd.\n");
-        return false;
+        InitiateShutdown();
+        return;
     }
 
     auto pBorrowedSubchannel = subchannelCollection_.Add(std::make_unique<Subchannel>(std::move(*maybeSubchannelFd), cancellationPipeReadEnd_));
@@ -308,23 +333,29 @@ bool Service::HandleMainChannelInput()
     {
         subchannelCollection_.Delete(pBorrowedSubchannel);
     }
-
-    return true;
 }
 
-bool Service::HandleMainChannelOutput()
+void Service::HandleMainChannelOutput()
 {
+    if (shuttingDown_)
+    {
+        return;
+    }
+
     if (!mainChannel_->Flush(BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: fflush %d\n", errno);
-        return false;
+        InitiateShutdown();
     }
-
-    return true;
 }
 
-bool Service::NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
+void Service::NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t siginfo)
 {
+    if (shuttingDown_)
+    {
+        return;
+    }
+
     ChildExitNotification cen{};
     cen.Token = pState->GetToken();
     cen.ProcessID = pState->GetPid();
@@ -333,8 +364,6 @@ bool Service::NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t sig
     if (!mainChannel_->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
         TRACE_INFO("Main channel disconnected: send %d\n", errno);
-        return false;
+        InitiateShutdown();
     }
-
-    return true;
 }

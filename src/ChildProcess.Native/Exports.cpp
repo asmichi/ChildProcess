@@ -192,6 +192,7 @@ extern "C" std::intptr_t SubchannelCreate(std::intptr_t mainChannelFd)
     // Send remoteSock to the helper process and request subchannel creation.
     const int fds[1]{remoteSock.Get()};
     const char dummyData = 0;
+    // We should not split this.
     if (!SendExactBytesWithFd(static_cast<int>(mainChannelFd), &dummyData, 1, fds, 1))
     {
         return -1;

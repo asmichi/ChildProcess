@@ -223,10 +223,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         g_ChildProcessStateMap.Allocate(childPid, r.Token);
 
         // Send a reap request in case the child has already been killed and we have delayed reaping.
-        if (!g_Service.NotifyChildRegistration())
-        {
-            FatalErrorAbort(errno, "write");
-        }
+        g_Service.NotifyChildRegistration();
 
         // Make the child to perform exec.
         if (!WriteExactBytes(outPipe.WriteEnd.Get(), "", 1))

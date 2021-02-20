@@ -34,6 +34,26 @@ void SetupSignalHandlers()
     SetSignalAction(SIGCHLD, SA_NOCLDSTOP);
 }
 
+void RaiseQuitOnSelf()
+{
+    struct sigaction act = {};
+    act.sa_flags = 0;
+    sigemptyset(&act.sa_mask);
+    act.sa_handler = SIG_DFL;
+
+    if (sigaction(SIGQUIT, &act, nullptr) != 0)
+    {
+        FatalErrorAbort("sigaction");
+    }
+
+    if (kill(getpid(), SIGQUIT) == -1)
+    {
+        FatalErrorAbort("kill");
+    }
+
+    std::abort();
+}
+
 bool IsSignalIgnored(int signum)
 {
     struct sigaction oldact;
