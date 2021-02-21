@@ -269,14 +269,8 @@ void Subchannel::HandleSendSignalCommand(std::unique_ptr<std::byte[]> body, std:
         // The process has already been reaped.
         SendSuccess(0);
     }
-    else if (pState->SendSignal(nativeSignal.value()))
+    else if (pState->SendSignal(nativeSignal.value(), r.Signal == AbstractSignal::Termination))
     {
-        if (r.Signal == AbstractSignal::Termination)
-        {
-            // Also send SIGCONT to ensure termination.
-            static_cast<void>(pState->SendSignal(SIGCONT));
-        }
-
         // Sent a signal.
         SendSuccess(0);
     }

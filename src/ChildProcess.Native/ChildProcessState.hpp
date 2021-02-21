@@ -23,7 +23,9 @@ public:
     std::uint64_t GetToken() const { return token_; }
     int GetPid() const { return pid_; }
     void Reap();
-    [[nodiscard]] bool SendSignal(int sig);
+
+    // If alsoSendSigCont, also send SIGCONT to ensure termination.
+    [[nodiscard]] bool SendSignal(int sig, bool alsoSendSigCont = false);
 
 private:
     // Serializes all accesses to the process (signal, reap, etc.).

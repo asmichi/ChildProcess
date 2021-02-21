@@ -91,7 +91,7 @@ void ChildProcessState::Reap()
     isReaped_ = true;
 }
 
-bool ChildProcessState::SendSignal(int sig)
+bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont)
 {
     const std::lock_guard<std::mutex> guard(mutex_);
     if (isReaped_)
@@ -99,6 +99,13 @@ bool ChildProcessState::SendSignal(int sig)
         return true;
     }
 
-    int ret = kill(isNewProcessGroup_ ? -pid_ : pid_, sig);
+    const int target = isNewProcessGroup_ ? -pid_ : pid_;
+    const int ret = kill(target, sig);
+    if (ret == 0 && alsoSendSigCont)
+    {
+        int err = errno;
+        kill(target, SIGCONT);
+        errno = err;
+    }
     return ret == 0;
 }
