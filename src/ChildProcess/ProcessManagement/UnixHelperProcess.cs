@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -52,6 +51,7 @@ namespace Asmichi.Utilities.ProcessManagement
         private readonly NetworkStream _mainChannel;
         private readonly int _maxSubchannelCount;
         private readonly Channel<UnixSubchannel> _subchannels;
+        private bool _isDisposed;
         private int _subchannelCount;
 
         public UnixHelperProcess(Process helperProcess, Socket mainChannel, int maxSubchannelCount)
@@ -65,8 +65,21 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public void Dispose()
         {
-            _mainChannel.Dispose();
-            _helperProcess.Dispose();
+            Debug.Assert(!_isDisposed, "Internal call sites should avoid double-dispose.");
+
+            if (!_isDisposed)
+            {
+                _ = _subchannels.Writer.TryComplete();
+                while (_subchannels.Reader.TryRead(out var subchannel))
+                {
+                    subchannel.Dispose();
+                }
+
+                _mainChannel.Dispose();
+                _helperProcess.Dispose();
+
+                _isDisposed = true;
+            }
         }
 
         public ValueTask<int> ReadFromMainChannelAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
@@ -92,6 +105,8 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private bool TryAddSubchannel([NotNullWhen(true)] out UnixSubchannel? subchannel)
         {
+            CheckNotDisposed();
+
             if (!TryIncrementSubchannelCount())
             {
                 subchannel = default;
@@ -120,6 +135,8 @@ namespace Asmichi.Utilities.ProcessManagement
 
         private UnixSubchannel CreateSubchannel()
         {
+            CheckNotDisposed();
+
             var mainChannelhandle = _mainChannelSocket.SafeHandle;
             var subchannelHandle = LibChildProcess.SubchannelCreate(mainChannelhandle.DangerousGetHandle());
             if (subchannelHandle.IsInvalid)
@@ -134,6 +151,15 @@ namespace Asmichi.Utilities.ProcessManagement
         {
             // Succeeds unless _subchannels has been completed.
             _ = _subchannels.Writer.TryWrite(subchannel);
+        }
+
+        // Guard against use of unmanaged resources after disposal.
+        private void CheckNotDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(ChildProcessImpl));
+            }
         }
 
         public static UnixHelperProcess Launch(int maxSubchannelCount)

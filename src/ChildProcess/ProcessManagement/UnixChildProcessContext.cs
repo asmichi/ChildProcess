@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Asmichi.Utilities.ProcessManagement
@@ -21,8 +22,10 @@ namespace Asmichi.Utilities.ProcessManagement
         private const int InitialBufferCapacity = 256; // Minimal capacity that every practical request will consume.
 
         private readonly CancellationTokenSource _shutdownTokenSource = new CancellationTokenSource();
+        private readonly Channel<long> _terminationRequests;
         private readonly UnixHelperProcess _helperProcess;
         private readonly Task _readNotificationsTask;
+        private readonly Task _processAsyncTerminationTask;
 
         internal UnixChildProcessContext()
             : this(Environment.ProcessorCount)
@@ -31,28 +34,37 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public UnixChildProcessContext(int maxSubchannelCount)
         {
+            _terminationRequests = Channel.CreateUnbounded<long>();
+
+            // Launch the helper.
             _helperProcess = UnixHelperProcess.Launch(maxSubchannelCount);
-            _readNotificationsTask = ReadNotificationsAsync(_shutdownTokenSource.Token);
+
+            // Start communication with the helper.
+            _readNotificationsTask = Task.Run(() => ReadNotificationsAsync(_shutdownTokenSource.Token));
+            _processAsyncTerminationTask = Task.Run(() => ProcessAsyncTerminationAsync(_shutdownTokenSource.Token));
         }
 
         public void Dispose()
         {
-            if (_readNotificationsTask.IsCompleted)
-            {
-                _shutdownTokenSource.Dispose();
-            }
-            else
-            {
-                _shutdownTokenSource.Cancel();
-            }
+            Debug.Assert(_shutdownTokenSource.IsCancellationRequested);
+            Debug.Assert(_readNotificationsTask.IsCompleted);
+            Debug.Assert(_processAsyncTerminationTask.IsCompleted);
 
+            _shutdownTokenSource.Dispose();
             _helperProcess.Dispose();
         }
 
-        public Task ShutdownAsync()
+        public async Task ShutdownAsync()
         {
+            _ = _terminationRequests.Writer.TryComplete();
             _shutdownTokenSource.Cancel();
-            return _readNotificationsTask;
+            try
+            {
+                await Task.WhenAll(_readNotificationsTask, _processAsyncTerminationTask).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         public IChildProcessStateHolder SpawnProcess(
@@ -210,6 +222,29 @@ namespace Asmichi.Utilities.ProcessManagement
             finally
             {
                 _helperProcess.ReturnSubchannel(subchannel);
+            }
+        }
+
+        public void RequestAsyncTermination(long token)
+        {
+            // Succeeds unless _terminationRequests has been completed.
+            _ = _terminationRequests.Writer.TryWrite(token);
+        }
+
+        private async Task ProcessAsyncTerminationAsync(CancellationToken cancellationToken)
+        {
+            await foreach (var token in _terminationRequests.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            {
+                try
+                {
+                    SendSignal(token, UnixHelperProcessSignalNumber.Termination);
+                }
+                catch (Win32Exception ex)
+                {
+                    // No way to report this failure.
+                    Trace.WriteLine(string.Format(
+                        CultureInfo.InvariantCulture, "fatal error: " + nameof(ProcessAsyncTerminationAsync) + " failed (probably the helper process failed): {0}", ex.Message));
+                }
             }
         }
 

@@ -73,6 +73,13 @@ namespace Asmichi.Utilities.ProcessManagement
 
         public void Dispose()
         {
+            if (CanSignal && !_hasExited)
+            {
+                // Request asynchronous termination because SengSignal allocates additional resources and may fail.
+                // (Dispose should not fail!)
+                _context.RequestAsyncTermination(_token);
+            }
+
             ChildProcessStateCollection.RemoveChildProcessState(this);
             _exitedEvent.Dispose();
         }
