@@ -19,7 +19,7 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
     - stdout to the current stdout
     - stderr to the current stderr
 - Pipes are asynchronous; asynchronous reads and writes will be handled by IO completion ports.
-- `WaitForExitAsync`.
+- Ensures termination of child processes
 
 # License
 
