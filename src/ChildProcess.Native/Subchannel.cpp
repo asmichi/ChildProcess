@@ -158,6 +158,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
     auto inPipe = std::move(*maybeInPipe);
 
     const bool shouldCreateNewProcessGroup = r.Flags & RequestFlagsCreateNewProcessGroup;
+    const bool shouldAutoTerminate = r.Flags & RequestFlagsEnableAutoTermination;
     int childPid = fork();
     if (childPid == -1)
     {
@@ -225,7 +226,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         inPipe.WriteEnd.Reset();
 
         // Register the child before the child performs exec.
-        g_ChildProcessStateMap.Allocate(childPid, r.Token, shouldCreateNewProcessGroup);
+        g_ChildProcessStateMap.Allocate(childPid, r.Token, shouldCreateNewProcessGroup, shouldAutoTerminate);
 
         // Send a reap request in case the child has already been killed and we have delayed reaping.
         g_Service.NotifyChildRegistration();

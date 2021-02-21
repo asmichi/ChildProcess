@@ -32,6 +32,7 @@ enum SpawnProcessRequestFlags
     RequestFlagsRedirectStdout = 1 << 1,
     RequestFlagsRedirectStderr = 1 << 2,
     RequestFlagsCreateNewProcessGroup = 1 << 3,
+    RequestFlagsEnableAutoTermination = 1 << 4,
 };
 
 struct SpawnProcessRequest final

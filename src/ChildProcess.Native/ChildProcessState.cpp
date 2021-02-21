@@ -30,7 +30,7 @@ void ChildProcessState::Reap()
     isReaped_ = true;
 }
 
-bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont)
+bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont) const
 {
     const std::lock_guard<std::mutex> guard(mutex_);
     if (isReaped_)
@@ -49,9 +49,9 @@ bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont)
     return ret == 0;
 }
 
-void ChildProcessStateMap::Allocate(int pid, std::uint64_t token, bool isNewProcessGroup)
+void ChildProcessStateMap::Allocate(int pid, std::uint64_t token, bool isNewProcessGroup, bool shouldAutoTerminate)
 {
-    const auto pState = std::make_shared<ChildProcessState>(pid, token, isNewProcessGroup);
+    const auto pState = std::make_shared<ChildProcessState>(pid, token, isNewProcessGroup, shouldAutoTerminate);
 
     const std::lock_guard<std::mutex> guard(mapMutex_);
 
@@ -108,4 +108,22 @@ void ChildProcessStateMap::Delete(ChildProcessState* pState)
 
     byPid_.erase(pidIt);
     byToken_.erase(tokenIt);
+}
+
+void ChildProcessStateMap::AutoTerminateAll()
+{
+    const std::lock_guard<std::mutex> guard(mapMutex_);
+
+    for (const auto& it : byToken_)
+    {
+        const auto& childProcess = it.second;
+        if (childProcess->ShouldAutoTerminate())
+        {
+            TRACE_INFO("Auto-terminating PID %d.\n", childProcess->GetPid());
+            if (!childProcess->SendSignal(SIGTERM, true) && errno != ESRCH)
+            {
+                TRACE_ERROR("Failed to auto-terminate %d (%d).", childProcess->GetPid(), errno);
+            }
+        }
+    }
 }

@@ -15,6 +15,7 @@ namespace Asmichi.Utilities.ProcessManagement
         private const uint RequestFlagsRedirectStdout = 1U << 1;
         private const uint RequestFlagsRedirectStderr = 1U << 2;
         private const uint RequestFlagsCreateNewProcessGroup = 1 << 3;
+        private const uint RequestFlagsEnableAutoTermination = 1 << 4;
         private const int InitialBufferCapacity = 256; // Minimal capacity that every practical request will consume.
 
         private readonly UnixHelperProcess _helperProcess;
@@ -66,6 +67,13 @@ namespace Asmichi.Utilities.ProcessManagement
             else
             {
                 Debug.Assert(!startInfo.AllowSignal);
+            }
+
+            // If AttachToCurrentConsole (== !startInfo.AllowSignal), leave the process running after we (the parent) exit.
+            // After being orphaned (and possibly reparented to the shell), it may continue running or may be terminated by SIGTTIN/SIGTTOU.
+            if (startInfo.AllowSignal)
+            {
+                flags |= RequestFlagsEnableAutoTermination;
             }
 
             using var bw = new MyBinaryWriter(InitialBufferCapacity);
