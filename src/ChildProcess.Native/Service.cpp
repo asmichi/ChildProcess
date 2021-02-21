@@ -80,16 +80,8 @@ void Service::NotifySignal(int signum)
 
     switch (signum)
     {
-    case SIGINT:
-        n = NotificationToService::Interrupt;
-        break;
-
     case SIGQUIT:
         n = NotificationToService::Quit;
-        break;
-
-    case SIGTERM:
-        n = NotificationToService::Termination;
         break;
 
     case SIGCHLD:
@@ -217,18 +209,6 @@ void Service::HandleNotificationPipeInput()
 
         switch (notification)
         {
-        case NotificationToService::Interrupt:
-            // TODO: Propagate SIGINT to children.
-            // NOTE: It's up to the client whether the service should exit on SIGINT. (The service will exit when the connection is closed.)
-            TRACE_INFO("Caught SIGINT.\n");
-            break;
-
-        case NotificationToService::Termination:
-            // TODO: Propagate SIGTERM to children.
-            // NOTE: It's up to the client whether the service should exit on SIGTERM. (The service will exit when the connection is closed.)
-            TRACE_INFO("Caught SIGTERM).\n");
-            break;
-
         case NotificationToService::Quit:
             TRACE_FATAL("Caught SIGQUIT.\n");
             // We do not have any critical data to persist. Just quit by reraising the signal.

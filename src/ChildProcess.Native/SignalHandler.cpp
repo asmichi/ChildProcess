@@ -22,6 +22,10 @@ void SetupSignalHandlers()
     {
         SetSignalAction(SIGINT, 0);
     }
+    if (!IsSignalIgnored(SIGTERM))
+    {
+        SetSignalAction(SIGTERM, 0);
+    }
     if (!IsSignalIgnored(SIGQUIT))
     {
         SetSignalAction(SIGQUIT, 0);
@@ -79,7 +83,6 @@ void SignalHandler(int signum, siginfo_t* siginfo, void* context)
     // Dispatch the real work to the service thread.
     switch (signum)
     {
-    case SIGINT:
     case SIGQUIT:
     case SIGCHLD:
     {
@@ -89,6 +92,10 @@ void SignalHandler(int signum, siginfo_t* siginfo, void* context)
         break;
     }
 
+    // NOTE: It's up to the client whether the service should exit on SIGINT/SIGTERM. (The service will exit when the connection is closed.)
+    // NOTE: It's up to the client whether child processs in other process groups should be sent SIGINT/SIGTERM.
+    case SIGINT:
+    case SIGTERM:
     case SIGPIPE:
     default:
         // Ignored

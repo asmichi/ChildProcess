@@ -13,10 +13,6 @@
 
 enum class NotificationToService : std::uint8_t
 {
-    // SIGINT
-    Interrupt,
-    // SIGTERM
-    Termination,
     // SIGQUIT
     Quit,
     // Request the service to reap children (SIGCHLD or "child process registered to g_ChildProcessStateMap")
