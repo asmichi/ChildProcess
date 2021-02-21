@@ -11,6 +11,44 @@
 #include <unistd.h>
 #include <unordered_map>
 
+void ChildProcessState::Reap()
+{
+    const std::lock_guard<std::mutex> guard(mutex_);
+    assert(!isReaped_);
+    if (isReaped_)
+    {
+        return;
+    }
+
+    siginfo_t siginfo;
+    int ret = waitid(P_PID, pid_, &siginfo, WEXITED | WNOHANG);
+    if (ret < 0)
+    {
+        FatalErrorAbort(errno, "waitpid");
+    }
+
+    isReaped_ = true;
+}
+
+bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont)
+{
+    const std::lock_guard<std::mutex> guard(mutex_);
+    if (isReaped_)
+    {
+        return true;
+    }
+
+    const int target = isNewProcessGroup_ ? -pid_ : pid_;
+    const int ret = kill(target, sig);
+    if (ret == 0 && alsoSendSigCont)
+    {
+        int err = errno;
+        kill(target, SIGCONT);
+        errno = err;
+    }
+    return ret == 0;
+}
+
 void ChildProcessStateMap::Allocate(int pid, std::uint64_t token, bool isNewProcessGroup)
 {
     const auto pState = std::make_shared<ChildProcessState>(pid, token, isNewProcessGroup);
@@ -70,42 +108,4 @@ void ChildProcessStateMap::Delete(ChildProcessState* pState)
 
     byPid_.erase(pidIt);
     byToken_.erase(tokenIt);
-}
-
-void ChildProcessState::Reap()
-{
-    const std::lock_guard<std::mutex> guard(mutex_);
-    assert(!isReaped_);
-    if (isReaped_)
-    {
-        return;
-    }
-
-    siginfo_t siginfo;
-    int ret = waitid(P_PID, pid_, &siginfo, WEXITED | WNOHANG);
-    if (ret < 0)
-    {
-        FatalErrorAbort(errno, "waitpid");
-    }
-
-    isReaped_ = true;
-}
-
-bool ChildProcessState::SendSignal(int sig, bool alsoSendSigCont)
-{
-    const std::lock_guard<std::mutex> guard(mutex_);
-    if (isReaped_)
-    {
-        return true;
-    }
-
-    const int target = isNewProcessGroup_ ? -pid_ : pid_;
-    const int ret = kill(target, sig);
-    if (ret == 0 && alsoSendSigCont)
-    {
-        int err = errno;
-        kill(target, SIGCONT);
-        errno = err;
-    }
-    return ret == 0;
 }
