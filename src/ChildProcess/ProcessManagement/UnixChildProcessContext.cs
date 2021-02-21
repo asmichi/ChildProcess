@@ -19,6 +19,8 @@ namespace Asmichi.Utilities.ProcessManagement
         private const uint RequestFlagsRedirectStderr = 1U << 2;
         private const uint RequestFlagsCreateNewProcessGroup = 1 << 3;
         private const uint RequestFlagsEnableAutoTermination = 1 << 4;
+        private const uint RequestFlagsInheritEnvironmentVariables = 1 << 5;
+
         private const int InitialBufferCapacity = 256; // Minimal capacity that every practical request will consume.
 
         private readonly CancellationTokenSource _shutdownTokenSource = new CancellationTokenSource();
@@ -111,6 +113,11 @@ namespace Asmichi.Utilities.ProcessManagement
             if (startInfo.AllowSignal)
             {
                 flags |= RequestFlagsEnableAutoTermination;
+            }
+
+            if (startInfo.EnvironmentVariables is null)
+            {
+                flags |= RequestFlagsInheritEnvironmentVariables;
             }
 
             using var bw = new MyBinaryWriter(InitialBufferCapacity);

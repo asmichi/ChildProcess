@@ -51,7 +51,7 @@ namespace Asmichi.Utilities
         {
             var tempFile = Path.GetTempFileName();
 
-            var si = new ChildProcessStartInfo("ls", "/")
+            var si = new ChildProcessStartInfo("env")
             {
                 StdOutputRedirection = OutputRedirection.File,
                 StdErrorRedirection = OutputRedirection.File,
@@ -64,8 +64,7 @@ namespace Asmichi.Utilities
                 await p.WaitForExitAsync();
             }
 
-            // bin
-            // boot
+            // LANG=C.UTF-8
             // ...
             Console.WriteLine(File.ReadAllText(tempFile));
             File.Delete(tempFile);
