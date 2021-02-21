@@ -85,27 +85,23 @@ namespace Asmichi.Utilities
 
             for (int i = 0; i < N; i++)
             {
-                tasks[i] = SpawnCmdAsync();
+                tasks[i] = SpawnCmdAsync(i);
             }
 
             // Spawned 128 processes.
+            // ERROR: Timed out waiting for 'pause5'.
+            // (snip)
+            // ERROR: Timed out waiting for 'pause127'.
             // The 128 processes have exited.
-            // Elapsed Time: 3367 ms
+            // Elapsed Time: 3262 ms
             Console.WriteLine("Spawned {0} processes.", N);
             await Task.WhenAll(tasks);
             Console.WriteLine("The {0} processes have exited.", N);
             Console.WriteLine("Elapsed Time: {0} ms", stopWatch.ElapsedMilliseconds);
 
-            static async Task SpawnCmdAsync()
+            static async Task SpawnCmdAsync(int i)
             {
-                // Using timeout because Windows does not have a handy sleep command.
-                // (`powershell -NoProfile -Command Sleep 3` is not an option because
-                // it takes ~200 ms to boot.)
-                //
-                // This is super racy because these N timeout processes simultaneously
-                // attempts to perform PeekConsoleInput followed by ReadConsoleInput.
-                // When a console input arrives, some processes will get stuck in ReadConsoleInput.
-                var si = new ChildProcessStartInfo("timeout", "3")
+                var si = new ChildProcessStartInfo("waitfor", "/T", "3", $"pause{i}")
                 {
                     StdInputRedirection = InputRedirection.ParentInput,
                     StdOutputRedirection = OutputRedirection.NullDevice,
