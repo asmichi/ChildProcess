@@ -13,7 +13,7 @@ public:
     ~SubchannelCollection();
     Subchannel* Add(std::unique_ptr<Subchannel> subchannel);
     void Delete(Subchannel* key);
-    size_t Size() const { return map_.size(); }
+    size_t Size() const;
 
 private:
     // Serializes lookup, insertion and removal.

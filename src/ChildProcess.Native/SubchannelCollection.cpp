@@ -42,3 +42,10 @@ void SubchannelCollection::Delete(Subchannel* key)
     assert(it != map_.end());
     map_.erase(it);
 }
+
+size_t SubchannelCollection::Size() const
+{
+    const std::lock_guard<std::mutex> guard(mapMutex_);
+
+    return map_.size();
+}
