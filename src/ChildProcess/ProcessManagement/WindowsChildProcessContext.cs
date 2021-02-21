@@ -20,6 +20,10 @@ namespace Asmichi.Utilities.ProcessManagement
             Environment.GetFolderPath(Environment.SpecialFolder.System, Environment.SpecialFolderOption.DoNotVerify),
             "chcp.com");
 
+        public void Dispose()
+        {
+        }
+
         public unsafe IChildProcessStateHolder SpawnProcess(
             ref ChildProcessStartInfoInternal startInfo,
             string resolvedPath,

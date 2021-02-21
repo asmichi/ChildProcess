@@ -47,8 +47,6 @@ namespace Asmichi.Utilities.ProcessManagement
         private static readonly string HelperPath = GetHelperPath();
         private static readonly ReadOnlyMemory<byte> HelperHello = new byte[4] { 0x41, 0x53, 0x4d, 0x43 };
 
-        private readonly CancellationTokenSource _shutdownTokenSource = new CancellationTokenSource();
-        private readonly Task _readNotificationsTask;
         private readonly Process _helperProcess;
         private readonly Socket _mainChannelSocket;
         private readonly NetworkStream _mainChannel;
@@ -63,82 +61,16 @@ namespace Asmichi.Utilities.ProcessManagement
             _mainChannel = new NetworkStream(mainChannel, ownsSocket: true);
             _maxSubchannelCount = maxSubchannelCount;
             _subchannels = Channel.CreateUnbounded<UnixSubchannel>();
-            _readNotificationsTask = ReadNotificationsAsync(_shutdownTokenSource.Token);
         }
 
         public void Dispose()
         {
             _mainChannel.Dispose();
             _helperProcess.Dispose();
-            if (_readNotificationsTask.IsCompleted)
-            {
-                _shutdownTokenSource.Dispose();
-            }
-            else
-            {
-                _shutdownTokenSource.Cancel();
-            }
         }
 
-        public Task ShutdownAsync()
-        {
-            _shutdownTokenSource.Cancel();
-            return _readNotificationsTask;
-        }
-
-        private async Task ReadNotificationsAsync(CancellationToken cancellationToken)
-        {
-            Debug.Assert(Marshal.SizeOf<ChildExitNotification>() == ChildExitNotification.Size);
-            int carriedOverBytes = 0;
-            var buf = new byte[256];
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                int bytes = carriedOverBytes + await _mainChannel.ReadAsync(buf.AsMemory(carriedOverBytes), cancellationToken).ConfigureAwait(false);
-                int elementCount = bytes / ChildExitNotification.Size;
-                for (int i = 0; i < elementCount; i++)
-                {
-                    ProcessNotification(ref MemoryMarshal.AsRef<ChildExitNotification>(buf.AsSpan(i * ChildExitNotification.Size, ChildExitNotification.Size)));
-                }
-
-                carriedOverBytes = bytes % ChildExitNotification.Size;
-                if (carriedOverBytes != 0)
-                {
-                    Array.Copy(buf, bytes - carriedOverBytes, buf, 0, carriedOverBytes);
-                }
-            }
-        }
-
-        private static void ProcessNotification(ref ChildExitNotification notification)
-        {
-            if (!UnixChildProcessState.TryGetChildProcessState(notification.Token, out var holder))
-            {
-                // Ignore. This is a process where exec failed and we already reported that failure.
-                return;
-            }
-
-            using (holder)
-            {
-                if (holder.State.HasExitCode)
-                {
-                    Trace.WriteLine("warning: Multiple ChildExitNotification delivered to one process.");
-                }
-                else
-                {
-                    holder.State.SetExited(notification.Status);
-                }
-            }
-        }
-
-        // NOTE: Make sure to sync with the server.
-        [StructLayout(LayoutKind.Sequential)]
-        private struct ChildExitNotification
-        {
-            public const int Size = 16;
-
-            public long Token;
-            public int ProcessID;
-            public int Status;
-        }
+        public ValueTask<int> ReadFromMainChannelAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            _mainChannel.ReadAsync(buffer, cancellationToken);
 
         public ValueTask<UnixSubchannel> RentSubchannelAsync(CancellationToken cancellationToken)
         {
