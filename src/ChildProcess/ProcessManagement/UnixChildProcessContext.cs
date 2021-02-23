@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -19,7 +20,6 @@ namespace Asmichi.Utilities.ProcessManagement
         private const uint RequestFlagsRedirectStderr = 1U << 2;
         private const uint RequestFlagsCreateNewProcessGroup = 1 << 3;
         private const uint RequestFlagsEnableAutoTermination = 1 << 4;
-        private const uint RequestFlagsInheritEnvironmentVariables = 1 << 5;
 
         private const int InitialBufferCapacity = 256; // Minimal capacity that every practical request will consume.
 
@@ -115,11 +115,6 @@ namespace Asmichi.Utilities.ProcessManagement
                 flags |= RequestFlagsEnableAutoTermination;
             }
 
-            if (startInfo.EnvironmentVariables is null)
-            {
-                flags |= RequestFlagsInheritEnvironmentVariables;
-            }
-
             using var bw = new MyBinaryWriter(InitialBufferCapacity);
             var stateHolder = UnixChildProcessState.Create(this, startInfo.AllowSignal);
             try
@@ -138,7 +133,24 @@ namespace Asmichi.Utilities.ProcessManagement
 
                 if (environmentVariables == null)
                 {
-                    bw.Write(0U);
+                    // Send the environment variables of this process to the helper process.
+                    //
+                    // NOTE: We cannot cache or detect updates to the environment block; only the runtime can.
+                    //       Concurrently invoking getenv and setenv is a racy operation; therefore the runtime
+                    //       employs a process-global lock.
+                    //
+                    //       Fortunately, the caller can take a snapshot of environment variables theirselves.
+                    var processEnvironmentVariables = Environment.GetEnvironmentVariables();
+                    bw.Write((uint)processEnvironmentVariables.Count);
+
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                    foreach (DictionaryEntry de in processEnvironmentVariables)
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                    {
+                        var name = (string)de.Key;
+                        var value = (string)de.Value!;
+                        bw.WriteEnvironmentVariable(name, value);
+                    }
                 }
                 else
                 {

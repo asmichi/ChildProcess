@@ -159,7 +159,6 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
 
     const bool shouldCreateNewProcessGroup = r.Flags & RequestFlagsCreateNewProcessGroup;
     const bool shouldAutoTerminate = r.Flags & RequestFlagsEnableAutoTermination;
-    const bool shouldInheritEnvironmentVariables = r.Flags & RequestFlagsInheritEnvironmentVariables;
     int childPid = fork();
     if (childPid == -1)
     {
@@ -215,8 +214,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         }
 
         // NOTE: POSIX specifies execve shall not modify argv and envp.
-        char* const* const envp = shouldInheritEnvironmentVariables ? environ : const_cast<char* const*>(&r.Envp[0]);
-        execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), envp);
+        execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
 
         reportError(inPipe.WriteEnd.Get(), errno);
         _exit(1);
