@@ -18,6 +18,40 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="$(WorktreeRoot)\build\msbuild\CopyNativeAssets.targets" />
+
+  <!--
+    An exstreme hack to work around https://github.com/dotnet/sdk/issues/1088:
+    directly inject items into the GenerateDepsFile task.
+    WARNING: This will probably break on a future version of the SDK.
+  -->
+  <Target Name="Workaround" BeforeTargets="GenerateBuildDependencyFile">
+    <ItemGroup>
+      <RuntimeTargetsCopyLocalItems Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\libAsmichiChildProcess.so">
+        <AssetType>native</AssetType>
+        <CopyLocal>true</CopyLocal>
+        <DestinationSubDirectory>runtimes\linux-x64\native\</DestinationSubDirectory>
+        <DestinationSubPath>runtimes\linux-x64\native\libAsmichiChildProcess.so</DestinationSubPath>
+        <!--
+          This needs to be an actually referenced *NuGet package*. 
+          https://github.com/dotnet/sdk/blob/v5.0.103/src/Tasks/Microsoft.NET.Build.Tasks/DependencyContextBuilder.cs#L532
+        -->
+        <NuGetPackageId>StyleCop.Analyzers</NuGetPackageId>
+        <NuGetPackageVersion>1.2.0-beta.205</NuGetPackageVersion>
+        <PathInPackage>runtimes/linux-x64/native/libAsmichiChildProcess.so</PathInPackage>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+      </RuntimeTargetsCopyLocalItems>
+      <RuntimeTargetsCopyLocalItems Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\AsmichiChildProcessHelper">
+        <AssetType>native</AssetType>
+        <CopyLocal>true</CopyLocal>
+        <DestinationSubDirectory>runtimes\linux-x64\native\</DestinationSubDirectory>
+        <DestinationSubPath>runtimes\linux-x64\native\AsmichiChildProcessHelper</DestinationSubPath>
+        <NuGetPackageId>StyleCop.Analyzers</NuGetPackageId>
+        <NuGetPackageVersion>1.2.0-beta.205</NuGetPackageVersion>
+        <PathInPackage>runtimes/linux-x64/native/AsmichiChildProcessHelper</PathInPackage>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+      </RuntimeTargetsCopyLocalItems>
+    </ItemGroup>
+    <!-- etc., etc., ... -->
+  </Target>
 
 </Project>
