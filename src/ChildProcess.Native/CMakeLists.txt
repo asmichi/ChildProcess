@@ -58,9 +58,10 @@ if(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
-        TestChildMain.win32.cpp
+        tests/TestChildMain.win32.cpp
     )
     add_executable(${testChildName} ${testChildSources}>)
+    target_include_directories(${testChildName} PRIVATE include)
     target_compile_features(${testChildName} PRIVATE cxx_std_17)
     target_link_libraries(${testChildName})
 
@@ -82,6 +83,7 @@ else(WIN32)
     #
     add_library(${objlibName} OBJECT ${objlibSources})
     target_compile_features(${objlibName} PRIVATE cxx_std_17)
+    target_include_directories(${objlibName} PUBLIC include)
     # These objects are primarily used for producing a shared library, hence POSITION_INDEPENDENT_CODE.
     set_property(TARGET ${objlibName} PROPERTY POSITION_INDEPENDENT_CODE 1)
 
@@ -114,9 +116,10 @@ else(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
-        TestChildMain.unix.cpp
+        tests/TestChildMain.unix.cpp
     )
     add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
+    target_include_directories(${testChildName} PRIVATE include)
     target_compile_features(${testChildName} PRIVATE cxx_std_17)
     target_link_libraries(${testChildName}
         Threads::Threads
