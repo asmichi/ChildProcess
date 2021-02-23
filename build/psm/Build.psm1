@@ -79,5 +79,15 @@ function Get-CommonBuildOptions {
     )
 }
 
+function Get-VsDevCmdLocation {
+    $vswhere = Join-Path ${Env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
+    $vs2019 = & $vswhere -nologo -format json -latest -version "[16.0,17.0)" -requires Microsoft.VisualStudio.Workload.NativeDesktop | ConvertFrom-Json
+    if ($null -eq $vs2019) {
+        throw "VS2019 not found."
+    }
+    return Join-Path $vs2019.installationPath "Common7/Tools/VsDevCmd.bat"
+}
+
 Export-ModuleMember -Function Get-CommonBuildOptions
 Export-ModuleMember -Function Get-VersionInfo
+Export-ModuleMember -Function Get-VsDevCmdLocation

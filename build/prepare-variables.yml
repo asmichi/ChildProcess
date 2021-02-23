@@ -4,6 +4,7 @@ steps:
   - task: PowerShell@2
     displayName: 'Set Variables'
     inputs:
+      pwsh: true
       targetType: 'filePath'
       failOnStderr: true
       filePath: '$(Build.SourcesDirectory)/build/SetAzurePipelineVariables.ps1'

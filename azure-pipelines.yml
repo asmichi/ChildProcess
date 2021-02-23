@@ -28,6 +28,7 @@ jobs:
 
   steps:
   - task: Bash@3
+    displayName: 'Build Native Linux'
     inputs:
       targetType: 'filePath'
       filePath: 'src/ChildProcess.Native/Subbuild-linux.sh'
@@ -35,6 +36,39 @@ jobs:
 
   - publish: 'obj/Subbuild-linux/bin'
     artifact: 'ChildProcess.Native-linux'
+
+- job: build_native_win
+
+  pool:
+    vmImage: 'windows-2019'
+
+  steps:
+  - task: PowerShell@2
+    displayName: 'Set VSDEVCMD_LOCATION'
+    inputs:
+      pwsh: true
+      targetType: 'filePath'
+      failOnStderr: true
+      filePath: '$(Build.SourcesDirectory)/build/SetVsDevCmdLocation.ps1'
+
+  - task: BatchScript@1
+    displayName: 'Call VsDevCmd.bat'
+    inputs:
+      filename: '$(VSDEVCMD_LOCATION)'
+      arguments: '-no_logo -arch=amd64 -host_arch=amd64'
+      failOnStderr: true
+      modifyEnvironment: true
+
+  - task: PowerShell@2
+    displayName: 'Build Native Windows'
+    inputs:
+      pwsh: true
+      targetType: 'filePath'
+      filePath: 'src/ChildProcess.Native/Subbuild-win.ps1'
+      arguments: '$(Build.SourcesDirectory)'
+
+  - publish: 'bin/ChildProcess.Native'
+    artifact: 'ChildProcess.Native-win'
 
 - job: test_linux
 
@@ -67,7 +101,9 @@ jobs:
 
 - job: build
 
-  dependsOn: build_native_linux
+  dependsOn:
+    - build_native_linux
+    - build_native_win
 
   pool:
     vmImage: 'windows-2019'
@@ -80,6 +116,12 @@ jobs:
     inputs:
       source: current
       artifact: 'ChildProcess.Native-linux'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-win'
       path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
 
   - template: 'build/build-and-test.yml'

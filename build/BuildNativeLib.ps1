@@ -17,6 +17,8 @@ Set-StrictMode -Version latest
 
 $ErrorActionPreference = "Stop"
 
+Import-Module "$PSScriptRoot\psm\Build.psm1"
+
 $worktreeRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
 $linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20201102.1"
@@ -51,14 +53,7 @@ if (Test-Path Env:VCToolsInstallDir) {
 }
 else {
     $invokeCommandInVsDevCmd = Join-Path $worktreeRoot "build/Invoke-CommandInVsDevCmd.cmd"
-    $vswhere = Join-Path ${Env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
-    $vs2019 = & $vswhere -nologo -format json -latest -version "[16.0,17.0)" -requires Microsoft.VisualStudio.Workload.NativeDesktop | ConvertFrom-Json
-    if ($null -eq $vs2019) {
-        Write-Error "VS2019 not found."
-        exit 1
-    }
-    $vsDevCmd = Join-Path $vs2019.installationPath "Common7/Tools/VsDevCmd.bat"
-
+    $vsDevCmd = Get-VsDevCmdLocation
     $winJob = Start-ThreadJob -ScriptBlock { & $using:invokeCommandInVsDevCmd $using:vsDevCmd $using:pwsh $using:subbuildWin @using:subbuildWinArgs }
 }
 

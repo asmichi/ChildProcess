@@ -38,9 +38,14 @@ function Start-Build() {
         Pop-Location
         
         ninja -C $buildDir
-        
-        New-Item -ItemType Directory -Force $outDir | Out-Null
-        Copy-Item "$buildDir/bin/*" -Destination $outDir
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "build failed ($Arch $Configuration)"
+        }
+        else {
+            New-Item -ItemType Directory -Force $outDir | Out-Null
+            Copy-Item "$buildDir/bin/*" -Destination $outDir
+        }
     }
 }
 
