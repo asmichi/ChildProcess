@@ -182,21 +182,21 @@ extern "C" int GetPid()
     return static_cast<int>(getpid());
 }
 
-// Opens "/dev/nul" with the specified mode.
+// Opens "/dev/null" with the specified nativeAccess.
 extern "C" std::intptr_t OpenNullDevice(int fileAccess)
 {
-    mode_t mode;
-    if (fileAccess & (FileAccessRead | FileAccessWrite))
+    int nativeAccess;
+    if ((fileAccess & (FileAccessRead | FileAccessWrite)) == (FileAccessRead | FileAccessWrite))
     {
-        mode = O_RDWR;
+        nativeAccess = O_RDWR;
     }
     else if (fileAccess & FileAccessRead)
     {
-        mode = O_RDONLY;
+        nativeAccess = O_RDONLY;
     }
     else if (fileAccess & FileAccessWrite)
     {
-        mode = O_WRONLY;
+        nativeAccess = O_WRONLY;
     }
     else
     {
@@ -204,7 +204,7 @@ extern "C" std::intptr_t OpenNullDevice(int fileAccess)
         return -1;
     }
 
-    return open("/dev/null", O_CLOEXEC, mode);
+    return open("/dev/null", O_CLOEXEC | nativeAccess);
 }
 
 // Creates a subchannel.
