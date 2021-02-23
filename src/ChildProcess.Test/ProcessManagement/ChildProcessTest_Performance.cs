@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
-    public class PerformanceTest
+    public class ChildProcessTest_Performance
     {
         [Fact]
         public void ChildProcessWaitForAsyncIsTrulyAsynchronous()
