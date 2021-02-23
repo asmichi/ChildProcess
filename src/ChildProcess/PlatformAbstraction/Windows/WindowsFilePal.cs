@@ -49,7 +49,7 @@ namespace Asmichi.Utilities.PlatformAbstraction.Windows
         private static uint ToNativeDesiredAccess(FileAccess fileAccess)
         {
             return (((fileAccess & FileAccess.Read) != 0) ? Kernel32.GENERIC_READ : 0)
-                & (((fileAccess & FileAccess.Write) != 0) ? Kernel32.GENERIC_WRITE : 0);
+                | (((fileAccess & FileAccess.Write) != 0) ? Kernel32.GENERIC_WRITE : 0);
         }
 
         public (SafeFileHandle readPipe, SafeFileHandle writePipe) CreatePipePair()
