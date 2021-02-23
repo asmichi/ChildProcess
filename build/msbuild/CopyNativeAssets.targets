@@ -1,19 +1,34 @@
 <Project>
 
-  <ItemGroup>
-    <!--
-      Workaround for https://github.com/dotnet/sdk/issues/1088.
-      Copy native assets for the current OS (currently linux-x64 only) to $(OutputPath) so that CLR can pick them.
-    -->
-    <Content Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\libAsmichiChildProcess.so">
+  <!--
+    Workaround for https://github.com/dotnet/sdk/issues/1088.
+    Copy native assets for the current OS to $(OutputPath) so that CLR can pick them.
+  -->
+  <PropertyGroup>
+    <NativeAssetsRid Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-x64</NativeAssetsRid>
+    <NativeAssetsRid Condition="$([MSBuild]::IsOSPlatform('Windows'))">win-x64</NativeAssetsRid>
+    <NativeAssetsExeExtension Condition="'$(NativeAssetsRid)'=='win-x64'">.exe</NativeAssetsExeExtension>
+    <NativeAssetsHaveHelper Condition="'$(NativeAssetsRid)'!='win-x64'">true</NativeAssetsHaveHelper>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(NativeAssetsHaveHelper)'=='true'">
+    <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\libAsmichiChildProcess.so">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libAsmichiChildProcess.so</Link>
     </Content>
-    <Content Include="$(BinDir)ChildProcess.Native\linux-x64\$(Configuration)\AsmichiChildProcessHelper">
+    <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\AsmichiChildProcessHelper">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>AsmichiChildProcessHelper</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\TestChildNative$(NativeAssetsExeExtension)">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>TestChildNative$(NativeAssetsExeExtension)</Link>
     </Content>
   </ItemGroup>
 

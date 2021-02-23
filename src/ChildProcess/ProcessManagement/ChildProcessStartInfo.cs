@@ -45,7 +45,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <para>
         /// Specifies that the child process should be attached to the current console.
         /// If it is set, the child process will be attached the current console
-        /// and you cannot send any signals to the process (except SIGKILL).
+        /// and you cannot send any signals to the process (except <see cref="IChildProcess.Kill"/>).
         /// If it is not set, the child process will be attached to a new console.
         /// </para>
         /// <para>
@@ -55,7 +55,11 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <para>
         /// (Windows-specific) If it is set and the current process is not attached to a console,
         /// the child process will be attached to a pseudo console.
-        /// You still cannot send the Ctrl+C signal to the process.
+        /// You still cannot send the signals to the process (except <see cref="IChildProcess.Kill"/>).
+        /// </para>
+        /// <para>
+        /// (Non-Windows-specific) If it is set, a new process group will be created whose leader is the child process.
+        /// If it is not set, the child process will be attached to the current process group.
         /// </para>
         /// </summary>
         AttachToCurrentConsole = 0x0008,

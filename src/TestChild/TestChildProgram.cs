@@ -2,8 +2,10 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace Asmichi.Utilities
@@ -70,11 +72,13 @@ namespace Asmichi.Utilities
 
         private static int CommandDumpEnvironmentVariables()
         {
-            var evars = Environment.GetEnvironmentVariables();
+            // Output in UTF-8 so that the output will not be affected by the current code page.
+            using var sw = new StreamWriter(Console.OpenStandardOutput(), Encoding.UTF8);
 
+            var evars = Environment.GetEnvironmentVariables();
             foreach (var key in evars.Keys.Cast<string>().OrderBy(x => x))
             {
-                Console.Write("{0}={1}\0", key, (string?)evars[key]);
+                sw.Write("{0}={1}\0", key, (string?)evars[key]);
             }
 
             return 0;

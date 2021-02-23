@@ -117,12 +117,14 @@ namespace Asmichi.Utilities.ProcessManagement
         void SignalTermination();
 
         /// <summary>
-        /// <para>Forcibly kills the process group. Succeeds if the process has already exited.</para>
+        /// <para>Forcibly kills the process group or the process. Succeeds if the process has already exited.</para>
         /// <para>
         /// (Windows-specific) Calls TerminateJobObject with exit code -1 on the job object associated to the process tree,
         /// which kills each process in the process tree unless it broke away from the job object using CREATE_BREAKAWAY_FROM_JOB.
         /// </para>
-        /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
+        /// <para>
+        /// (Non-Windows-specific) Sends SIGKILL to the process group or the process.
+        /// (A new process group is created if and only if <see cref="ChildProcessFlags.AttachToCurrentConsole"/> is unset).</para>
         /// </summary>
         void Kill();
     }

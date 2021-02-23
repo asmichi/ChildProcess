@@ -58,7 +58,8 @@ if(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
-        tests/TestChildMain.win32.cpp
+        tests/ReportSignal.win.cpp
+        tests/TestChildMain.cpp
     )
     add_executable(${testChildName} ${testChildSources}>)
     target_include_directories(${testChildName} PRIVATE include)
@@ -116,7 +117,10 @@ else(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
-        tests/TestChildMain.unix.cpp
+        tests/ReportSignal.unix.cpp
+        tests/Startup.unix.cpp
+        tests/TestChildMain.cpp
+        tests/TestSignalHandler.cpp
     )
     add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
     target_include_directories(${testChildName} PRIVATE include)

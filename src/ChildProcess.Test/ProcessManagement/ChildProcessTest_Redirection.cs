@@ -11,7 +11,182 @@ namespace Asmichi.Utilities.ProcessManagement
     public sealed class ChildProcessTest_Redirection
     {
         [Fact]
-        public async Task CorrectlyConnectOutputPipes()
+        public void RejectsInvalidRedirection()
+        {
+            using var tmp = new TemporaryDirectory();
+            var filePath = Path.Combine(tmp.Location, "file");
+
+            // null
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdInputRedirection = InputRedirection.Handle }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdInputRedirection = InputRedirection.File }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdOutputRedirection = OutputRedirection.Handle }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdOutputRedirection = OutputRedirection.File }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdOutputRedirection = OutputRedirection.AppendToFile }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdErrorRedirection = OutputRedirection.Handle }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdErrorRedirection = OutputRedirection.File }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdErrorRedirection = OutputRedirection.AppendToFile }));
+
+            // Enum value out of range
+            Assert.Throws<ArgumentOutOfRangeException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdInputRedirection = (InputRedirection)(-1) }));
+            Assert.Throws<ArgumentOutOfRangeException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdOutputRedirection = (OutputRedirection)(-1) }));
+            Assert.Throws<ArgumentOutOfRangeException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath) { StdErrorRedirection = (OutputRedirection)(-1) }));
+
+            // When both stdout and stderr are redirected to the same file, they must have the same "append" option.
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath)
+                {
+                    StdOutputFile = filePath,
+                    StdOutputRedirection = OutputRedirection.File,
+                    StdErrorFile = filePath,
+                    StdErrorRedirection = OutputRedirection.AppendToFile,
+                }));
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath)
+                {
+                    StdOutputFile = filePath,
+                    StdOutputRedirection = OutputRedirection.AppendToFile,
+                    StdErrorFile = filePath,
+                    StdErrorRedirection = OutputRedirection.File,
+                }));
+        }
+
+        [Fact]
+        public void StreamPropertiesThrowWhenNoPipeAssociated()
+        {
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "ExitCode", "0")
+            {
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.NullDevice,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            using var sut = ChildProcess.Start(si);
+
+            Assert.False(sut.HasStandardInput);
+            Assert.False(sut.HasStandardOutput);
+            Assert.False(sut.HasStandardError);
+            Assert.Throws<InvalidOperationException>(() => sut.StandardInput);
+            Assert.Throws<InvalidOperationException>(() => sut.StandardOutput);
+            Assert.Throws<InvalidOperationException>(() => sut.StandardError);
+
+            sut.WaitForExit();
+        }
+
+        [Fact]
+        public void RedirectionToNull()
+        {
+            {
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoBack")
+                {
+                    StdInputRedirection = InputRedirection.NullDevice,
+                    StdOutputRedirection = OutputRedirection.NullDevice,
+                    StdErrorRedirection = OutputRedirection.NullDevice,
+                };
+
+                using var sut = ChildProcess.Start(si);
+                sut.WaitForExit();
+                Assert.Equal(0, sut.ExitCode);
+            }
+
+            {
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoOutAndError")
+                {
+                    StdInputRedirection = InputRedirection.NullDevice,
+                    StdOutputRedirection = OutputRedirection.NullDevice,
+                    StdErrorRedirection = OutputRedirection.NullDevice,
+                };
+
+                using var sut = ChildProcess.Start(si);
+                sut.WaitForExit();
+                Assert.Equal(0, sut.ExitCode);
+            }
+        }
+
+        [Fact]
+        public void ConnectsInputPipe()
+        {
+            using var tmp = new TemporaryDirectory();
+            var outFile = Path.Combine(tmp.Location, "out");
+
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoBack")
+            {
+                StdInputRedirection = InputRedirection.InputPipe,
+                StdOutputRedirection = OutputRedirection.File,
+                StdOutputFile = outFile,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            using var sut = ChildProcess.Start(si);
+            const string Text = "foo";
+            using (var sw = new StreamWriter(sut.StandardInput))
+            {
+                sw.Write(Text);
+            }
+            sut.WaitForExit();
+
+            Assert.True(sut.HasStandardInput);
+            Assert.False(sut.HasStandardOutput);
+            Assert.False(sut.HasStandardError);
+            Assert.Equal(Text, File.ReadAllText(outFile));
+        }
+
+        [Fact]
+        public void ConnectsOutputPipe()
+        {
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoOutAndError")
+            {
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.OutputPipe,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            using var sut = ChildProcess.Start(si);
+            using var sr = new StreamReader(sut.StandardOutput);
+            var output = sr.ReadToEnd();
+            sut.WaitForExit();
+
+            Assert.False(sut.HasStandardInput);
+            Assert.True(sut.HasStandardOutput);
+            Assert.False(sut.HasStandardError);
+            Assert.Equal(0, sut.ExitCode);
+            Assert.Equal("TestChild.Out", output);
+        }
+
+        [Fact]
+        public void ConnectsErrorPipe()
+        {
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoOutAndError")
+            {
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.NullDevice,
+                StdErrorRedirection = OutputRedirection.ErrorPipe,
+            };
+
+            using var sut = ChildProcess.Start(si);
+            using var sr = new StreamReader(sut.StandardError);
+            var output = sr.ReadToEnd();
+            sut.WaitForExit();
+
+            Assert.False(sut.HasStandardInput);
+            Assert.False(sut.HasStandardOutput);
+            Assert.True(sut.HasStandardError);
+            Assert.Equal(0, sut.ExitCode);
+            Assert.Equal("TestChild.Error", output);
+        }
+
+        [Fact]
+        public async Task ConnectOutputAndErrorPipes()
         {
             {
                 var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoOutAndError")
@@ -21,7 +196,7 @@ namespace Asmichi.Utilities.ProcessManagement
                 };
 
                 using var sut = ChildProcess.Start(si);
-                await CorrectlyConnectsPipesAsync(sut, "TestChild.Out", "TestChild.Error");
+                await Impl(sut, "TestChild.Out", "TestChild.Error");
             }
 
             {
@@ -33,20 +208,21 @@ namespace Asmichi.Utilities.ProcessManagement
                 };
 
                 using var sut = ChildProcess.Start(si);
-                await CorrectlyConnectsPipesAsync(sut, "TestChild.Error", "TestChild.Out");
+                await Impl(sut, "TestChild.Error", "TestChild.Out");
             }
-        }
 
-        private static async Task CorrectlyConnectsPipesAsync(IChildProcess sut, string expectedStdout, string expectedStderr)
-        {
-            using var srOut = new StreamReader(sut.StandardOutput);
-            using var srErr = new StreamReader(sut.StandardError);
-            var stdoutTask = srOut.ReadToEndAsync();
-            var stderrTask = srErr.ReadToEndAsync();
-            sut.WaitForExit();
+            static async Task Impl(IChildProcess sut, string expectedStdout, string expectedStderr)
+            {
+                using var srOut = new StreamReader(sut.StandardOutput);
+                using var srErr = new StreamReader(sut.StandardError);
+                var stdoutTask = srOut.ReadToEndAsync();
+                var stderrTask = srErr.ReadToEndAsync();
+                sut.WaitForExit();
 
-            Assert.Equal(expectedStdout, await stdoutTask);
-            Assert.Equal(expectedStderr, await stderrTask);
+                Assert.Equal(0, sut.ExitCode);
+                Assert.Equal(expectedStdout, await stdoutTask);
+                Assert.Equal(expectedStderr, await stderrTask);
+            }
         }
 
         [Fact]

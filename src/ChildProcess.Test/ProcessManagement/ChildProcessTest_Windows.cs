@@ -1,13 +1,14 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+using System;
 using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
+using static Asmichi.Utilities.ProcessManagement.ChildProcessExecutionTestUtil;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
-    public sealed class ChildProcessTest_Windows
+    public sealed class ChildProcessTest_Signals
     {
         [Fact]
         public void CanChangeCodePage()
@@ -33,14 +34,27 @@ namespace Asmichi.Utilities.ProcessManagement
                     StdOutputRedirection = OutputRedirection.OutputPipe,
                 };
 
-                using var sut = ChildProcess.Start(si);
-                using var sr = new StreamReader(sut.StandardOutput);
-                var output = sr.ReadToEnd();
-                sut.WaitForExit();
-
-                Assert.Equal(0, sut.ExitCode);
+                var output = ExecuteForStandardOutput(si);
                 Assert.Equal(codePage.ToString(CultureInfo.InvariantCulture), output);
             }
+        }
+
+        [Fact]
+        public void ThrowsOnChcpFailure()
+        {
+            // Code pages are Windows-specific.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoCodePage")
+            {
+                CodePage = 0,
+                Flags = ChildProcessFlags.UseCustomCodePage,
+            };
+
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(si));
         }
     }
 }

@@ -7,11 +7,29 @@ using System.ComponentModel;
 using System.IO;
 using Asmichi.Utilities.Utilities;
 using Xunit;
+using static System.FormattableString;
+using static Asmichi.Utilities.ProcessManagement.ChildProcessExecutionTestUtil;
 
 namespace Asmichi.Utilities.ProcessManagement
 {
     public sealed class ChildProcessTest_Creation
     {
+        // NOTE: Redirection-related arguments are covered by ChildProcessTest_Redirection.
+        [Fact]
+        public void RejectsInvalidStartInfos()
+        {
+            // null
+            Assert.Throws<ArgumentException>(
+                () => ChildProcess.Start(new ChildProcessStartInfo { FileName = "a", Arguments = null! }));
+            Assert.Throws<ArgumentException>(
+                () => ChildProcess.Start(new ChildProcessStartInfo { FileName = null, Arguments = Array.Empty<string>() }));
+
+            // Invalid Flags
+            Assert.Throws<ArgumentException>(() => ChildProcess.Start(
+                new ChildProcessStartInfo(TestUtil.TestChildNativePath)
+                { Flags = ChildProcessFlags.AttachToCurrentConsole | ChildProcessFlags.UseCustomCodePage }));
+        }
+
         [Fact]
         public void CanCreateChildProcess()
         {
@@ -21,12 +39,12 @@ namespace Asmichi.Utilities.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
+            using var sr = new StreamReader(sut.StandardOutput);
+            var output = sr.ReadToEnd();
+
             sut.WaitForExit();
             Assert.Equal(0, sut.ExitCode);
-
-            // This closes StandardOutput, which should be acceptable.
-            using var sr = new StreamReader(sut.StandardOutput);
-            Assert.Equal("TestChild", sr.ReadToEnd());
+            Assert.Equal("TestChild", output);
         }
 
         [Fact]
@@ -89,11 +107,31 @@ namespace Asmichi.Utilities.ProcessManagement
                 WorkingDirectory = tmp.Location,
             };
 
-            using var sut = ChildProcess.Start(si);
-            using var sr = new StreamReader(sut.StandardOutput);
-            var output = sr.ReadToEnd();
-            sut.WaitForExit();
+            var output = ExecuteForStandardOutput(si);
             Assert.Equal(tmp.Location, output);
+        }
+
+        // Assumes we do not change the environment variables of the current process.
+        [Fact]
+        public void InheritsEnvironmentVariables()
+        {
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "DumpEnvironmentVariables")
+            {
+                StdOutputRedirection = OutputRedirection.OutputPipe,
+            };
+
+            var output = ExecuteForStandardOutput(si);
+            var childEvars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+            foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+            {
+                var key = (string)de.Key;
+                var value = (string)de.Value!;
+
+                Assert.Contains(Invariant($"{key}={value}"), childEvars);
+            }
         }
 
         [Fact]
@@ -105,13 +143,9 @@ namespace Asmichi.Utilities.ProcessManagement
                 EnvironmentVariables = GetTestEnvironmentVariables(),
             };
 
-            using var sut = ChildProcess.Start(si);
-            using var sr = new StreamReader(sut.StandardOutput);
-            var output = sr.ReadToEnd();
+            var output = ExecuteForStandardOutput(si);
             var childEvars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-            sut.WaitForExit();
 
-            Assert.Equal(0, sut.ExitCode);
             Assert.Contains("A=a", childEvars);
             Assert.Contains("BB=bb", childEvars);
 
