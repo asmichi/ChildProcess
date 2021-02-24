@@ -32,7 +32,7 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 RIDs:
 
 - `win10-x86` (Not tested)
-- `win10-x64` (1803 or later)
+- `win10-x64` (1809 or later)
 - `win10-arm` (Not tested)
 - `win10-arm64` (Not tested)
 - `linux-x64`
