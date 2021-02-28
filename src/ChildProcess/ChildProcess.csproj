@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>Asmichi.Utilities.ChildProcess</AssemblyName>
+    <AssemblyName>Asmichi.ChildProcess</AssemblyName>
     <CodeAnalysisRuleSet>..\PublicAssembly.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>$(OutDir)$(AssemblyName).xml</DocumentationFile>
     <RootNamespace>Asmichi.Utilities</RootNamespace>
