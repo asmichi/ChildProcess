@@ -4,9 +4,10 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Asmichi.Utilities;
 using Xunit;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public sealed class ChildProcessTest_Redirection
     {

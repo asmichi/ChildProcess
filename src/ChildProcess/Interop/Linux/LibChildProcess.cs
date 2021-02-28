@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.Interop.Linux
+namespace Asmichi.Interop.Linux
 {
     internal static class LibChildProcess
     {

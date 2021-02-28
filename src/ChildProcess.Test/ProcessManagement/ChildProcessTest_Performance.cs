@@ -4,9 +4,10 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Asmichi.Utilities;
 using Xunit;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public class ChildProcessTest_Performance
     {

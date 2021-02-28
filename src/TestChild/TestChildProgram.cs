@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-namespace Asmichi.Utilities
+namespace Asmichi
 {
     internal static class TestChildProgram
     {

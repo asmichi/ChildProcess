@@ -7,11 +7,11 @@ using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Asmichi.Utilities.Interop.Windows;
-using Asmichi.Utilities.PlatformAbstraction.Utilities;
+using Asmichi.Interop.Windows;
+using Asmichi.PlatformAbstraction.Utilities;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Windows
+namespace Asmichi.PlatformAbstraction.Windows
 {
     internal sealed class WindowsFilePal : IFilePal
     {

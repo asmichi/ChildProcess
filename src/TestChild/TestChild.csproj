@@ -10,7 +10,7 @@
     <AssemblyName>TestChild</AssemblyName>
     <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Asmichi.Utilities</RootNamespace>
+    <RootNamespace>Asmichi</RootNamespace>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

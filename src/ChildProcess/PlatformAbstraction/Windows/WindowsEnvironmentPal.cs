@@ -1,8 +1,8 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
-using Asmichi.Utilities.Interop.Windows;
+using Asmichi.Interop.Windows;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Windows
+namespace Asmichi.PlatformAbstraction.Windows
 {
     internal sealed class WindowsEnvironmentPal : IEnvironmentPal
     {

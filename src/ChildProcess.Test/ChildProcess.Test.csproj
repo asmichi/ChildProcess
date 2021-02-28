@@ -10,7 +10,7 @@
     <AssemblyName>Asmichi.ChildProcess.Test</AssemblyName>
     <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Asmichi.Utilities</RootNamespace>
+    <RootNamespace>Asmichi</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Asmichi.Utilities
+namespace Asmichi
 {
     internal static class Kernel32
     {

@@ -3,7 +3,7 @@
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Asmichi.Utilities
+namespace Asmichi
 {
     public static class ChildProcessExamples
     {

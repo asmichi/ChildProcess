@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public static class ChildProcessExecutionTestUtil
     {

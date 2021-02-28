@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 
-namespace Asmichi.Utilities.Utilities
+namespace Asmichi.Utilities
 {
     internal static class ArgumentValidationUtil
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// <para>

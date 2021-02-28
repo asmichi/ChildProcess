@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Specifies how a child process is created.

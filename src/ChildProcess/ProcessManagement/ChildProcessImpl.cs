@@ -4,9 +4,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Asmichi.Utilities.Utilities;
+using Asmichi.Utilities;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Represents a child process created.

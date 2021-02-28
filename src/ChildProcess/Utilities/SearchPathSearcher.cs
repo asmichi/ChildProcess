@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Asmichi.Utilities.Utilities
+namespace Asmichi.Utilities
 {
     /// <summary>
     /// Searches a search path for a file.

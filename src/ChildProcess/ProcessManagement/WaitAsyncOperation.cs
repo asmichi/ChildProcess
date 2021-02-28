@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 // We know WaitAsyncOperation objects will not be exposed.
 #pragma warning disable CA2002 // Do not lock on objects with weak identity
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     // Creates an asynchronous operation that performs WaitHandle.WaitOne and cleans itself up.
     internal sealed class WaitAsyncOperation

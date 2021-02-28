@@ -3,7 +3,7 @@
 using System.Runtime.InteropServices;
 
 // PERF: Not using virtual calls via interfaces so that those calls will be easy to inline.
-namespace Asmichi.Utilities.PlatformAbstraction
+namespace Asmichi.PlatformAbstraction
 {
     internal enum PlatformKind
     {

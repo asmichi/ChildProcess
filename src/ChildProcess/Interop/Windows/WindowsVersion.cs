@@ -1,9 +1,9 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
-using Asmichi.Utilities.ProcessManagement;
+using Asmichi.ProcessManagement;
 using static System.FormattableString;
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     internal static class WindowsVersion
     {

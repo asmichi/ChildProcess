@@ -5,9 +5,10 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Asmichi.Utilities;
 using Xunit;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public sealed class ChildProcessTest_Waiting
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction
+namespace Asmichi.PlatformAbstraction
 {
     internal interface IFilePal
     {

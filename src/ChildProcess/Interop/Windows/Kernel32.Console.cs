@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     internal static partial class Kernel32
     {

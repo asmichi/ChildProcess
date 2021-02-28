@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Thrown when the library (typically the helper process) crashed due to critical disturbance

@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public class ChildProcessStartInfoTest
     {

@@ -3,10 +3,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
-using Asmichi.Utilities.Interop.Windows;
+using Asmichi.Interop.Windows;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     internal class WindowsChildProcessState : IChildProcessStateHolder, IChildProcessState
     {

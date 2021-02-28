@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Asmichi.Utilities.PlatformAbstraction;
+using Asmichi.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Provides in/out/err handles of a pipeline.

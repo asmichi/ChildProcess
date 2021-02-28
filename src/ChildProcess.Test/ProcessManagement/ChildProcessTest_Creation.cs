@@ -5,12 +5,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using Asmichi.Utilities.Utilities;
+using Asmichi.Utilities;
 using Xunit;
 using static System.FormattableString;
-using static Asmichi.Utilities.ProcessManagement.ChildProcessExecutionTestUtil;
+using static Asmichi.ProcessManagement.ChildProcessExecutionTestUtil;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public sealed class ChildProcessTest_Creation
     {

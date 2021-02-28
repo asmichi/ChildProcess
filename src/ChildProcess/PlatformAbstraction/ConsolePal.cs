@@ -3,7 +3,7 @@
 using System;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction
+namespace Asmichi.PlatformAbstraction
 {
     internal interface IConsolePal
     {

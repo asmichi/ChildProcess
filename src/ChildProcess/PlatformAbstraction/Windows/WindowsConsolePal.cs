@@ -1,10 +1,10 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using Asmichi.Utilities.Interop.Windows;
+using Asmichi.Interop.Windows;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Windows
+namespace Asmichi.PlatformAbstraction.Windows
 {
     internal sealed class WindowsConsolePal : IConsolePal
     {

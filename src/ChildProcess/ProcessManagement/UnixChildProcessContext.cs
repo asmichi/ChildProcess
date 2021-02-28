@@ -9,8 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Asmichi.Utilities;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     internal sealed class UnixChildProcessContext : IChildProcessContext
     {

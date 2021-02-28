@@ -3,7 +3,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Utilities
+namespace Asmichi.PlatformAbstraction.Utilities
 {
     internal static class NamedPipeUtil
     {

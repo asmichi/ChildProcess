@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Asmichi.Utilities.Utilities
+namespace Asmichi.Utilities
 {
     // Cached completed Task<bool>
     internal static class CompletedBoolTask

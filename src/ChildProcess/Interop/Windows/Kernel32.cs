@@ -6,7 +6,7 @@ using Microsoft.Win32.SafeHandles;
 
 #pragma warning disable SA1310 // Field names must not contain underscore
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     internal static partial class Kernel32
     {

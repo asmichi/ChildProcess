@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Asmichi.Utilities.PlatformAbstraction
+namespace Asmichi.PlatformAbstraction
 {
     internal interface IEnvironmentPal
     {

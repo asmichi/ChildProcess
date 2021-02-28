@@ -10,11 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Asmichi.Utilities.Interop.Linux;
-using Asmichi.Utilities.PlatformAbstraction.Unix;
+using Asmichi.Interop.Linux;
+using Asmichi.PlatformAbstraction.Unix;
 using static System.FormattableString;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     // NOTE: Make sure to sync with the helper.
     internal enum UnixHelperProcessCommand : uint

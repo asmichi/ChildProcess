@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Asmichi.Utilities.ProcessManagement;
+using Asmichi.ProcessManagement;
 
-namespace Asmichi.Utilities
+namespace Asmichi
 {
     public static class ChildProcessExamplesUnix
     {

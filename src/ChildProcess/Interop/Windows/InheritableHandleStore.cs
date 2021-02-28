@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     /// <summary>
     /// Stores inheritable handles. When an uninheritable handle would be added, creates and stores a temporary inheritable duplicate of it.

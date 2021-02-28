@@ -1,9 +1,9 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
-using Asmichi.Utilities.Interop.Linux;
+using Asmichi.Interop.Linux;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Unix
+namespace Asmichi.PlatformAbstraction.Unix
 {
     internal class UnixConsolePal : IConsolePal
     {

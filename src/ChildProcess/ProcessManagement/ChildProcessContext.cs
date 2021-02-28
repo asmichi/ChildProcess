@@ -1,9 +1,9 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using Asmichi.Utilities.PlatformAbstraction;
+using Asmichi.PlatformAbstraction;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     internal static class ChildProcessContext
     {

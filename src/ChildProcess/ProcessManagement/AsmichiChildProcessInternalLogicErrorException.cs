@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Thrown when an internal logic error was detected within the Asmichi.ChildProcess library.

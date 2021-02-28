@@ -2,10 +2,11 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Asmichi.Utilities.Interop.Windows;
+using Asmichi.Interop.Windows;
+using Asmichi.Utilities;
 using Xunit;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     public sealed class ChildProcessTest_Windows
     {

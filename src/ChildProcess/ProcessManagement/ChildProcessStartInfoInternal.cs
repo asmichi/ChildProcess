@@ -2,10 +2,10 @@
 
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Asmichi.Utilities.PlatformAbstraction;
+using Asmichi.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Holds internal creation parameters in addition to <see cref="ChildProcessStartInfo"/>.

@@ -7,9 +7,9 @@ using System.Globalization;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Asmichi.Utilities.Interop.Linux;
+using Asmichi.Interop.Linux;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     internal sealed class UnixSubchannel : IDisposable
     {

@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Asmichi.Utilities.ProcessManagement;
+using Asmichi.ProcessManagement;
 
-namespace Asmichi.Utilities.Utilities
+namespace Asmichi.Utilities
 {
     internal static class ThrowHelper
     {

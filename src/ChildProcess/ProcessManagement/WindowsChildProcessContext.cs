@@ -7,12 +7,12 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using Asmichi.Utilities.Interop.Windows;
-using Asmichi.Utilities.PlatformAbstraction;
-using Asmichi.Utilities.Utilities;
+using Asmichi.Interop.Windows;
+using Asmichi.PlatformAbstraction;
+using Asmichi.Utilities;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     internal sealed class WindowsChildProcessContext : IChildProcessContext
     {

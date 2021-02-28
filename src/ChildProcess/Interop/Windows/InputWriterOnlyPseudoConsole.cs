@@ -2,10 +2,10 @@
 
 using System;
 using System.IO;
-using Asmichi.Utilities.PlatformAbstraction;
+using Asmichi.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     internal sealed class InputWriterOnlyPseudoConsole : IDisposable
     {

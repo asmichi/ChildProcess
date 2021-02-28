@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Reference-counts an <see cref="IChildProcessState"/> instance.

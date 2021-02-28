@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
 
-namespace Asmichi.Utilities.Interop.Windows
+namespace Asmichi.Interop.Windows
 {
     internal static partial class NtDll
     {

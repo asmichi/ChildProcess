@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using Asmichi.Utilities.PlatformAbstraction;
-using Asmichi.Utilities.Utilities;
+using Asmichi.PlatformAbstraction;
+using Asmichi.Utilities;
 
-namespace Asmichi.Utilities.ProcessManagement
+namespace Asmichi.ProcessManagement
 {
     /// <summary>
     /// Provides functionality for creating child processes.

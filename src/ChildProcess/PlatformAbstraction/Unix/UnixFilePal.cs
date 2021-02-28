@@ -7,11 +7,11 @@ using System.IO;
 using System.IO.Pipes;
 using System.Net.Sockets;
 using System.Threading;
-using Asmichi.Utilities.Interop.Linux;
-using Asmichi.Utilities.PlatformAbstraction.Utilities;
+using Asmichi.Interop.Linux;
+using Asmichi.PlatformAbstraction.Utilities;
 using Microsoft.Win32.SafeHandles;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Unix
+namespace Asmichi.PlatformAbstraction.Unix
 {
     internal sealed class UnixFilePal : IFilePal
     {

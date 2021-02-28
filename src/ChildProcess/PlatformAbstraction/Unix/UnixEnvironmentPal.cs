@@ -1,8 +1,8 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
-using Asmichi.Utilities.Interop.Linux;
+using Asmichi.Interop.Linux;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Unix
+namespace Asmichi.PlatformAbstraction.Unix
 {
     internal sealed class UnixEnvironmentPal : IEnvironmentPal
     {
