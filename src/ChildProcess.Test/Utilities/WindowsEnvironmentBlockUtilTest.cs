@@ -3,7 +3,7 @@
 using Xunit;
 using KV = System.Collections.Generic.KeyValuePair<string, string>;
 
-namespace Asmichi.Utilities
+namespace Asmichi.Utilities.Utilities
 {
     public class WindowsEnvironmentBlockUtilTest
     {

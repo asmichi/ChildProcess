@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-namespace Asmichi.Utilities.PlatformAbstraction.Windows
+namespace Asmichi.Utilities.Utilities
 {
     public class CommandLineUtilTest
     {
