@@ -109,7 +109,7 @@ namespace Asmichi.Utilities.ProcessManagement
         /// <para>Sends the termination signal to the process group. Succeeds if the process has already exited.</para>
         /// <para>
         /// (Windows-specific) Closes the pseudo console and the process will receive the CTRL_CLOSE_EVENT event.
-        /// Non-console processes are not currenyly supported.
+        /// Non-console processes are not currenyly supported. NOTE: See the known issues for an issue on Windows 10 1809 (including Windows Server 2019).
         /// </para>
         /// <para>(Non-Windows-specific) Sends SIGTERM to the process group.</para>
         /// </summary>

@@ -10,8 +10,10 @@ namespace Asmichi.Utilities.Interop.Windows
 {
     internal static partial class Kernel32
     {
+        // https://docs.microsoft.com/en-us/windows/win32/procthread/job-objects
         // JOBOBJECT_BASIC_LIMIT_INFORMATION.LimitFlags
         public const int JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800;
+        public const int JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000;
 
         [DllImport(DllName, EntryPoint = "CreateJobObjectW", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeJobObjectHandle CreateJobObject(

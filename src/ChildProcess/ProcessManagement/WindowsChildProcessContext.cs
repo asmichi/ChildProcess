@@ -195,8 +195,14 @@ namespace Asmichi.Utilities.ProcessManagement
                     throw new Win32Exception();
                 }
 
+                var limitFlags = Kernel32.JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+                if (WindowsVersion.NeedsWorkaroundForWindows1809)
+                {
+                    limitFlags |= Kernel32.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                }
+
                 var extendedLimitInformation = default(Kernel32.JOBOBJECT_EXTENDED_LIMIT_INFORMATION);
-                extendedLimitInformation.BasicLimitInformation.LimitFlags = Kernel32.JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+                extendedLimitInformation.BasicLimitInformation.LimitFlags = (uint)limitFlags;
                 if (!Kernel32.SetInformationJobObject(
                     jobObjectHandle,
                     Kernel32.JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation,

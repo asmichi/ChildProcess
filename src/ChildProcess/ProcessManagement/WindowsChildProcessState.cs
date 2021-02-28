@@ -107,6 +107,11 @@ namespace Asmichi.Utilities.ProcessManagement
                 return;
             }
 
+            if (WindowsVersion.NeedsWorkaroundForWindows1809)
+            {
+                Kill();
+            }
+
             _pseudoConsole.Dispose();
             _isPseudoConsoleDisposed = true;
         }

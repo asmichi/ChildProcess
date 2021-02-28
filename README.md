@@ -41,9 +41,18 @@ RIDs:
 
 NOTE: On Linux, the system must have GLIBC 2.x.y or later and LIBSTDCXX 3.x.y or later. Musl-based Linux (Alpine, etc.) is not currently supported.
 
+# Known Issues
+
+- On Windows 10 1809 (including Windows Server 2019), `SignalTermination` just kills the process tree (the same operation as `Kill`).
+    - This is due to a Windows pseudoconsole bug where [`ClosePseudoConsole`](https://docs.microsoft.com/en-us/windows/console/closepseudoconsole) does not terminate applications attached to the pseudoconsole.
+
 # Notes
 
 - When overriding environment variables, it is recommended that you include basic environment variables such as `SystemRoot`, etc.
+
+# Limitations
+
+- More than 2^63 processes cannot be created.
 
 # Assumptions on Runtimes
 
@@ -57,10 +66,6 @@ This library assumes that the underlying runtime has the following characteristi
     - The inner value of a `SafeFileHandle` is a file descriptor.
     - The inner value of a `SafeProcessHandle` is a process id.
     - `Socket.Handle` returns a socket file descriptor.
-
-# Limitations
-
-- More than 2^63 processes cannot be created.
 
 # Examples
 
