@@ -55,7 +55,8 @@ namespace Asmichi.ProcessManagement
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }
 
-                jobObjectHandle = CreateJobObject();
+                bool killOnClose = startInfo.AllowSignal && WindowsVersion.NeedsWorkaroundForWindows1809;
+                jobObjectHandle = CreateJobObject(killOnClose);
 
                 using var inheritableHandleStore = new InheritableHandleStore(3);
                 var childStdIn = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
@@ -185,7 +186,7 @@ namespace Asmichi.ProcessManagement
             }
         }
 
-        private static unsafe SafeJobObjectHandle CreateJobObject()
+        private static unsafe SafeJobObjectHandle CreateJobObject(bool killOnClose)
         {
             var jobObjectHandle = Kernel32.CreateJobObject(IntPtr.Zero, null);
             try
@@ -196,7 +197,7 @@ namespace Asmichi.ProcessManagement
                 }
 
                 var limitFlags = Kernel32.JOB_OBJECT_LIMIT_BREAKAWAY_OK;
-                if (WindowsVersion.NeedsWorkaroundForWindows1809)
+                if (killOnClose)
                 {
                     limitFlags |= Kernel32.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
                 }
