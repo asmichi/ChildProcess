@@ -25,6 +25,8 @@ $linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20210516.1"
 $linuxContainerName = "${NamePrefix}-buildnativelib-linux"
 $buildVolumeName = "${NamePrefix}-buildnativelib-linux"
 
+$successful = $true
+
 # Prepare the output directory.
 $objDir = "${worktreeRoot}\obj\ChildProcess.Native"
 $binDir = "${worktreeRoot}\bin\ChildProcess.Native"
@@ -77,6 +79,10 @@ docker run `
     --mount "type=volume,src=${buildVolumeName},dst=/proj/build" `
     $linuxImageName /bin/bash /proj/src/Subbuild-linux.sh /proj
 
+if ($LASTEXITCODE -ne 0) {
+    $successful = $false
+}
+
 # If the container mounts and writes directly to a host directory, generated files will have 
 # NTFS extended attributes (EAs) $LXUID/$LXGID/$LXMOD. There is no way to remove NTFS EAs via Win32 APIs.
 # Even worse, NTFS EAs will be copied by CopyFile. (We can of course effectively remove NTFS EAs by creating a new file
@@ -86,7 +92,13 @@ docker run `
 docker cp "${linuxContainerName}:/proj/bin/." "${worktreeRoot}/bin/ChildProcess.Native"
 docker rm $linuxContainerName | Out-Null
 
-if ($null -ne $winJob)
-{
-    Receive-Job -Wait -AutoRemoveJob $winJob
+if ($null -ne $winJob) {
+    Receive-Job -Wait -AutoRemoveJob $winJob -ErrorAction Continue
+    if (-not $?) {
+        $successful = $false
+    }
+}
+
+if (-not $successful) {
+    Write-Error "*** BuildNativeLib FAILED ***"
 }

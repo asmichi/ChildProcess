@@ -6,8 +6,9 @@ ProjRoot=$1
 LinuxX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-linux.cmake
 LinuxArmToolchainFile=${SrcRoot}/cmake/toolchain-arm-linux-gnueabihf.cmake
 LinuxArm64ToolchainFile=${SrcRoot}/cmake/toolchain-aarch64-linux-gnu.cmake
+pids=()
 
-function build()
+function build_impl()
 {
     local rid=$1
     local configuration=$2
@@ -16,20 +17,34 @@ function build()
     local outDir=${ProjRoot}/bin/${rid}/${configuration}
 
     mkdir -p ${buildDir}
-    (cd ${buildDir}; cmake ${SrcRoot} -G Ninja -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10)
+    (cd ${buildDir}; cmake ${SrcRoot} -G Ninja -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10) || return
 
-    ninja -C ${buildDir}
+    ninja -C ${buildDir} || return
 
     mkdir -p ${outDir}
     cp ${buildDir}/bin/* ${outDir}
     cp ${buildDir}/lib/* ${outDir}
 }
 
-build linux-x64 Debug ${LinuxX64ToolchainFile} &
-build linux-x64 Release ${LinuxX64ToolchainFile} &
-build linux-arm Debug ${LinuxArmToolchainFile} &
-build linux-arm Release ${LinuxArmToolchainFile} &
-build linux-arm64 Debug ${LinuxArm64ToolchainFile} &
-build linux-arm64 Release ${LinuxArm64ToolchainFile} &
+function build()
+{
+    build_impl "$@" &
+    pids+=($!)
+}
 
-wait
+build linux-x64 Debug ${LinuxX64ToolchainFile}
+build linux-x64 Release ${LinuxX64ToolchainFile}
+build linux-arm Debug ${LinuxArmToolchainFile}
+build linux-arm Release ${LinuxArmToolchainFile}
+build linux-arm64 Debug ${LinuxArm64ToolchainFile}
+build linux-arm64 Release ${LinuxArm64ToolchainFile}
+
+status=0
+for pid in ${pids[*]}; do
+    wait -n $pid
+    if [ $? -ne 0 ]; then
+        status=1
+    fi
+done
+
+exit $status
