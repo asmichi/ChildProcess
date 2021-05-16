@@ -1,15 +1,21 @@
+# Assume x64 Ubuntu 18.04 & Clang 10 & LLD
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
-set(CMAKE_C_COMPILER /usr/bin/arm-linux-gnueabihf-gcc)
-set(CMAKE_CXX_COMPILER /usr/bin/arm-linux-gnueabihf-g++)
+set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
+set(CMAKE_SYSROOT /usr/arm-linux-gnueabihf)
+include_directories(SYSTEM
+    /usr/arm-linux-gnueabihf/include/c++/7
+    /usr/arm-linux-gnueabihf/include/c++/7/arm-linux-gnueabihf
+    /usr/arm-linux-gnueabihf/include/c++/7/backward
+    /usr/lib/gcc-cross/arm-linux-gnueabihf/7/include
+    /usr/lib/gcc-cross/arm-linux-gnueabihf/7/include-fixed
+    /usr/arm-linux-gnueabihf/include)
+
+add_compile_options(-nostdinc)
+add_link_options(-fuse-ld=lld)
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
-
-add_compile_options(
-    # https://stackoverflow.com/questions/48149323/what-does-the-gcc-warning-project-parameter-passing-for-x-changed-in-gcc-7-1-m
-    -Wno-psabi
-)

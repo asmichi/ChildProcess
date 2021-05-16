@@ -17,8 +17,16 @@
 
 In order to edit the native implementation:
 
-- `copy src\ChildProcess.Native\CMakeSettings.template.json src\ChildProcess.Native\CMakeSettings.json`
-- Open CMake at src\ChildProcess.Native\CMakeLists.txt with Visual Studio 2019.
+- Set up an Ubuntu host (18.04 recommended)
+    - Execute:
+        ```
+        apt-get install clang-10 lld-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu ninja-build
+        ```
+      (See also [src\docker\childprocess-buildtools-ubuntu\Dockerfile](src\docker\childprocess-buildtools-ubuntu\Dockerfile))
+    - [Download](https://cmake.org/download/) and install CMake >3.11
+- copy `src\ChildProcess.Native\CMakeSettings.template.json` to `src\ChildProcess.Native\CMakeSettings.json`
+    - Have `cmakeExecutable` in `CMakeSettings.json` points to the CMake executable.
+- Launch Visual Studio 2019 and "Open CMake" at src\ChildProcess.Native\CMakeLists.txt.
 
 ## Building Package
 

@@ -3,6 +3,7 @@
 
 SrcRoot=$(dirname $0)
 ProjRoot=$1
+LinuxX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-linux.cmake
 LinuxArmToolchainFile=${SrcRoot}/cmake/toolchain-arm-linux-gnueabihf.cmake
 LinuxArm64ToolchainFile=${SrcRoot}/cmake/toolchain-aarch64-linux-gnu.cmake
 
@@ -15,7 +16,7 @@ function build()
     local outDir=${ProjRoot}/bin/${rid}/${configuration}
 
     mkdir -p ${buildDir}
-    (cd ${buildDir}; cmake ${SrcRoot} -G Ninja -DCMAKE_BUILD_TYPE=${configuration} -DCMAKE_TOOLCHAIN_FILE=${toolchainFile})
+    (cd ${buildDir}; cmake ${SrcRoot} -G Ninja -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10)
 
     ninja -C ${buildDir}
 
@@ -24,8 +25,8 @@ function build()
     cp ${buildDir}/lib/* ${outDir}
 }
 
-build linux-x64 Debug &
-build linux-x64 Release &
+build linux-x64 Debug ${LinuxX64ToolchainFile} &
+build linux-x64 Release ${LinuxX64ToolchainFile} &
 build linux-arm Debug ${LinuxArmToolchainFile} &
 build linux-arm Release ${LinuxArmToolchainFile} &
 build linux-arm64 Debug ${LinuxArm64ToolchainFile} &

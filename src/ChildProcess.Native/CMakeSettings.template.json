@@ -9,8 +9,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
       "name": "x64-Release",
@@ -21,8 +20,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
       "name": "x86-Debug",
@@ -33,8 +31,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x86" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x86" ]
     },
     {
       "name": "x86-Release",
@@ -45,38 +42,136 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x86" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x86" ]
     },
     {
       "name": "WSL-x64-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "cmakeExecutable": "$HOME/bin/cmake",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "linux_x64" ],
-      "wslPath": "${defaultWSLPath}",
+      "inheritEnvironments": [ "linux_clang_x64" ],
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ]
     },
     {
       "name": "WSL-x64-Release",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
-      "cmakeExecutable": "$HOME/bin/cmake",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "linux_x64" ],
-      "wslPath": "${defaultWSLPath}",
+      "inheritEnvironments": [ "linux_clang_x64" ],
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "WSL-arm-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-arm-linux-gnueabihf.cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ],
+    },
+    {
+      "name": "WSL-arm-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "WSL-arm64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-aarch64-linux-gnu.cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "WSL-arm64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "wslPath": "${defaultWSLPath}",
+      "cmakeExecutable": "$HOME/bin/cmake",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-aarch64-linux-gnu.cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "/usr/bin/clang++-10",
+          "type": "FILEPATH"
+        }
+      ]
     }
   ]
 }
