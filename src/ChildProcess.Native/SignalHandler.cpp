@@ -77,7 +77,7 @@ void SetSignalAction(int signum, int extraFlags)
     assert(isError == 0);
 }
 
-void SignalHandler(int signum, siginfo_t* siginfo, void* context)
+void SignalHandler(int signum, siginfo_t*, void*)
 {
     // Avoid doing the real work in the signal handler.
     // Dispatch the real work to the service thread.

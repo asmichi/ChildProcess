@@ -29,7 +29,7 @@ namespace
     }
 } // namespace
 
-int TestCommandReportSignal(int argc, const char* const* argv)
+int TestCommandReportSignal(int, const char* const*)
 {
     SetSignalHandler(SIGINT, SA_RESTART, SignalHandler);
     SetSignalHandler(SIGTERM, SA_RESTART, SignalHandler);

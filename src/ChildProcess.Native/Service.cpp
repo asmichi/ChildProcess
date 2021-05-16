@@ -169,6 +169,8 @@ int Service::Run()
     }
 
     g_ChildProcessStateMap.AutoTerminateAll();
+
+    return 0;
 }
 
 void Service::InitiateShutdown()
