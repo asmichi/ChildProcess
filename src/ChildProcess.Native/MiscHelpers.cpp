@@ -4,6 +4,7 @@
 #include "Base.hpp"
 #include "ExactBytesIO.hpp"
 #include "UniqueResource.hpp"
+#include "config.h"
 #include <array>
 #include <cerrno>
 #include <cstddef>
@@ -98,10 +99,14 @@ int chdir_restarting(const char* path) noexcept
 std::optional<PipeEnds> CreatePipe() noexcept
 {
     int pipes[2];
+#if HAVE_PIPE2
     if (pipe2(pipes, O_CLOEXEC) != 0)
     {
         return std::nullopt;
     }
+#else
+#error Not implemented.
+#endif
 
     PipeEnds ret;
     ret.ReadEnd = UniqueFd(pipes[0]);

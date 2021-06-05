@@ -5,6 +5,7 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
+include(CheckSymbolExists)
 
 project("AsmichiChildProcessNative" CXX)
 
@@ -13,6 +14,7 @@ set(libName "AsmichiChildProcess")
 set(helperName "AsmichiChildProcessHelper")
 set(testChildName "TestChildNative")
 set(versionScript "${CMAKE_CURRENT_SOURCE_DIR}/AsmichiChildProcess.version")
+set(intermediateIncludeDir ${CMAKE_BINARY_DIR}/include)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -67,6 +69,11 @@ if(WIN32)
     target_link_libraries(${testChildName})
 
 else(WIN32)
+    check_symbol_exists(pipe2 unistd.h HAVE_PIPE2)
+
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+        ${intermediateIncludeDir}/config.h)
 
     add_compile_options(
         -Wextra
@@ -85,6 +92,7 @@ else(WIN32)
     add_library(${objlibName} OBJECT ${objlibSources})
     target_compile_features(${objlibName} PRIVATE cxx_std_17)
     target_include_directories(${objlibName} PUBLIC include)
+    target_include_directories(${objlibName} PRIVATE ${intermediateIncludeDir})
     # These objects are primarily used for producing a shared library, hence POSITION_INDEPENDENT_CODE.
     set_property(TARGET ${objlibName} PROPERTY POSITION_INDEPENDENT_CODE 1)
 
@@ -124,6 +132,7 @@ else(WIN32)
     )
     add_executable(${testChildName} ${testChildSources} $<TARGET_OBJECTS:${objlibName}>)
     target_include_directories(${testChildName} PRIVATE include)
+    target_include_directories(${testChildName} PRIVATE ${intermediateIncludeDir})
     target_compile_features(${testChildName} PRIVATE cxx_std_17)
     target_link_libraries(${testChildName}
         Threads::Threads

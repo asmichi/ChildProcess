@@ -18,7 +18,7 @@ insert_final_newline = true
 # - VS2017 supports .editorconfig
 # - cl supports /source-charset:utf-8
 # - pwsh treats script files as UTF-8 by default
-[*.{cpp,c,cs,csx,fs,fsx,h,hpp,vb,vbx,ps1,psm1}]
+[*.{cpp,c,cs,csx,fs,fsx,h,hpp,h.in,vb,vbx,ps1,psm1}]
 indent_size = 4
 trim_trailing_whitespace = true
 insert_final_newline = true
