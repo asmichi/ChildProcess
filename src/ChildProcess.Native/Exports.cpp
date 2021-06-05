@@ -137,7 +137,7 @@ extern "C" bool DuplicateStdFileForChild(int stdFd, bool createNewProcessGroup, 
 // On error, returns -1.
 extern "C" std::int32_t GetDllPath(char* buf, std::int32_t len)
 {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
     Dl_info info;
     if (!dladdr(reinterpret_cast<const void*>(&GetDllPath), &info))
     {
@@ -160,7 +160,7 @@ extern "C" std::int32_t GetDllPath(char* buf, std::int32_t len)
 
     return requiredBufLen;
 #else
-#error dladdr is linux-specific.
+#error dladdr not available.
 #endif
 }
 
@@ -264,8 +264,8 @@ extern "C" bool SubchannelDestroy(std::intptr_t subchannelFd)
         return -1;
     }
 
-#if defined(__linux__)
-    // On Linux, even when close returns EINTR, the fd has been closed.
+#if defined(__linux__) || defined(__APPLE__)
+    // On most *nix systems, even when close returns EINTR, the fd has been closed.
     return close(static_cast<int>(subchannelFd)) == 0 || errno == EINTR;
 #else
 #error Not implemented.

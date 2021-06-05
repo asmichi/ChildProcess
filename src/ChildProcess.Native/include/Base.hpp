@@ -4,6 +4,7 @@
 
 // Common implementations.
 
+#include <cstdio>
 #include <errno.h>
 #include <exception>
 
