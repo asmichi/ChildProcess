@@ -31,7 +31,7 @@ jobs:
     displayName: 'Build Native Linux'
     inputs:
       targetType: 'filePath'
-      filePath: 'src/ChildProcess.Native/Subbuild-linux.sh'
+      filePath: 'src/ChildProcess.Native/Subbuild-unix.sh'
       arguments: 'obj/Subbuild-linux'
 
   - publish: 'obj/Subbuild-linux/bin'
