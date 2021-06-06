@@ -22,7 +22,7 @@ namespace Asmichi.PlatformAbstraction
             return Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => new Windows.WindowsConsolePal(),
-                PlatformKind.Linux => new Unix.UnixConsolePal(),
+                PlatformKind.Unix => new Unix.UnixConsolePal(),
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new PlatformNotSupportedException(),
             };

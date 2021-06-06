@@ -1,3 +1,5 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+#cmakedefine01 HAVE_MSG_CMSG_CLOEXEC
 #cmakedefine01 HAVE_PIPE2
+#cmakedefine01 HAVE_SOCK_CLOEXEC

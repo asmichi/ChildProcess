@@ -14,12 +14,17 @@ set(libName "AsmichiChildProcess")
 set(helperName "AsmichiChildProcessHelper")
 set(testChildName "TestChildNative")
 set(versionScript "${CMAKE_CURRENT_SOURCE_DIR}/AsmichiChildProcess.version")
+set(exportedSymbolList "${CMAKE_CURRENT_SOURCE_DIR}/AsmichiChildProcess.symbols.txt")
 set(intermediateIncludeDir ${CMAKE_BINARY_DIR}/include)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+if(APPLE)
+set(CMAKE_INSTALL_RPATH "@executable_path")
+else(APPLE)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+endif(APPLE)
 
 find_package(Threads REQUIRED)
 
@@ -69,7 +74,9 @@ if(WIN32)
     target_link_libraries(${testChildName})
 
 else(WIN32)
+    check_symbol_exists(MSG_CMSG_CLOEXEC "sys/socket.h" HAVE_MSG_CMSG_CLOEXEC)
     check_symbol_exists(pipe2 unistd.h HAVE_PIPE2)
+    check_symbol_exists(SOCK_CLOEXEC "sys/socket.h" HAVE_SOCK_CLOEXEC)
 
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
@@ -106,9 +113,15 @@ else(WIN32)
         ${CMAKE_DL_LIBS}
     )
     set_target_properties(${libName} PROPERTIES LINK_DEPENDS ${versionScript})
-    set_target_properties(${libName} PROPERTIES LINK_FLAGS
-        "-Wl,--version-script=${versionScript} -Wl,--no-undefined"
-    )
+    if(APPLE)
+        set_target_properties(${libName} PROPERTIES LINK_FLAGS
+            "-Wl,-exported_symbols_list -Wl,${exportedSymbolList}"
+        )
+    else(APPLE)
+        set_target_properties(${libName} PROPERTIES LINK_FLAGS
+            "-Wl,--version-script=${versionScript} -Wl,--no-undefined"
+        )
+    endif(APPLE)
 
     #
     # The helper process.

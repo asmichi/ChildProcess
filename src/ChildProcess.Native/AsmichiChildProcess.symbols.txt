@@ -1,0 +1,15 @@
+_ConnectToUnixSocket
+_CreatePipe
+_CreateUnixStreamSocketPair
+_DuplicateStdFileForChild
+_GetDllPath
+_GetENOENT
+_GetMaxSocketPathLength
+_GetPid
+_OpenNullDevice
+_HelperMain
+_SubchannelCreate
+_SubchannelDestroy
+_SubchannelRecvExactBytes
+_SubchannelSendExactBytes
+_SubchannelSendExactBytesAndFds

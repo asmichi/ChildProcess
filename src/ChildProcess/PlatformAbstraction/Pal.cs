@@ -9,7 +9,7 @@ namespace Asmichi.PlatformAbstraction
     {
         Unknown,
         Win32,
-        Linux,
+        Unix,
     }
 
     internal static class Pal
@@ -24,9 +24,12 @@ namespace Asmichi.PlatformAbstraction
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return PlatformKind.Linux;
+                return PlatformKind.Unix;
             }
-            // else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return PlatformKind.Unix;
+            }
             else
             {
                 return PlatformKind.Unknown;

@@ -5,6 +5,7 @@
 #include "ExactBytesIO.hpp"
 #include "MiscHelpers.hpp"
 #include "SocketHelpers.hpp"
+#include "config.h"
 #include <array>
 #include <cassert>
 #include <cerrno>
@@ -148,7 +149,12 @@ ssize_t AncillaryDataSocket::Recv(void* buf, std::size_t len, BlockingFlag block
     msg.msg_controllen = CmsgFds::BufferSize;
     msg.msg_flags = 0;
 
-    const ssize_t receivedBytes = recvmsg_restarting(fd_.Get(), &msg, MakeSockFlags(blocking) | MSG_CMSG_CLOEXEC);
+#if HAVE_MSG_CMSG_CLOEXEC
+    constexpr int cloexecFlags = MSG_CMSG_CLOEXEC;
+#else
+    constexpr int cloexecFlags = 0;
+#endif
+    const ssize_t receivedBytes = recvmsg_restarting(fd_.Get(), &msg, MakeSockFlags(blocking) | cloexecFlags);
     if (receivedBytes == -1)
     {
         return -1;

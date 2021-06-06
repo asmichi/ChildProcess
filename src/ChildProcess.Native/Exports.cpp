@@ -45,8 +45,8 @@ extern "C" bool ConnectToUnixSocket(const char* path, intptr_t* outSock)
         return false;
     }
 
-    int sock = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-    if (sock == -1)
+    auto maybeSock = CreateUnixStreamSocket();
+    if (!maybeSock)
     {
         return false;
     }
@@ -55,13 +55,12 @@ extern "C" bool ConnectToUnixSocket(const char* path, intptr_t* outSock)
     name.sun_family = AF_UNIX;
     std::strcpy(name.sun_path, path);
 
-    if (connect(sock, reinterpret_cast<struct sockaddr*>(&name), sizeof(name)) == -1)
+    if (connect(maybeSock->Get(), reinterpret_cast<struct sockaddr*>(&name), sizeof(name)) == -1)
     {
-        close(sock);
         return false;
     }
 
-    *outSock = sock;
+    *outSock = maybeSock->Release();
     return true;
 }
 

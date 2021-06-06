@@ -45,21 +45,21 @@ extern "C" int HelperMain(int argc, const char** argv)
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, path);
 
-    int sock = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-    if (sock == -1)
+    auto maybeSock = CreateUnixStreamSocket();
+    if (!maybeSock)
     {
         PutFatalError(errno, "socket");
         return 1;
     }
 
-    int ret = connect(sock, reinterpret_cast<struct sockaddr*>(&addr), sizeof(struct sockaddr_un));
+    int ret = connect(maybeSock->Get(), reinterpret_cast<struct sockaddr*>(&addr), sizeof(struct sockaddr_un));
     if (ret == -1)
     {
         PutFatalError(errno, "connect");
         return 1;
     }
 
-    if (!SendExactBytes(sock, HelperHello, HelperHelloBytes))
+    if (!SendExactBytes(maybeSock->Get(), HelperHello, HelperHelloBytes))
     {
         PutFatalError(errno, "send");
         return 1;
@@ -67,7 +67,7 @@ extern "C" int HelperMain(int argc, const char** argv)
 
     close(STDIN_FILENO);
 
-    g_Service.Initialize(UniqueFd{sock});
+    g_Service.Initialize(std::move(*maybeSock));
     const int exitCode = g_Service.Run();
     TRACE_INFO("Helper exiting: %d\n", exitCode);
     return exitCode;

@@ -105,22 +105,76 @@ std::optional<PipeEnds> CreatePipe() noexcept
         return std::nullopt;
     }
 #else
-#error Not implemented.
+    if (pipe(pipes) != 0)
+    {
+        return std::nullopt;
+    }
+    if (fcntl(pipes[0], F_SETFD, FD_CLOEXEC) == -1
+        || fcntl(pipes[1], F_SETFD, FD_CLOEXEC) == -1)
+    {
+        ErrnoRestorer er;
+        close(pipes[0]);
+        close(pipes[1]);
+        return std::nullopt;
+    }
 #endif
 
-    PipeEnds ret;
-    ret.ReadEnd = UniqueFd(pipes[0]);
-    ret.WriteEnd = UniqueFd(pipes[1]);
-    return std::move(ret);
+    PipeEnds pipeEnds;
+    pipeEnds.ReadEnd = UniqueFd(pipes[0]);
+    pipeEnds.WriteEnd = UniqueFd(pipes[1]);
+    return std::move(pipeEnds);
+}
+
+std::optional<UniqueFd> CreateUnixStreamSocket() noexcept
+{
+#if HAVE_SOCK_CLOEXEC
+    constexpr int cloexecType = SOCK_CLOEXEC;
+#else
+    constexpr int cloexecType = 0;
+#endif
+
+    int sock = socket(AF_UNIX, SOCK_STREAM | cloexecType, 0);
+    if (sock == -1)
+    {
+        return std::nullopt;
+    }
+
+#if !HAVE_SOCK_CLOEXEC
+    if (fcntl(sock, F_SETFD, FD_CLOEXEC) == -1)
+    {
+        ErrnoRestorer er;
+        close(sock);
+        return std::nullopt;
+    }
+#endif
+
+    return UniqueFd(sock);
 }
 
 std::optional<std::array<UniqueFd, 2>> CreateUnixStreamSocketPair() noexcept
 {
+#if HAVE_SOCK_CLOEXEC
+    constexpr int cloexecType = SOCK_CLOEXEC;
+#else
+    constexpr int cloexecType = 0;
+#endif
+
     int socks[2];
-    if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, socks) != 0)
+    if (socketpair(AF_UNIX, SOCK_STREAM | cloexecType, 0, socks) != 0)
     {
         return std::nullopt;
     }
+
+#if !HAVE_SOCK_CLOEXEC
+    if (fcntl(socks[0], F_SETFD, FD_CLOEXEC) == -1
+        || fcntl(socks[1], F_SETFD, FD_CLOEXEC) == -1)
+    {
+        ErrnoRestorer er;
+        close(socks[0]);
+        close(socks[1]);
+        return std::nullopt;
+    }
+#endif
 
     return std::array<UniqueFd, 2>{UniqueFd(socks[0]), UniqueFd(socks[1])};
 }

@@ -11,6 +11,7 @@
 #include "Request.hpp"
 #include "Service.hpp"
 #include "UniqueResource.hpp"
+#include "config.h"
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -18,8 +19,69 @@
 #include <cstring>
 #include <memory>
 #include <poll.h>
+#include <spawn.h>
 #include <unistd.h>
 #include <vector>
+
+#if HAVE_PIPE2 && HAVE_MSG_CMSG_CLOEXEC && HAVE_SOCK_CLOEXEC
+#define HAVE_COMPLETE_CLOEXEC 1
+#else
+#define HAVE_COMPLETE_CLOEXEC 0
+#endif
+
+class ScopedPosixSpawnFileActions final
+{
+public:
+    ~ScopedPosixSpawnFileActions() noexcept
+    {
+        if (initialized_)
+        {
+            posix_spawn_file_actions_destroy(&Value);
+            initialized_ = false;
+        }
+    }
+
+    int Initialize() noexcept
+    {
+        assert(!initialized_);
+
+        int err = posix_spawn_file_actions_init(&Value);
+        initialized_ = (err == 0);
+        return err;
+    }
+
+    posix_spawn_file_actions_t Value;
+
+private:
+    bool initialized_ = false;
+};
+
+class ScopedPosixSpawnAttr final
+{
+public:
+    ~ScopedPosixSpawnAttr() noexcept
+    {
+        if (initialized_)
+        {
+            posix_spawnattr_destroy(&Value);
+            initialized_ = false;
+        }
+    }
+
+    int Initialize() noexcept
+    {
+        assert(!initialized_);
+
+        int err = posix_spawnattr_init(&Value);
+        initialized_ = (err == 0);
+        return err;
+    }
+
+    posix_spawnattr_t Value;
+
+private:
+    bool initialized_ = false;
+};
 
 // After StartCommunicationThread succeeds, this instance must not be manipulated outside the communication thread.
 bool Subchannel::StartCommunicationThread()
@@ -140,6 +202,43 @@ void Subchannel::ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_pt
 
 std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
 {
+    const bool shouldCreateNewProcessGroup = r.Flags & RequestFlagsCreateNewProcessGroup;
+    const bool shouldAutoTerminate = r.Flags & RequestFlagsEnableAutoTermination;
+    int err = 0;
+
+#if !HAVE_COMPLETE_CLOEXEC
+    // If neither CLOEXEC nor closefrom is available, fall back to POSIX_SPAWN_CLOEXEC_DEFAULT.
+    ScopedPosixSpawnFileActions fileActions;
+    ScopedPosixSpawnAttr attr;
+
+    if ((err = fileActions.Initialize()) != 0)
+    {
+        return {err, 0};
+    }
+    if ((err = attr.Initialize()) != 0)
+    {
+        return {err, 0};
+    }
+    if ((err = posix_spawnattr_setflags(&attr.Value, POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_SETEXEC | POSIX_SPAWN_CLOEXEC_DEFAULT)) != 0)
+    {
+        return {err, 0};
+    }
+    // We need to call posix_spawn_file_actions_adddup2 instead of dup2 since POSIX_SPAWN_CLOEXEC_DEFAULT will close
+    // all fds except ones created by file actions.
+    if (r.StdinFd.IsValid() && (err = posix_spawn_file_actions_adddup2(&fileActions.Value, r.StdinFd.Get(), STDIN_FILENO)) != 0)
+    {
+        return {err, 0};
+    }
+    if (r.StdoutFd.IsValid() && (err = posix_spawn_file_actions_adddup2(&fileActions.Value, r.StdoutFd.Get(), STDOUT_FILENO)) != 0)
+    {
+        return {err, 0};
+    }
+    if (r.StderrFd.IsValid() && (err = posix_spawn_file_actions_adddup2(&fileActions.Value, r.StderrFd.Get(), STDERR_FILENO)) != 0)
+    {
+        return {err, 0};
+    }
+#endif
+
     auto maybeOutPipe = CreatePipe();
     if (!maybeOutPipe)
     {
@@ -152,13 +251,12 @@ std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
     }
 
     // NOTE: These fds may be inherited by multiple forked processes.
+    //       Those inherited fds will only be closed when the processes perform execve.
     // parent -> child : To signal "the parent is ready; perform exec"
     auto outPipe = std::move(*maybeOutPipe);
     // child -> parent : To signal exec error (or no write on success)
     auto inPipe = std::move(*maybeInPipe);
 
-    const bool shouldCreateNewProcessGroup = r.Flags & RequestFlagsCreateNewProcessGroup;
-    const bool shouldAutoTerminate = r.Flags & RequestFlagsEnableAutoTermination;
     int childPid = fork();
     if (childPid == -1)
     {
@@ -170,6 +268,11 @@ std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
         outPipe.WriteEnd.Reset();
         inPipe.ReadEnd.Reset();
 
+        auto reportError = [](int fd, int err) {
+            static_cast<void>(WriteExactBytes(fd, &err, sizeof(err)));
+        };
+
+#if HAVE_COMPLETE_CLOEXEC
         auto dup2OrFail = [](const UniqueFd& writeEnd, const UniqueFd& src, int dst) {
             if (src.IsValid())
             {
@@ -182,13 +285,10 @@ std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
             }
         };
 
-        auto reportError = [](int fd, int err) {
-            static_cast<void>(WriteExactBytes(fd, &err, sizeof(err)));
-        };
-
         dup2OrFail(inPipe.WriteEnd, r.StdinFd, STDIN_FILENO);
         dup2OrFail(inPipe.WriteEnd, r.StdoutFd, STDOUT_FILENO);
         dup2OrFail(inPipe.WriteEnd, r.StderrFd, STDERR_FILENO);
+#endif
 
         if (r.WorkingDirectory != nullptr)
         {
@@ -203,20 +303,29 @@ std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
         char c;
         if (!ReadExactBytes(outPipe.ReadEnd.Get(), &c, 1))
         {
-            // The parent has been killed; no point in continuing.
+            // The parent has been SIGKILLed; no point in continuing.
+            // 
+            // In such a case, there is a rare race condition where multiple forked processes get stuck in ReadExactBytes
+            // since outPipe.ReadEnd may be inherited by multiple forked processes.
+            // We have no way to avoid such inheritance; that is how concurrent forks work. Never SIGKILL!!!
             _exit(1);
         }
 
-        
         if (shouldCreateNewProcessGroup)
         {
             setpgid(0, 0);
         }
 
+#if HAVE_COMPLETE_CLOEXEC
         // NOTE: POSIX specifies execve shall not modify argv and envp.
         execve(r.ExecutablePath, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
-
         reportError(inPipe.WriteEnd.Get(), errno);
+#else
+        // This will behave as a more featureful execve since POSIX_SPAWN_SETEXEC is set.
+        err = posix_spawn(nullptr, r.ExecutablePath, &fileActions.Value, &attr.Value, const_cast<char* const*>(&r.Argv[0]), const_cast<char* const*>(&r.Envp[0]));
+        reportError(inPipe.WriteEnd.Get(), err);
+#endif
+
         _exit(1);
     }
     else
@@ -238,7 +347,6 @@ std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
             return {errno, 0};
         }
 
-        int err = 0;
         const bool execSuccessful = !ReadExactBytes(inPipe.ReadEnd.Get(), &err, sizeof(err));
         if (execSuccessful)
         {

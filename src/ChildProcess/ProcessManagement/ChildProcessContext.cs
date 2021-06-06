@@ -13,7 +13,7 @@ namespace Asmichi.ProcessManagement
             Pal.PlatformKind switch
             {
                 PlatformKind.Win32 => new WindowsChildProcessContext(),
-                PlatformKind.Linux => new UnixChildProcessContext(),
+                PlatformKind.Unix => new UnixChildProcessContext(),
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new AsmichiChildProcessInternalLogicErrorException(),
             };

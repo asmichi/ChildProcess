@@ -18,6 +18,16 @@ private:
     const char* const description_;
 };
 
+struct ErrnoRestorer final
+{
+public:
+    ErrnoRestorer() noexcept : saved_(errno) {}
+    ~ErrnoRestorer() noexcept { errno = saved_; }
+
+private:
+    int saved_;
+};
+
 enum class BlockingFlag : bool
 {
     Blocking = false,
