@@ -6,6 +6,7 @@ ProjRoot=$1
 LinuxX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-linux.cmake
 LinuxArmToolchainFile=${SrcRoot}/cmake/toolchain-arm-linux-gnueabihf.cmake
 LinuxArm64ToolchainFile=${SrcRoot}/cmake/toolchain-aarch64-linux-gnu.cmake
+Jobs=$(getconf _NPROCESSORS_ONLN)
 pids=()
 
 function build_impl()
@@ -17,9 +18,9 @@ function build_impl()
     local outDir=${ProjRoot}/bin/${rid}/${configuration}
 
     mkdir -p ${buildDir}
-    (cd ${buildDir}; cmake ${SrcRoot} -G Ninja -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10) || return
+    (cd ${buildDir}; cmake ${SrcRoot} -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10) || return
 
-    ninja -C ${buildDir} || return
+    make -C ${buildDir} -j ${Jobs} || return
 
     mkdir -p ${outDir}
     cp ${buildDir}/bin/* ${outDir}
@@ -41,7 +42,7 @@ build linux-arm64 Release ${LinuxArm64ToolchainFile}
 
 status=0
 for pid in ${pids[*]}; do
-    wait -n $pid
+    wait $pid
     if [ $? -ne 0 ]; then
         status=1
     fi

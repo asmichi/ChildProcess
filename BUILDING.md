@@ -20,7 +20,7 @@ In order to edit the native implementation:
 - Set up an Ubuntu host (18.04 recommended)
     - Execute:
         ```
-        apt-get install clang-10 lld-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu ninja-build
+        apt-get install clang-10 lld-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu make
         ```
       (See also [src\docker\childprocess-buildtools-ubuntu\Dockerfile](src\docker\childprocess-buildtools-ubuntu\Dockerfile))
     - [Download](https://cmake.org/download/) and install CMake >3.11

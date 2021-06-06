@@ -21,7 +21,7 @@ Import-Module "$PSScriptRoot\psm\Build.psm1"
 
 $worktreeRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-$linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20210516.1"
+$linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20210606.1"
 $linuxContainerName = "${NamePrefix}-buildnativelib-linux"
 $buildVolumeName = "${NamePrefix}-buildnativelib-linux"
 
@@ -39,7 +39,7 @@ if ($Rebuild) {
         Remove-Item $objDir/* -Recurse
         Remove-Item $binDir/* -Recurse
     }
-    catch {}    
+    catch {}
 }
 
 $pwsh = Join-Path $PSHOME "pwsh.exe"
@@ -83,10 +83,10 @@ if ($LASTEXITCODE -ne 0) {
     $successful = $false
 }
 
-# If the container mounts and writes directly to a host directory, generated files will have 
+# If the container mounts and writes directly to a host directory, generated files will have
 # NTFS extended attributes (EAs) $LXUID/$LXGID/$LXMOD. There is no way to remove NTFS EAs via Win32 APIs.
 # Even worse, NTFS EAs will be copied by CopyFile. (We can of course effectively remove NTFS EAs by creating a new file
-# and copying only the file data to it). 
+# and copying only the file data to it).
 #
 # Avoid mouting a host directory and do docker cp.
 docker cp "${linuxContainerName}:/proj/bin/." "${worktreeRoot}/bin/ChildProcess.Native"
