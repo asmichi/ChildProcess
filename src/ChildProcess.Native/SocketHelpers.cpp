@@ -85,7 +85,7 @@ ssize_t SendWithFd(int fd, const void* buf, std::size_t len, const int* fds, std
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;
     msg.msg_control = cmsgFds.Buffer;
-    msg.msg_controllen = CmsgFds::BufferSize;
+    msg.msg_controllen = CMSG_SPACE(sizeof(int) * fdCount);
     msg.msg_flags = 0;
 
     struct cmsghdr* pcmsghdr = CMSG_FIRSTHDR(&msg);
@@ -94,5 +94,5 @@ ssize_t SendWithFd(int fd, const void* buf, std::size_t len, const int* fds, std
     pcmsghdr->cmsg_type = SCM_RIGHTS;
     std::memcpy(CMSG_DATA(pcmsghdr), fds, sizeof(int) * fdCount);
 
-    return sendmsg_restarting(fd, &msg, 0);
+    return sendmsg_restarting(fd, &msg, MakeSockFlags(blocking));
 }
