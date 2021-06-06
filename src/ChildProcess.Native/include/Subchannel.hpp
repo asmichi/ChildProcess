@@ -7,6 +7,7 @@
 #include "UniqueResource.hpp"
 #include <cstdint>
 #include <optional>
+#include <tuple>
 
 const std::uint32_t MaxReqeuestLength = 2 * 1024 * 1024;
 
@@ -30,7 +31,8 @@ private:
 
     void HandleProcessCreationCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
     void ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
-    void HandleProcessCreationRequest(const SpawnProcessRequest& r);
+    // return: {err, pid}
+    std::pair<int, int> CreateProcess(const SpawnProcessRequest& r);
 
     void HandleSendSignalCommand(std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength);
     std::optional<int> ToNativeSignal(AbstractSignal abstractSignal) noexcept;

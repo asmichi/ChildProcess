@@ -100,7 +100,9 @@ void Subchannel::HandleProcessCreationCommand(std::unique_ptr<std::byte[]> body,
 {
     SpawnProcessRequest r;
     ToProcessCreationRequest(&r, std::move(body), bodyLength);
-    HandleProcessCreationRequest(r);
+
+    const auto [err, childPid] = CreateProcess(r);
+    SendResponse(err, childPid);
 }
 
 void Subchannel::ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_ptr<std::byte[]> body, std::uint32_t bodyLength)
@@ -136,19 +138,17 @@ void Subchannel::ToProcessCreationRequest(SpawnProcessRequest* r, std::unique_pt
     }
 }
 
-void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
+std::pair<int, int> Subchannel::CreateProcess(const SpawnProcessRequest& r)
 {
     auto maybeOutPipe = CreatePipe();
     if (!maybeOutPipe)
     {
-        SendResponse(errno, 0);
-        return;
+        return {errno, 0};
     }
     auto maybeInPipe = CreatePipe();
     if (!maybeInPipe)
     {
-        SendResponse(errno, 0);
-        return;
+        return {errno, 0};
     }
 
     // NOTE: These fds may be inherited by multiple forked processes.
@@ -162,7 +162,7 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
     int childPid = fork();
     if (childPid == -1)
     {
-        SendResponse(errno, 0);
+        return {errno, 0};
     }
     else if (childPid == 0)
     {
@@ -235,20 +235,19 @@ void Subchannel::HandleProcessCreationRequest(const SpawnProcessRequest& r)
         if (!WriteExactBytes(outPipe.WriteEnd.Get(), "", 1))
         {
             // The child has already been killed.
-            SendResponse(errno, 0);
-            return;
+            return {errno, 0};
         }
 
         int err = 0;
         const bool execSuccessful = !ReadExactBytes(inPipe.ReadEnd.Get(), &err, sizeof(err));
         if (execSuccessful)
         {
-            SendResponse(0, childPid);
+            return {0, childPid};
         }
         else
         {
             // Failed to execute the program: failed to dup2 or execve.
-            SendResponse(err, 0);
+            return {err, 0};
         }
     }
 }
