@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- *** Invoke build/BuildNativeLib.ps1 beforehand! ***  -->
+  <!-- *** Invoke build/FetchNativeLib.ps1 beforehand! ***  -->
   <ItemGroup>
     <!-- See https://github.com/NuGet/Home/issues/6645 -->
     <!--

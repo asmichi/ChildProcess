@@ -1,6 +1,8 @@
 
 # Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+# Build the package on a local environment.
+
 #Requires -Version 7.0
 
 param(
@@ -26,8 +28,6 @@ $branchName = $(git rev-parse --abbrev-ref HEAD)
 $versionInfo = Get-VersionInfo -CommitHash $commitHash -BranchName $branchName -AllowRetailRelease:$AllowRetailRelease
 
 $commonBuildOptions = Get-CommonBuildOptions -VersionInfo $versionInfo
-
-& $worktreeRoot\Build\BuildNativeLib.ps1 -Rebuild:(-not $IncrementalBuild)
 
 Exec { dotnet build @commonBuildOptions $slnFile }
 Exec { dotnet test @commonBuildOptions --no-build "$worktreeRoot\src\ChildProcess.Test\ChildProcess.Test.csproj" }
