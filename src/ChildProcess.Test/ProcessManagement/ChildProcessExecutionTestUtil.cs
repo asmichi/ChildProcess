@@ -28,7 +28,7 @@ namespace Asmichi.ProcessManagement
 
             if (!p.IsSuccessful)
             {
-                throw new ChildProcessFailedException($"Child process failed with exit code {p.ExitCode}.");
+                throw new ChildProcessFailedException($"Child process failed with exit code {p.ExitCode} (0x{p.ExitCode:X8}).");
             }
 
             return standardOutput;

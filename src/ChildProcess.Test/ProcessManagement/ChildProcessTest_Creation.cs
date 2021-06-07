@@ -108,7 +108,19 @@ namespace Asmichi.ProcessManagement
             };
 
             var output = ExecuteForStandardOutput(si);
-            Assert.Equal(tmp.Location, output);
+            Assert.Equal(ToResolvedCurrentDirectory(tmp.Location), output);
+
+            // On macOS, the path to the temporary directory contains symbolic links.
+            // Resolve it to a real path since getcwd will return a resolved path (as specified by POSIX).
+            static string ToResolvedCurrentDirectory(string path)
+            {
+                var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "ToResolvedCurrentDirectory", path)
+                {
+                    StdOutputRedirection = OutputRedirection.OutputPipe,
+                };
+
+                return ExecuteForStandardOutput(si);
+            }
         }
 
         // Assumes we do not change the environment variables of the current process.

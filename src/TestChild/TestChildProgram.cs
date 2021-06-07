@@ -37,6 +37,8 @@ namespace Asmichi
                     return CommandEchoWorkingDirectory();
                 case "EchoCodePage":
                     return CommandEchoCodePage();
+                case "ToResolvedCurrentDirectory":
+                    return CommandToResolvedCurrentDirectory(args);
                 default:
                     Console.WriteLine("Unknown command: {0}", command);
                     return 1;
@@ -99,6 +101,17 @@ namespace Asmichi
             }
 
             Console.Write("{0}", codePage);
+            return 0;
+        }
+
+        /// <summary>
+        /// Resolve the specified path as if it were obtained with getcwd.
+        /// The path must exist and be a directory.
+        /// </summary>
+        private static int CommandToResolvedCurrentDirectory(string[] args)
+        {
+            Environment.CurrentDirectory = args[1];
+            Console.Write(Environment.CurrentDirectory);
             return 0;
         }
     }
