@@ -32,10 +32,26 @@ jobs:
     inputs:
       targetType: 'filePath'
       filePath: 'src/ChildProcess.Native/Subbuild-unix.sh'
-      arguments: 'obj/Subbuild-linux'
+      arguments: 'obj/Subbuild-linux Linux'
 
   - publish: 'obj/Subbuild-linux/bin'
     artifact: 'ChildProcess.Native-linux'
+
+- job: build_native_osx
+
+  pool:
+    vmImage: 'macOS-10.15'
+
+  steps:
+  - task: Bash@3
+    displayName: 'Build Native macOS'
+    inputs:
+      targetType: 'filePath'
+      filePath: 'src/ChildProcess.Native/Subbuild-unix.sh'
+      arguments: 'obj/Subbuild-osx OSX'
+
+  - publish: 'obj/Subbuild-osx/bin'
+    artifact: 'ChildProcess.Native-osx'
 
 - job: build_native_win
 
@@ -99,10 +115,11 @@ jobs:
       platform: linux
       additionalArguments: '-p:AddImportSearchPathAssemblyDirectory=true' # Workaround for https://github.com/dotnet/sdk/issues/1088
 
-- job: build
+- job: test_win_and_pack
 
   dependsOn:
     - build_native_linux
+    - build_native_osx
     - build_native_win
 
   pool:
@@ -116,6 +133,12 @@ jobs:
     inputs:
       source: current
       artifact: 'ChildProcess.Native-linux'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-osx'
       path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
 
   - task: DownloadPipelineArtifact@2

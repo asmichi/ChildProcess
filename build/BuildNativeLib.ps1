@@ -76,8 +76,8 @@ docker volume create $buildVolumeName | Out-Null
 docker run `
     --name $linuxContainerName `
     --mount "type=bind,readonly,source=${worktreeRoot}/src/ChildProcess.Native,target=/proj/src" `
-    --mount "type=volume,src=${buildVolumeName},dst=/proj/build" `
-    $linuxImageName /bin/bash /proj/src/Subbuild-unix.sh /proj
+    --mount "type=volume,src=${buildVolumeName},dst=/proj/obj" `
+    $linuxImageName /bin/bash /proj/src/Subbuild-unix.sh /proj Linux
 
 if ($LASTEXITCODE -ne 0) {
     $successful = $false

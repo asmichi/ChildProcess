@@ -1,1 +1,1 @@
-# placeholder
+set(CMAKE_OSX_ARCHITECTURES x86_64)

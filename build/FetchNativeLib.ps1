@@ -20,6 +20,7 @@ $ErrorActionPreference = "Stop"
 
 $archiveNames = @(
     "ChildProcess.Native-linux",
+    "ChildProcess.Native-osx"
     "ChildProcess.Native-win"
 )
 
