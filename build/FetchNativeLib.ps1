@@ -105,6 +105,12 @@ foreach ($name in $archiveNames) {
             Remove-Item -LiteralPath $dst -Recurse
         }
         Move-Item -LiteralPath $src.FullName -Destination $dst
+
+        if (-not $IsWindows) {
+            # Azure DevOps's artifacts do not preserve permissions. Add +x here.
+            chmod -R u+x $dst
+        }
+
         Write-Host "    Created ${dst}/$($src.Name)."
     }
 }
