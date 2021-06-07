@@ -29,6 +29,9 @@ namespace Asmichi.ProcessManagement
         /// <para>Gets the exit code of the process.</para>
         /// <para>(Non-Windows-Specific) If the process was terminated by signal N, the exit code will be -N.</para>
         /// </summary>
+        /// <remarks>
+        /// (Known Issue) On macOS prior to 11.0, if the process was terminated by a signal, the exit code will always be -1.
+        /// </remarks>
         /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
         int ExitCode { get; }
 

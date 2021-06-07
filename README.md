@@ -45,6 +45,8 @@ NOTE: On Linux, the system must have GLIBC 2.x.y or later and LIBSTDCXX 3.x.y or
 
 - On Windows 10 1809 (including Windows Server 2019), `SignalTermination` just kills the process tree (the same operation as `Kill`).
     - This is due to a Windows pseudoconsole bug where [`ClosePseudoConsole`](https://docs.microsoft.com/en-us/windows/console/closepseudoconsole) does not terminate applications attached to the pseudoconsole.
+- On macOS prior to 11.0, `ExitCode` for killed processes will always be `-1`.
+    - This is due to a `waitid` bug where it returns `0` in `siginfo_t.si_status` for killed processes.
 
 # Notes
 

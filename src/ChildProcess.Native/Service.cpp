@@ -343,7 +343,17 @@ void Service::NotifyClientOfExitedChild(ChildProcessState* pState, siginfo_t sig
     ChildExitNotification cen{};
     cen.Token = pState->GetToken();
     cen.ProcessID = pState->GetPid();
-    cen.Status = siginfo.si_code == CLD_EXITED ? siginfo.si_status : -siginfo.si_status;
+
+    if (siginfo.si_code == CLD_EXITED)
+    {
+        cen.Status = siginfo.si_status;
+    }
+    else
+    {
+        // On macOS prior to 11.0, for killed processes, waitid (not waitpid) returns 0 in siginfo_t.si_status.
+        // We need WNOWAIT to be resistant to PID recycling, hence no luck. Just return -1 on affected versions of macOS.
+        cen.Status = siginfo.si_status == 0 ? -1 : -siginfo.si_status;
+    }
 
     if (!mainChannel_->SendBuffered(&cen, sizeof(cen), BlockingFlag::NonBlocking))
     {
