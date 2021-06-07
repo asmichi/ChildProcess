@@ -275,7 +275,15 @@ namespace Asmichi.ProcessManagement
             var buf = new byte[256];
             while (!cancellationToken.IsCancellationRequested)
             {
-                int bytes = carriedOverBytes + await _helperProcess.ReadFromMainChannelAsync(buf.AsMemory(carriedOverBytes), cancellationToken).ConfigureAwait(false);
+                int readBytes = await _helperProcess.ReadFromMainChannelAsync(buf.AsMemory(carriedOverBytes), cancellationToken).ConfigureAwait(false);
+                if (readBytes <= 0)
+                {
+                    Trace.WriteLine(string.Format(
+                        CultureInfo.InvariantCulture, "fatal error: " + nameof(ReadNotificationsAsync) + " failed (probably the helper process failed)"));
+                    return;
+                }
+
+                int bytes = carriedOverBytes + readBytes;
                 int elementCount = bytes / ChildExitNotification.Size;
                 for (int i = 0; i < elementCount; i++)
                 {
