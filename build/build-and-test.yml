@@ -4,6 +4,7 @@ parameters:
     values:
     - win
     - linux
+    - osx
   - name: additionalArguments
     type: string
     default: ''

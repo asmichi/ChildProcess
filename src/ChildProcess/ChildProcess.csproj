@@ -67,6 +67,30 @@
       <Link>runtimes\linux-arm64\native\AsmichiChildProcessHelper</Link>
       <PackagePath>runtimes\linux-arm64\native</PackagePath>
     </Content>
+    <Content Include="$(BinDir)ChildProcess.Native\osx-x64\$(Configuration)\libAsmichiChildProcess.dylib">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\osx-x64\native\libAsmichiChildProcess.dylib</Link>
+      <PackagePath>runtimes\osx-x64\native</PackagePath>
+    </Content>
+    <Content Include="$(BinDir)ChildProcess.Native\osx-x64\$(Configuration)\AsmichiChildProcessHelper">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\osx-x64\native\AsmichiChildProcessHelper</Link>
+      <PackagePath>runtimes\osx-x64\native</PackagePath>
+    </Content>
+    <Content Include="$(BinDir)ChildProcess.Native\osx-arm64\$(Configuration)\libAsmichiChildProcess.dylib">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\osx-arm64\native\libAsmichiChildProcess.dylib</Link>
+      <PackagePath>runtimes\osx-arm64\native</PackagePath>
+    </Content>
+    <Content Include="$(BinDir)ChildProcess.Native\osx-arm64\$(Configuration)\AsmichiChildProcessHelper">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\osx-arm64\native\AsmichiChildProcessHelper</Link>
+      <PackagePath>runtimes\osx-arm64\native</PackagePath>
+    </Content>
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

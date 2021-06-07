@@ -5,17 +5,35 @@
     Copy native assets for the current OS to $(OutputPath) so that CLR can pick them.
   -->
   <PropertyGroup>
-    <NativeAssetsRid Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-x64</NativeAssetsRid>
-    <NativeAssetsRid Condition="$([MSBuild]::IsOSPlatform('Windows'))">win-x64</NativeAssetsRid>
-    <NativeAssetsExeExtension Condition="'$(NativeAssetsRid)'=='win-x64'">.exe</NativeAssetsExeExtension>
-    <NativeAssetsHaveHelper Condition="'$(NativeAssetsRid)'!='win-x64'">true</NativeAssetsHaveHelper>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">x64</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86'">x86</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'">arm</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</NativeAssetsArch>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <NativeAssetsRid>win-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsDllExtension>.dll</NativeAssetsDllExtension>
+    <NativeAssetsExeExtension>.exe</NativeAssetsExeExtension>
+    <NativeAssetsHaveHelper>false</NativeAssetsHaveHelper>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <NativeAssetsRid>linux-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsDllExtension>.so</NativeAssetsDllExtension>
+    <NativeAssetsExeExtension></NativeAssetsExeExtension>
+    <NativeAssetsHaveHelper>true</NativeAssetsHaveHelper>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <NativeAssetsRid>osx-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsDllExtension>.dylib</NativeAssetsDllExtension>
+    <NativeAssetsExeExtension></NativeAssetsExeExtension>
+    <NativeAssetsHaveHelper>true</NativeAssetsHaveHelper>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(NativeAssetsHaveHelper)'=='true'">
-    <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\libAsmichiChildProcess.so">
+    <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\libAsmichiChildProcess$(NativeAssetsDllExtension)">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libAsmichiChildProcess.so</Link>
+      <Link>libAsmichiChildProcess$(NativeAssetsDllExtension)</Link>
     </Content>
     <Content Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\AsmichiChildProcessHelper">
       <Visible>false</Visible>

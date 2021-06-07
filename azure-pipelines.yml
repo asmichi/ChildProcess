@@ -88,7 +88,9 @@ jobs:
 
 - job: test_linux
 
-  dependsOn: build_native_linux
+  dependsOn:
+    - build_native_linux
+    - build_native_osx
 
   continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
 
@@ -96,24 +98,25 @@ jobs:
     vmImage: 'ubuntu-18.04'
 
   steps:
-  - template: 'build/prepare-variables.yml'
-  - template: 'build/prepare-dotnet.yml'
-
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      source: current
-      artifact: 'ChildProcess.Native-linux'
-      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
-
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: 'chmod +x -R $(Build.SourcesDirectory)/bin/ChildProcess.Native'
-
-  - template: 'build/build-and-test.yml'
+  - template: 'build/test-native-unix.yml'
     parameters:
       platform: linux
-      additionalArguments: '-p:AddImportSearchPathAssemblyDirectory=true' # Workaround for https://github.com/dotnet/sdk/issues/1088
+
+- job: test_osx
+
+  dependsOn:
+    - build_native_linux
+    - build_native_osx
+
+  continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
+
+  pool:
+    vmImage: 'macOS-10.15'
+
+  steps:
+  - template: 'build/test-native-unix.yml'
+    parameters:
+      platform: osx
 
 - job: test_win_and_pack
 
