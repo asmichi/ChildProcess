@@ -47,11 +47,10 @@ case ${OS} in
         build linux-arm64 Release ${LinuxArm64ToolchainFile}
         ;;
     "OSX")
-        CMAKE_FLAGS=""
-        build osx-x64 Debug ${OSXX64ToolchainFile}
-        build osx-x64 Release ${OSXX64ToolchainFile}
-        build osx-arm64 Debug ${OSXArm64ToolchainFile}
-        build osx-arm64 Release ${OSXArm64ToolchainFile}
+        build osx-x64 Debug ${OSXX64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=x86_64
+        build osx-x64 Release ${OSXX64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=x86_64
+        build osx-arm64 Debug ${OSXArm64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=arm64
+        build osx-arm64 Release ${OSXArm64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=arm64
         ;;
     *)
         echo "Unknown OS: ${OS}" 1>&2
