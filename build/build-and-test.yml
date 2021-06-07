@@ -25,5 +25,4 @@ steps:
       command: test
       projects: 'src/ChildProcess.Test/ChildProcess.Test.csproj'
       arguments: '$(CommonBuildOptions) --no-build ${{ parameters.additionalArguments }} -- RunConfiguration.TestSessionTimeout=${{ parameters.testTimeoutMilliseconds }}'
-      continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
       testRunTitle: ${{ parameters.platform }}
