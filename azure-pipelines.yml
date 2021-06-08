@@ -32,9 +32,9 @@ jobs:
     inputs:
       targetType: 'filePath'
       filePath: 'src/ChildProcess.Native/Subbuild-unix.sh'
-      arguments: 'obj/Subbuild-linux Linux'
+      arguments: 'Linux obj/Subbuild-linux bin/ChildProcess.Native'
 
-  - publish: 'obj/Subbuild-linux/bin'
+  - publish: 'bin/ChildProcess.Native'
     artifact: 'ChildProcess.Native-linux'
 
 - job: build_native_osx
@@ -48,9 +48,9 @@ jobs:
     inputs:
       targetType: 'filePath'
       filePath: 'src/ChildProcess.Native/Subbuild-unix.sh'
-      arguments: 'obj/Subbuild-osx OSX'
+      arguments: 'OSX obj/Subbuild-osx bin/ChildProcess.Native'
 
-  - publish: 'obj/Subbuild-osx/bin'
+  - publish: 'bin/ChildProcess.Native'
     artifact: 'ChildProcess.Native-osx'
 
 - job: build_native_win

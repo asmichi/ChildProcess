@@ -2,8 +2,9 @@
 # Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 SrcRoot=$(dirname $0)
-ProjRoot=$1
-OS=$2
+OS=$1
+ObjDir=$2
+BinDir=$3
 LinuxX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-linux.cmake
 LinuxArmToolchainFile=${SrcRoot}/cmake/toolchain-arm-linux-gnueabihf.cmake
 LinuxArm64ToolchainFile=${SrcRoot}/cmake/toolchain-aarch64-linux-gnu.cmake
@@ -18,8 +19,8 @@ function build_impl()
     local configuration=$2
     local toolchainFile=$3
     local extraArgs=${@:4}
-    local buildDir=${ProjRoot}/obj/${rid}/${configuration}
-    local outDir=${ProjRoot}/bin/${rid}/${configuration}
+    local buildDir=${ObjDir}/${rid}/${configuration}
+    local outDir=${BinDir}/${rid}/${configuration}
 
     mkdir -p ${buildDir}
     (cd ${buildDir}; cmake ${SrcRoot} -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=${configuration} -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${toolchainFile} $extraArgs) || return

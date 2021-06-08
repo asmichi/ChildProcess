@@ -37,7 +37,6 @@ New-Item -ItemType Directory -Force $binDir | Out-Null
 if ($Rebuild) {
     try {
         Remove-Item $objDir/* -Recurse
-        Remove-Item $binDir/* -Recurse
     }
     catch {}
 }
@@ -77,7 +76,7 @@ docker run `
     --name $linuxContainerName `
     --mount "type=bind,readonly,source=${worktreeRoot}/src/ChildProcess.Native,target=/proj/src" `
     --mount "type=volume,src=${buildVolumeName},dst=/proj/obj" `
-    $linuxImageName /bin/bash /proj/src/Subbuild-unix.sh /proj Linux
+    $linuxImageName /bin/bash /proj/src/Subbuild-unix.sh Linux /proj/obj /proj/obj/out/ChildProcess.Native
 
 if ($LASTEXITCODE -ne 0) {
     $successful = $false
@@ -89,7 +88,7 @@ if ($LASTEXITCODE -ne 0) {
 # and copying only the file data to it).
 #
 # Avoid mouting a host directory and do docker cp.
-docker cp "${linuxContainerName}:/proj/bin/." "${worktreeRoot}/bin/ChildProcess.Native"
+docker cp "${linuxContainerName}:/proj/obj/out/ChildProcess.Native/." "${worktreeRoot}/bin/ChildProcess.Native"
 docker rm $linuxContainerName | Out-Null
 
 if ($null -ne $winJob) {
