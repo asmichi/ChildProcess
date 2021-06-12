@@ -31,15 +31,17 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 
 RIDs:
 
-- `win10-x86` (Not tested)
-- `win10-x64` (1809 or later)
-- `win10-arm` (Not tested)
-- `win10-arm64` (Not tested)
-- `linux-x64`
-- `linux-arm` (Not tested)
-- `linux-arm64` (Not tested)
-- `osx-x64` (macOS 10.15 Catalina or later)
-- `osx-arm64` (macOS 11.0 Big Sur or later; Not tested)
+- `win10-x86` (not tested)
+- `win10-x64` (1809 or later; tested on 1809)
+- `win10-arm` (not tested)
+- `win10-arm64` (not tested)
+- `linux-x64` (tested on Ubuntu 18.04)
+- `linux-arm` (not tested)
+- `linux-arm64` (not tested)
+- `linux-musl-arm64` (not tested)
+- `linux-musl-x64` (tested on Alpine 3.13)
+- `osx-x64` (macOS 10.15 Catalina or later; tested on 10.15)
+- `osx-arm64` (macOS 11.0 Big Sur or later; not tested)
 
 NOTE: On Linux, the system must have GLIBC 2.x.y or later and LIBSTDCXX 3.x.y or later. Musl-based Linux (Alpine, etc.) is not currently supported.
 

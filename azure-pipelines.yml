@@ -177,6 +177,23 @@ jobs:
       platform: linux
       rid: linux-x64
 
+- job: test_linux_alpine_x64
+
+  dependsOn:
+    - build_and_pack
+    - build_native_linux
+
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  container: 'asmichi/node-azuredevops:14-alpine'
+
+  steps:
+  - template: 'build/test.yml'
+    parameters:
+      platform: linux
+      rid: linux-musl-x64
+
 - job: test_osx_x64
 
   dependsOn:
