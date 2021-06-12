@@ -9,9 +9,8 @@ include_directories(SYSTEM
     /usr/arm-linux-gnueabihf/include/c++/7
     /usr/arm-linux-gnueabihf/include/c++/7/arm-linux-gnueabihf
     /usr/arm-linux-gnueabihf/include/c++/7/backward
-    /usr/lib/gcc-cross/arm-linux-gnueabihf/7/include
-    /usr/lib/gcc-cross/arm-linux-gnueabihf/7/include-fixed
-    /usr/arm-linux-gnueabihf/include)
+    /usr/arm-linux-gnueabihf/include
+    /usr/lib/llvm-10/lib/clang/10.0.0/include)
 
 add_compile_options(-nostdinc)
 add_link_options(-fuse-ld=lld)

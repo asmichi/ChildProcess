@@ -9,9 +9,8 @@ include_directories(SYSTEM
     /usr/aarch64-linux-gnu/include/c++/7
     /usr/aarch64-linux-gnu/include/c++/7/aarch64-linux-gnu
     /usr/aarch64-linux-gnu/include/c++/7/backward
-    /usr/lib/gcc-cross/aarch64-linux-gnu/7/include
-    /usr/lib/gcc-cross/aarch64-linux-gnu/7/include-fixed
-    /usr/aarch64-linux-gnu/include)
+    /usr/aarch64-linux-gnu/include
+    /usr/lib/llvm-10/lib/clang/10.0.0/include)
 
 add_compile_options(-nostdinc)
 add_link_options(-fuse-ld=lld)
