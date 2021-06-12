@@ -30,13 +30,13 @@ function Start-Build() {
         $rid = "win-${Arch}"
         $buildDir = Join-Path $WorktreeRoot "obj/ChildProcess.Native/$rid/${Configuration}"
         $outDir = Join-Path $WorktreeRoot "bin/ChildProcess.Native/$rid/${Configuration}"
-        
+
         New-Item -ItemType Directory -Force $buildDir | Out-Null
         Push-Location -LiteralPath $buildDir
         # --no-warn-unused-cli: https://gitlab.kitware.com/cmake/cmake/-/issues/17261
-        cmake $SrcRoot -G Ninja --no-warn-unused-cli "-DCMAKE_BUILD_TYPE=${Configuration}" "-DCMAKE_TOOLCHAIN_FILE=${SrcRoot}/cmake/toolchain-msvc-${Arch}.cmake"
+        cmake $SrcRoot -G Ninja --no-warn-unused-cli "-DCMAKE_BUILD_TYPE=${Configuration}" "-DCMAKE_TOOLCHAIN_FILE=${SrcRoot}/cmake/toolchain-win-${Arch}.cmake"
         Pop-Location
-        
+
         ninja -C $buildDir
 
         if ($LASTEXITCODE -ne 0) {

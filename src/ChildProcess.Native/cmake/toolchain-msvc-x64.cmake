@@ -1,4 +1,0 @@
-set(CMAKE_SYSTEM_PROCESSOR AMD64)
-set(MSVC_ARCHITECTURE x64)
-
-include(${CMAKE_CURRENT_LIST_DIR}/toolchain-msvc.cmake)

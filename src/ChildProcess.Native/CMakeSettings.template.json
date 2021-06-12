@@ -46,7 +46,7 @@
     },
     {
       "name": "WSL-x64-Debug",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
@@ -67,7 +67,7 @@
     },
     {
       "name": "WSL-x64-Release",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
@@ -88,11 +88,11 @@
     },
     {
       "name": "WSL-arm-Debug",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-arm-linux-gnueabihf.cmake",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-linux-arm.cmake",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
@@ -106,14 +106,15 @@
           "value": "/usr/bin/clang++-10",
           "type": "FILEPATH"
         }
-      ],
+      ]
     },
     {
       "name": "WSL-arm-Release",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-linux-arm.cmake",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
@@ -131,7 +132,7 @@
     },
     {
       "name": "WSL-arm64-Debug",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
@@ -142,7 +143,7 @@
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
       "wslPath": "${defaultWSLPath}",
       "cmakeExecutable": "$HOME/bin/cmake",
-      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-aarch64-linux-gnu.cmake",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-linux-arm64.cmake",
       "variables": [
         {
           "name": "CMAKE_CXX_COMPILER",
@@ -153,7 +154,7 @@
     },
     {
       "name": "WSL-arm64-Release",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
@@ -164,7 +165,7 @@
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
       "wslPath": "${defaultWSLPath}",
       "cmakeExecutable": "$HOME/bin/cmake",
-      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-aarch64-linux-gnu.cmake",
+      "cmakeToolchain": "${projectDir}\\cmake\\toolchain-linux-arm64.cmake",
       "variables": [
         {
           "name": "CMAKE_CXX_COMPILER",

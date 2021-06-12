@@ -1,15 +1,17 @@
 #!/bin/bash
 # Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+set -eu
+
 SrcRoot=$(dirname $0)
 OS=$1
 ObjDir=$2
 BinDir=$3
-LinuxX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-linux.cmake
-LinuxArmToolchainFile=${SrcRoot}/cmake/toolchain-arm-linux-gnueabihf.cmake
-LinuxArm64ToolchainFile=${SrcRoot}/cmake/toolchain-aarch64-linux-gnu.cmake
-OSXX64ToolchainFile=${SrcRoot}/cmake/toolchain-x64-osx.cmake
-OSXArm64ToolchainFile=${SrcRoot}/cmake/toolchain-arm64-osx.cmake
+ToolchainFile_LinuxX64=${SrcRoot}/cmake/toolchain-linux-x64.cmake
+ToolchainFile_LinuxArm=${SrcRoot}/cmake/toolchain-linux-arm.cmake
+ToolchainFile_LinuxArm64=${SrcRoot}/cmake/toolchain-linux-arm64.cmake
+ToolchainFile_OSXX64=${SrcRoot}/cmake/toolchain-osx-x64.cmake
+ToolchainFile_OSXArm64=${SrcRoot}/cmake/toolchain-osx-arm64.cmake
 Jobs=$(getconf _NPROCESSORS_ONLN)
 pids=()
 
@@ -40,18 +42,18 @@ function build()
 
 case ${OS} in
     "Linux")
-        build linux-x64 Debug ${LinuxX64ToolchainFile}
-        build linux-x64 Release ${LinuxX64ToolchainFile}
-        build linux-arm Debug ${LinuxArmToolchainFile}
-        build linux-arm Release ${LinuxArmToolchainFile}
-        build linux-arm64 Debug ${LinuxArm64ToolchainFile}
-        build linux-arm64 Release ${LinuxArm64ToolchainFile}
+        build linux-x64 Debug ${ToolchainFile_LinuxX64}
+        build linux-x64 Release ${ToolchainFile_LinuxX64}
+        build linux-arm Debug ${ToolchainFile_LinuxArm}
+        build linux-arm Release ${ToolchainFile_LinuxArm}
+        build linux-arm64 Debug ${ToolchainFile_LinuxArm64}
+        build linux-arm64 Release ${ToolchainFile_LinuxArm64}
         ;;
     "OSX")
-        build osx-x64 Debug ${OSXX64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=x86_64
-        build osx-x64 Release ${OSXX64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=x86_64
-        build osx-arm64 Debug ${OSXArm64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=arm64
-        build osx-arm64 Release ${OSXArm64ToolchainFile} -DCMAKE_OSX_ARCHITECTURES=arm64
+        build osx-x64 Debug ${ToolchainFile_OSXX64} -DCMAKE_OSX_ARCHITECTURES=x86_64
+        build osx-x64 Release ${ToolchainFile_OSXX64} -DCMAKE_OSX_ARCHITECTURES=x86_64
+        build osx-arm64 Debug ${ToolchainFile_OSXArm64} -DCMAKE_OSX_ARCHITECTURES=arm64
+        build osx-arm64 Release ${ToolchainFile_OSXArm64} -DCMAKE_OSX_ARCHITECTURES=arm64
         ;;
     *)
         echo "Unknown OS: ${OS}" 1>&2
