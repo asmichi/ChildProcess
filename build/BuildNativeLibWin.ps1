@@ -21,7 +21,7 @@ Import-Module "$PSScriptRoot\psm\Build.psm1"
 
 $worktreeRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-$linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20210606.1"
+$linuxImageName = "asmichi/childprocess-buildtools-ubuntu:18.04.20210612.1"
 $linuxContainerName = "${NamePrefix}-buildnativelib-linux"
 $buildVolumeName = "${NamePrefix}-buildnativelib-linux"
 

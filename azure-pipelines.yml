@@ -24,7 +24,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-18.04'
 
-  container: 'asmichi/childprocess-buildtools-ubuntu:18.04.20210606.1'
+  container: 'asmichi/childprocess-buildtools-ubuntu:18.04.20210612.1'
 
   steps:
   - task: Bash@3
