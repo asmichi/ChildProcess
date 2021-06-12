@@ -92,6 +92,12 @@ else(WIN32)
         $<$<CONFIG:Debug>:-DENABLE_TRACE_INFO>
         $<$<CONFIG:Debug>:-DENABLE_TRACE_ERROR>
     )
+    if (LIBC_MUSL)
+        # CMSG_NXTHDR of musl invokes -Wsign-compare; suppress it.
+        add_compile_options(
+            -Wno-sign-compare
+        )
+    endif(LIBC_MUSL)
 
     #
     # An intermediate object library to allow tests to reference nonexported symbols by statically linking these objects.

@@ -10,9 +10,11 @@ BinDir=$3
 ToolchainFile_LinuxX64=${SrcRoot}/cmake/toolchain-linux-x64.cmake
 ToolchainFile_LinuxArm=${SrcRoot}/cmake/toolchain-linux-arm.cmake
 ToolchainFile_LinuxArm64=${SrcRoot}/cmake/toolchain-linux-arm64.cmake
+ToolchainFile_LinuxMuslX64=${SrcRoot}/cmake/toolchain-linux-musl-x64.cmake
+ToolchainFile_LinuxMuslArm64=${SrcRoot}/cmake/toolchain-linux-musl-arm64.cmake
 ToolchainFile_OSXX64=${SrcRoot}/cmake/toolchain-osx-x64.cmake
 ToolchainFile_OSXArm64=${SrcRoot}/cmake/toolchain-osx-arm64.cmake
-Jobs=$(getconf _NPROCESSORS_ONLN)
+Jobs=$(($(getconf _NPROCESSORS_ONLN) / 2))
 pids=()
 
 function build_impl()
@@ -48,6 +50,10 @@ case ${OS} in
         build linux-arm Release ${ToolchainFile_LinuxArm}
         build linux-arm64 Debug ${ToolchainFile_LinuxArm64}
         build linux-arm64 Release ${ToolchainFile_LinuxArm64}
+        build linux-musl-x64 Debug ${ToolchainFile_LinuxMuslX64}
+        build linux-musl-x64 Release ${ToolchainFile_LinuxMuslX64}
+        build linux-musl-arm64 Debug ${ToolchainFile_LinuxMuslArm64}
+        build linux-musl-arm64 Release ${ToolchainFile_LinuxMuslArm64}
         ;;
     "OSX")
         build osx-x64 Debug ${ToolchainFile_OSXX64} -DCMAKE_OSX_ARCHITECTURES=x86_64

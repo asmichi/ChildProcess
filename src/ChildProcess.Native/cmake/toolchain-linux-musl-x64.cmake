@@ -1,0 +1,15 @@
+# Assume x64 Ubuntu 18.04 & Clang 10 & LLD
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+
+set(CMAKE_CXX_COMPILER /usr/bin/clang++-10)
+set(CMAKE_CXX_COMPILER_TARGET x86_64-alpine-linux-musl)
+set(CMAKE_SYSROOT $ENV{SYSROOTS_DIR}/sysroot-alpine-x86_64-alpine-linux-musl)
+
+set(LIBC_MUSL 1)
+add_link_options(-fuse-ld=lld)
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
