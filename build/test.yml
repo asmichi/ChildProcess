@@ -1,0 +1,61 @@
+# NOTE: This does not invoke prepare-variables.yml.
+parameters:
+  - name: platform
+    type: string
+    values:
+    - osx
+    - linux
+    - win
+  - name: rid
+    type: string
+    values:
+    - osx-x64
+    - linux-x64
+    - linux-musl-x64
+    - win-x64
+  - name: configuration
+    type: string
+    values:
+      - Debug
+      - Release
+    default: Release
+  - name: testTimeoutMilliseconds
+    type: number
+    default: 180000
+
+steps:
+  - template: 'prepare-dotnet.yml'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-${{ parameters.platform }}'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Test'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Test'
+
+  - task: Bash@3
+    condition: ${{ ne(parameters.platform, 'win') }}
+    inputs:
+      targetType: 'inline'
+      script: 'chmod -R +x $(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  # Workaround for https://github.com/dotnet/sdk/issues/1088
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/${{ parameters.rid }}/${{ parameters.configuration }}'
+      contents: '*'
+      targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/netcoreapp3.1'
+      overwrite: true
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/netcoreapp3.1/Asmichi.ChildProcess.Test.dll'
+      arguments: '-- RunConfiguration.TestSessionTimeout=${{ parameters.testTimeoutMilliseconds }}'
+      testRunTitle: ${{ parameters.rid }}
