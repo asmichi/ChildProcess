@@ -92,8 +92,6 @@ jobs:
     - build_native_linux
     - build_native_osx
 
-  continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
-
   pool:
     vmImage: 'ubuntu-18.04'
 
@@ -107,8 +105,6 @@ jobs:
   dependsOn:
     - build_native_linux
     - build_native_osx
-
-  continueOnError: true # Work around https://github.com/dotnet/sdk/issues/13431
 
   pool:
     vmImage: 'macOS-10.15'
