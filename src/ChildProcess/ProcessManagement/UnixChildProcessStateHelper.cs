@@ -13,7 +13,7 @@ using Asmichi.Utilities;
 
 namespace Asmichi.ProcessManagement
 {
-    internal sealed class UnixChildProcessContext : IChildProcessContext
+    internal sealed class UnixChildProcessStateHelper : IChildProcessStateHelper
     {
         // NOTE: Make sure to sync with the helper.
         private const uint RequestFlagsRedirectStdin = 1U << 0;
@@ -30,12 +30,12 @@ namespace Asmichi.ProcessManagement
         private readonly Task _readNotificationsTask;
         private readonly Task _processAsyncTerminationTask;
 
-        internal UnixChildProcessContext()
+        internal UnixChildProcessStateHelper()
             : this(Environment.ProcessorCount)
         {
         }
 
-        public UnixChildProcessContext(int maxSubchannelCount)
+        public UnixChildProcessStateHelper(int maxSubchannelCount)
         {
             _terminationRequests = Channel.CreateUnbounded<long>();
 

@@ -5,15 +5,15 @@ using Asmichi.PlatformAbstraction;
 
 namespace Asmichi.ProcessManagement
 {
-    internal static class ChildProcessContext
+    internal static class ChildProcessHelper
     {
-        public static IChildProcessContext Shared { get; } = CreateSharedContext();
+        public static IChildProcessStateHelper Shared { get; } = CreateSharedHelper();
 
-        private static IChildProcessContext CreateSharedContext() =>
+        private static IChildProcessStateHelper CreateSharedHelper() =>
             Pal.PlatformKind switch
             {
-                PlatformKind.Win32 => new WindowsChildProcessContext(),
-                PlatformKind.Unix => new UnixChildProcessContext(),
+                PlatformKind.Win32 => new WindowsChildProcessStateHelper(),
+                PlatformKind.Unix => new UnixChildProcessStateHelper(),
                 PlatformKind.Unknown => throw new PlatformNotSupportedException(),
                 _ => throw new AsmichiChildProcessInternalLogicErrorException(),
             };

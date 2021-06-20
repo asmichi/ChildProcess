@@ -46,7 +46,7 @@ namespace Asmichi.ProcessManagement
             IChildProcessStateHolder processState;
             try
             {
-                processState = ChildProcessContext.Shared.SpawnProcess(
+                processState = ChildProcessHelper.Shared.SpawnProcess(
                     startInfo: ref startInfoInternal,
                     resolvedPath: resolvedPath,
                     stdIn: stdHandles.PipelineStdIn,

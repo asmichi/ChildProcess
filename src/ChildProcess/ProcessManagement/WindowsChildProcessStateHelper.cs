@@ -14,7 +14,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.ProcessManagement
 {
-    internal sealed class WindowsChildProcessContext : IChildProcessContext
+    internal sealed class WindowsChildProcessStateHelper : IChildProcessStateHelper
     {
         private static readonly string ChcpPath = Path.Join(
             Environment.GetFolderPath(Environment.SpecialFolder.System, Environment.SpecialFolderOption.DoNotVerify),

@@ -50,7 +50,7 @@ namespace Asmichi.ProcessManagement
     {
         private readonly object _lock = new object();
         private readonly ManualResetEvent _exitedEvent = new ManualResetEvent(false);
-        private readonly UnixChildProcessContext _context;
+        private readonly UnixChildProcessStateHelper _helper;
         private readonly long _token;
         private readonly bool _allowSignal;
         private int _refCount = 1;
@@ -58,9 +58,9 @@ namespace Asmichi.ProcessManagement
         private int _pid = -1;
         private int _exitCode = -1;
 
-        private UnixChildProcessState(UnixChildProcessContext context, long token, bool allowSignal)
+        private UnixChildProcessState(UnixChildProcessStateHelper helper, long token, bool allowSignal)
         {
-            _context = context;
+            _helper = helper;
             _token = token;
             _allowSignal = allowSignal;
         }
@@ -77,7 +77,7 @@ namespace Asmichi.ProcessManagement
             {
                 // Request asynchronous termination because SengSignal allocates additional resources and may fail.
                 // (Dispose should not fail!)
-                _context.RequestAsyncTermination(_token);
+                _helper.RequestAsyncTermination(_token);
             }
 
             ChildProcessStateCollection.RemoveChildProcessState(this);
@@ -88,9 +88,9 @@ namespace Asmichi.ProcessManagement
         /// Creates a <see cref="UnixChildProcessState"/> with a new process token (an identifier unique within the current AssemblyLoadContext).
         /// </summary>
         /// <returns>A <see cref="UnixChildProcessStateHolder"/> that wraps the created <see cref="UnixChildProcessState"/>.</returns>
-        public static UnixChildProcessStateHolder Create(UnixChildProcessContext context, bool allowSignal)
+        public static UnixChildProcessStateHolder Create(UnixChildProcessStateHelper helper, bool allowSignal)
         {
-            var state = ChildProcessStateCollection.Create(context, allowSignal);
+            var state = ChildProcessStateCollection.Create(helper, allowSignal);
             return new UnixChildProcessStateHolder(state);
         }
 
@@ -227,18 +227,18 @@ namespace Asmichi.ProcessManagement
         public void SignalInterrupt()
         {
             Debug.Assert(_allowSignal);
-            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Interrupt);
+            _helper.SendSignal(_token, UnixHelperProcessSignalNumber.Interrupt);
         }
 
         public void SignalTermination()
         {
             Debug.Assert(_allowSignal);
-            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Termination);
+            _helper.SendSignal(_token, UnixHelperProcessSignalNumber.Termination);
         }
 
         public void Kill()
         {
-            _context.SendSignal(_token, UnixHelperProcessSignalNumber.Kill);
+            _helper.SendSignal(_token, UnixHelperProcessSignalNumber.Kill);
         }
 
         private static class ChildProcessStateCollection
@@ -247,10 +247,10 @@ namespace Asmichi.ProcessManagement
             private static readonly Dictionary<long, UnixChildProcessState> ChildProcessState = new Dictionary<long, UnixChildProcessState>();
             private static long _prevToken;
 
-            public static UnixChildProcessState Create(UnixChildProcessContext context, bool allowSignal)
+            public static UnixChildProcessState Create(UnixChildProcessStateHelper helper, bool allowSignal)
             {
                 var token = IssueProcessToken();
-                var state = new UnixChildProcessState(context, token, allowSignal);
+                var state = new UnixChildProcessState(helper, token, allowSignal);
                 lock (ChildProcessState)
                 {
                     ChildProcessState.Add(token, state);
