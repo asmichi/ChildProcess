@@ -10,14 +10,14 @@ namespace Asmichi.Utilities
         /// <summary>
         /// Constructs an environment block for CreateProcess.
         /// </summary>
-        /// <param name="evars">Collection of environment variables.</param>
+        /// <param name="envVars">Collection of environment variables.</param>
         /// <returns>A string that contains the environment block.</returns>
-        public static char[] MakeEnvironmentBlock(IReadOnlyCollection<KeyValuePair<string, string>> evars)
+        public static char[] MakeEnvironmentBlock(IReadOnlyCollection<KeyValuePair<string, string>> envVars)
         {
-            var buf = new char[CalculateLength(evars)];
+            var buf = new char[CalculateLength(envVars)];
 
             int cur = 0;
-            foreach (var (name, value) in evars)
+            foreach (var (name, value) in envVars)
             {
                 // name=value\0
                 name.CopyTo(0, buf, cur, name.Length);
@@ -39,10 +39,10 @@ namespace Asmichi.Utilities
             return buf;
         }
 
-        private static int CalculateLength(IReadOnlyCollection<KeyValuePair<string, string>> evars)
+        private static int CalculateLength(IReadOnlyCollection<KeyValuePair<string, string>> envVars)
         {
             int length = 0;
-            foreach (var (name, value) in evars)
+            foreach (var (name, value) in envVars)
             {
                 // name=value\0
                 length += name.Length + value.Length + 2;

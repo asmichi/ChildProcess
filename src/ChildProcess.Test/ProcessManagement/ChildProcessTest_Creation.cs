@@ -133,7 +133,7 @@ namespace Asmichi.ProcessManagement
             };
 
             var output = ExecuteForStandardOutput(si);
-            var childEvars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+            var childEnvVars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
 #pragma warning disable CS8605 // Unboxing a possibly null value.
             foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
@@ -142,7 +142,7 @@ namespace Asmichi.ProcessManagement
                 var key = (string)de.Key;
                 var value = (string)de.Value!;
 
-                Assert.Contains(Invariant($"{key}={value}"), childEvars);
+                Assert.Contains(Invariant($"{key}={value}"), childEnvVars);
             }
         }
 
@@ -156,14 +156,14 @@ namespace Asmichi.ProcessManagement
             };
 
             var output = ExecuteForStandardOutput(si);
-            var childEvars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+            var childEnvVars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
-            Assert.Contains("A=a", childEvars);
-            Assert.Contains("BB=bb", childEvars);
+            Assert.Contains("A=a", childEnvVars);
+            Assert.Contains("BB=bb", childEnvVars);
 
             static List<KeyValuePair<string, string>> GetTestEnvironmentVariables()
             {
-                var evars = new List<KeyValuePair<string, string>>();
+                var envVars = new List<KeyValuePair<string, string>>();
 
 #pragma warning disable CS8605 // Unboxing a possibly null value.
                 foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
@@ -172,13 +172,13 @@ namespace Asmichi.ProcessManagement
                     var key = (string)de.Key;
                     var value = (string)de.Value!;
 
-                    evars.Add(new KeyValuePair<string, string>(key, value));
+                    envVars.Add(new KeyValuePair<string, string>(key, value));
                 }
 
-                evars.Add(new KeyValuePair<string, string>("A", "a"));
-                evars.Add(new KeyValuePair<string, string>("BB", "bb"));
+                envVars.Add(new KeyValuePair<string, string>("A", "a"));
+                envVars.Add(new KeyValuePair<string, string>("BB", "bb"));
 
-                return evars;
+                return envVars;
             }
         }
     }

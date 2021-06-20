@@ -77,10 +77,10 @@ namespace Asmichi
             // Output in UTF-8 so that the output will not be affected by the current code page.
             using var sw = new StreamWriter(Console.OpenStandardOutput(), Encoding.UTF8);
 
-            var evars = Environment.GetEnvironmentVariables();
-            foreach (var key in evars.Keys.Cast<string>().OrderBy(x => x))
+            var envVars = Environment.GetEnvironmentVariables();
+            foreach (var key in envVars.Keys.Cast<string>().OrderBy(x => x))
             {
-                sw.Write("{0}={1}\0", key, (string?)evars[key]);
+                sw.Write("{0}={1}\0", key, (string?)envVars[key]);
             }
 
             return 0;
