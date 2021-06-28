@@ -81,7 +81,7 @@ else {
 
     [array]$matchedBuilds = $builds.value | Where-Object { $_.sourceVersion -eq $Revision }
 
-    if ($matchedBuilds.Count -eq 0) {
+    if ($null -eq $matchedBuilds -or $matchedBuilds.Count -eq 0) {
         Write-Error "Build not found. Rebase your branch onto origin/${sourceBranchName}. Make sure you have latest revision fetched. For the latest build see also: https://dev.azure.com/asmichi/ChildProcess/_build/latest?definitionId=${definitionId}&branchName=${sourceBranchName}"
         exit 1
     }
