@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -54,6 +55,7 @@ namespace Asmichi
 
             var si = new ChildProcessStartInfo("cmd", "/C", "set")
             {
+                ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
                 StdOutputRedirection = OutputRedirection.File,
                 StdErrorRedirection = OutputRedirection.File,
                 StdOutputFile = tempFile,
@@ -67,6 +69,7 @@ namespace Asmichi
                 await p.WaitForExitAsync();
             }
 
+            // A=A
             // ALLUSERSPROFILE=C:\ProgramData
             // ...
             Console.WriteLine(File.ReadAllText(tempFile));

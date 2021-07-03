@@ -7,6 +7,7 @@ namespace Asmichi.PlatformAbstraction
     internal interface IEnvironmentPal
     {
         bool IsFileNotFoundError(int error);
+        bool IsEnvironmentVariableNameCaseSensitive { get; }
     }
 
     internal static class EnvironmentPal
@@ -25,5 +26,10 @@ namespace Asmichi.PlatformAbstraction
         }
 
         public static bool IsFileNotFoundError(int error) => Impl.IsFileNotFoundError(error);
+
+        public static bool IsEnvironmentVariableNameCaseSensitive { get; } = Impl.IsEnvironmentVariableNameCaseSensitive;
+
+        public static StringComparison EnvironmentVariableNameComparison { get; } =
+            IsEnvironmentVariableNameCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
     }
 }

@@ -10,6 +10,7 @@ extern void SetupDefaultTestSignalHandlers();
 
 // Handlers
 extern int TestCommandReportSignal(int argc, const char* const* argv);
+extern int TestCommandDumpEnvironmentvariables(int argc, const char* const* argv);
 #if defined(_WIN32)
 #else
 #endif
@@ -24,6 +25,7 @@ namespace
 
     TestCommandDefinition TestCommandDefinitions[] = {
         {"ReportSignal", TestCommandReportSignal},
+        {"DumpEnvironmentVariables", TestCommandDumpEnvironmentvariables},
 #if defined(_WIN32)
 #else
 #endif

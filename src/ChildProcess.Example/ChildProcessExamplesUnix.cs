@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -53,6 +54,7 @@ namespace Asmichi
 
             var si = new ChildProcessStartInfo("env")
             {
+                ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
                 StdOutputRedirection = OutputRedirection.File,
                 StdErrorRedirection = OutputRedirection.File,
                 StdOutputFile = tempFile,

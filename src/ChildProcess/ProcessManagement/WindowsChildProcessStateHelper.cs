@@ -39,7 +39,7 @@ namespace Asmichi.ProcessManagement
             Debug.Assert(startInfo.CreateNewConsole || ConsolePal.HasConsoleWindow());
 
             var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>(), !flags.HasDisableArgumentQuoting());
-            var environmentBlock = environmentVariables != null ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables) : null;
+            var environmentBlock = startInfo.UseCustomEnvironmentVariables ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables.Span) : null;
 
             // Objects that need cleanup
             InputWriterOnlyPseudoConsole? pseudoConsole = null;

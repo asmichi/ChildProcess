@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Asmichi.ProcessManagement
@@ -22,9 +23,9 @@ namespace Asmichi.ProcessManagement
             Assert.Null(sut.StdErrorFile);
             Assert.Null(sut.StdErrorHandle);
             Assert.Null(sut.FileName);
-            Assert.Equal(sut.Arguments, Array.Empty<string>());
+            Assert.Equal(Array.Empty<string>(), sut.Arguments);
             Assert.Null(sut.WorkingDirectory);
-            Assert.Null(sut.EnvironmentVariables);
+            Assert.Equal(Array.Empty<KeyValuePair<string, string>>(), sut.ExtraEnvironmentVariables);
             Assert.Equal(ChildProcessFlags.None, sut.Flags);
             Assert.Equal(65001, sut.CodePage);
         }

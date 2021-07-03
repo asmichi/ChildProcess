@@ -1,13 +1,10 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using Asmichi.Utilities;
 using Xunit;
-using static System.FormattableString;
 using static Asmichi.ProcessManagement.ChildProcessExecutionTestUtil;
 
 namespace Asmichi.ProcessManagement
@@ -120,65 +117,6 @@ namespace Asmichi.ProcessManagement
                 };
 
                 return ExecuteForStandardOutput(si);
-            }
-        }
-
-        // Assumes we do not change the environment variables of the current process.
-        [Fact]
-        public void InheritsEnvironmentVariables()
-        {
-            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "DumpEnvironmentVariables")
-            {
-                StdOutputRedirection = OutputRedirection.OutputPipe,
-            };
-
-            var output = ExecuteForStandardOutput(si);
-            var childEnvVars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-            foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
-#pragma warning restore CS8605 // Unboxing a possibly null value.
-            {
-                var key = (string)de.Key;
-                var value = (string)de.Value!;
-
-                Assert.Contains(Invariant($"{key}={value}"), childEnvVars);
-            }
-        }
-
-        [Fact]
-        public void CanSetEnvironmentVariables()
-        {
-            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "DumpEnvironmentVariables")
-            {
-                StdOutputRedirection = OutputRedirection.OutputPipe,
-                EnvironmentVariables = GetTestEnvironmentVariables(),
-            };
-
-            var output = ExecuteForStandardOutput(si);
-            var childEnvVars = output.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-
-            Assert.Contains("A=a", childEnvVars);
-            Assert.Contains("BB=bb", childEnvVars);
-
-            static List<KeyValuePair<string, string>> GetTestEnvironmentVariables()
-            {
-                var envVars = new List<KeyValuePair<string, string>>();
-
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-                foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
-#pragma warning restore CS8605 // Unboxing a possibly null value.
-                {
-                    var key = (string)de.Key;
-                    var value = (string)de.Value!;
-
-                    envVars.Add(new KeyValuePair<string, string>(key, value));
-                }
-
-                envVars.Add(new KeyValuePair<string, string>("A", "a"));
-                envVars.Add(new KeyValuePair<string, string>("BB", "bb"));
-
-                return envVars;
             }
         }
     }

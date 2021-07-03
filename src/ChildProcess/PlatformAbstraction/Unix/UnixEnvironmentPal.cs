@@ -10,6 +10,8 @@ namespace Asmichi.PlatformAbstraction.Unix
 
         public char SearchPathSeparator { get; } = ':';
 
+        public bool IsEnvironmentVariableNameCaseSensitive => false;
+
         public bool IsFileNotFoundError(int error) => error == ENOENT;
     }
 }

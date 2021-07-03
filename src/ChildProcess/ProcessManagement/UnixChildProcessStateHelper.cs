@@ -1,7 +1,9 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Buffers;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -132,7 +134,7 @@ namespace Asmichi.ProcessManagement
                     bw.Write(x);
                 }
 
-                if (environmentVariables == null)
+                if (!startInfo.UseCustomEnvironmentVariables)
                 {
                     // Send the environment variables of this process to the helper process.
                     //
@@ -141,22 +143,29 @@ namespace Asmichi.ProcessManagement
                     //       employs a process-global lock.
                     //
                     //       Fortunately, the caller can take a snapshot of environment variables theirselves.
-                    var processEnvironmentVariables = Environment.GetEnvironmentVariables();
-                    bw.Write((uint)processEnvironmentVariables.Count);
+                    var processEnvVars = Environment.GetEnvironmentVariables();
+                    var envVarCount = processEnvVars.Count;
+                    bw.Write((uint)envVarCount);
 
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-                    foreach (DictionaryEntry de in processEnvironmentVariables)
-#pragma warning restore CS8605 // Unboxing a possibly null value.
+                    var sortedEnvVars = ArrayPool<KeyValuePair<string, string>>.Shared.Rent(envVarCount);
+                    try
                     {
-                        var name = (string)de.Key;
-                        var value = (string)de.Value!;
-                        bw.WriteEnvironmentVariable(name, value);
+                        EnvironmentVariableListUtil.ToSortedKeyValuePairs(processEnvVars, sortedEnvVars);
+
+                        foreach (var (name, value) in sortedEnvVars.AsSpan<KeyValuePair<string, string>>().Slice(0, envVarCount))
+                        {
+                            bw.WriteEnvironmentVariable(name, value);
+                        }
+                    }
+                    finally
+                    {
+                        ArrayPool<KeyValuePair<string, string>>.Shared.Return(sortedEnvVars);
                     }
                 }
                 else
                 {
-                    bw.Write((uint)environmentVariables.Count);
-                    foreach (var (name, value) in environmentVariables)
+                    bw.Write((uint)environmentVariables.Length);
+                    foreach (var (name, value) in environmentVariables.Span)
                     {
                         bw.WriteEnvironmentVariable(name, value);
                     }

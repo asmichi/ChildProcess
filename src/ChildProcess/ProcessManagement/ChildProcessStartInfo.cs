@@ -73,6 +73,13 @@ namespace Asmichi.ProcessManagement
         /// Note that <see cref="ChildProcessStartInfo.FileName"/> will still be automatically quoted.
         /// </summary>
         DisableArgumentQuoting = 0x0010,
+
+        /// <summary>
+        /// Specifies that the child process should not inherit environment variables from the context
+        /// (by default, <see cref="Environment.GetEnvironmentVariables()"/>).
+        /// This effectively gives you full control over the environment variables of the child process.
+        /// </summary>
+        DisableEnvironmentVariableInheritance = 0x0020,
     }
 
     /// <summary>
@@ -85,6 +92,7 @@ namespace Asmichi.ProcessManagement
         public static bool HasUseCustomCodePage(this ChildProcessFlags flags) => (flags & ChildProcessFlags.UseCustomCodePage) != 0;
         public static bool HasAttachToCurrentConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AttachToCurrentConsole) != 0;
         public static bool HasDisableArgumentQuoting(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableArgumentQuoting) != 0;
+        public static bool HasDisableEnvironmentVariableInheritance(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableEnvironmentVariableInheritance) != 0;
     }
 
     /// <summary>
@@ -241,12 +249,22 @@ namespace Asmichi.ProcessManagement
 
         /// <summary>
         /// <para>
-        /// The list of the environment variables that apply to the child process.
-        /// The default value is <see langword="null"/>.
+        /// The list of the environment variables that should be added or removed. The default value is <see cref="Array.Empty"/>.
         /// </para>
-        /// <para>If it is null, the child process inherits the environment variables of the current process.</para>
+        /// <para>
+        /// If the value of an entry is <see langword="null"/> or an empty string, that environment variable will be removed.
+        /// Otherwise, it will be added.
+        /// </para>
+        /// <para>
+        /// Names must not contain '\0' or '='. Values must not contain '\0'.
+        /// </para>
         /// </summary>
-        public IReadOnlyCollection<KeyValuePair<string, string>>? EnvironmentVariables { get; set; }
+        /// <remarks>
+        /// Unless <see cref="ChildProcessFlags.DisableEnvironmentVariableInheritance"/> is set,
+        /// the child process inherits the environment variables from <see cref="CreationContext"/>
+        /// (by default, those of the current process).
+        /// </remarks>
+        public IReadOnlyCollection<KeyValuePair<string, string>> ExtraEnvironmentVariables { get; set; } = Array.Empty<KeyValuePair<string, string>>();
 
         /// <summary>
         /// Specifies how the child process is created.
@@ -338,5 +356,14 @@ namespace Asmichi.ProcessManagement
         /// Otherwise not used.
         /// </summary>
         public SafeFileHandle? StdErrorHandle { get; set; }
+
+        /// <summary>
+        /// Specifies the context that should be used to create the child process.
+        /// </summary>
+        /// <remarks>
+        /// If <see langword="null"/>, this defaults to the context derived from the current process.
+        /// It will have the environment variables of the current process.
+        /// </remarks>
+        public ChildProcessCreationContext? CreationContext { get; set; }
     }
 }

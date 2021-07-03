@@ -56,7 +56,7 @@ NOTE: `osx-arm64` will be introduced on .NET 6. [dotnet/runtime#43313](https://g
 
 # Notes
 
-- When overriding environment variables, it is recommended that you include basic environment variables such as `SystemRoot`, etc.
+- When completely rewriting environment variables with `ChildProcessCreationContext` or `ChildProcessFlags.DisableEnvironmentVariableInheritance`, it is recommended that you include basic environment variables such as `SystemRoot`, etc.
 
 # Limitations
 
@@ -105,8 +105,11 @@ using (var p = ChildProcess.Start(si))
 ```cs
 var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
+    ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
     StdOutputRedirection = OutputRedirection.File,
     StdOutputFile = "env.txt"
+    Flags = ChildProcessFlags.UseCustomCodePage,
+    CodePage = Encoding.Default.CodePage, // UTF-8
 };
 
 using (var p = ChildProcess.Start(si))
@@ -114,6 +117,7 @@ using (var p = ChildProcess.Start(si))
     await p.WaitForExitAsync();
 }
 
+// A=A
 // ALLUSERSPROFILE=C:\ProgramData
 // ...
 Console.WriteLine(File.ReadAllText("env.txt"));

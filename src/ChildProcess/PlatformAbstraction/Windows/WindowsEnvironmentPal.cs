@@ -8,6 +8,8 @@ namespace Asmichi.PlatformAbstraction.Windows
     {
         public char SearchPathSeparator { get; } = ';';
 
+        public bool IsEnvironmentVariableNameCaseSensitive => false;
+
         public bool IsFileNotFoundError(int error) => error == Kernel32.ERROR_FILE_NOT_FOUND;
     }
 }

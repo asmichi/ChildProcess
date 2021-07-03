@@ -65,6 +65,7 @@ if(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
+        tests/DumpEnvironmentVariables.win.cpp
         tests/ReportSignal.win.cpp
         tests/TestChildMain.cpp
     )
@@ -144,6 +145,7 @@ else(WIN32)
     # The helper executable for tests.
     #
     set(testChildSources
+        tests/DumpEnvironmentVariables.unix.cpp
         tests/ReportSignal.unix.cpp
         tests/Startup.unix.cpp
         tests/TestChildMain.cpp

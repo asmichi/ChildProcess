@@ -1,5 +1,6 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -12,7 +13,7 @@ namespace Asmichi.Utilities
         /// </summary>
         /// <param name="envVars">Collection of environment variables.</param>
         /// <returns>A string that contains the environment block.</returns>
-        public static char[] MakeEnvironmentBlock(IReadOnlyCollection<KeyValuePair<string, string>> envVars)
+        public static char[] MakeEnvironmentBlock(ReadOnlySpan<KeyValuePair<string, string>> envVars)
         {
             var buf = new char[CalculateLength(envVars)];
 
@@ -39,7 +40,7 @@ namespace Asmichi.Utilities
             return buf;
         }
 
-        private static int CalculateLength(IReadOnlyCollection<KeyValuePair<string, string>> envVars)
+        private static int CalculateLength(ReadOnlySpan<KeyValuePair<string, string>> envVars)
         {
             int length = 0;
             foreach (var (name, value) in envVars)

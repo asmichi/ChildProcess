@@ -78,7 +78,7 @@ namespace Asmichi
             using var sw = new StreamWriter(Console.OpenStandardOutput(), Encoding.UTF8);
 
             var envVars = Environment.GetEnvironmentVariables();
-            foreach (var key in envVars.Keys.Cast<string>().OrderBy(x => x))
+            foreach (var key in envVars.Keys.Cast<string>().OrderBy(x => x, StringComparer.Ordinal))
             {
                 sw.Write("{0}={1}\0", key, (string?)envVars[key]);
             }
