@@ -48,6 +48,8 @@ namespace Asmichi.ProcessManagement
         /// and you cannot send any signals to the process (except <see cref="IChildProcess.Kill"/>).
         /// If it is not set, the child process will be attached to a new console.
         /// </para>
+        /// </summary>
+        /// <remarks>
         /// <para>
         /// Avoid this flag if you need to be fully cross-platform; instead always redirect stdin/stdout/stderr of a child process.
         /// This flag is inherently not cross-platform. The behavior of an "attached" process varies between platforms.
@@ -58,10 +60,10 @@ namespace Asmichi.ProcessManagement
         /// You still cannot send the signals to the process (except <see cref="IChildProcess.Kill"/>).
         /// </para>
         /// <para>
-        /// (Non-Windows-specific) If it is set, a new process group will be created whose leader is the child process.
-        /// If it is not set, the child process will be attached to the current process group.
+        /// (Non-Windows-specific) If it is set, the child process will be attached to the current process group.
+        /// If it is not set, a new process group will be created whose leader is the child process.
         /// </para>
-        /// </summary>
+        /// </remarks>
         AttachToCurrentConsole = 0x0008,
 
         /// <summary>
@@ -272,6 +274,9 @@ namespace Asmichi.ProcessManagement
         /// (Windows-specific) This default list has the 32-bit Windows system directory (system32) and the Windows directory prepended.
         /// </para>
         /// </summary>
+        /// <remarks>
+        /// If <see cref="ChildProcessFlags.IgnoreSearchPath"/> is set, this value is ignored.
+        /// </remarks>
         public IReadOnlyList<string>? SearchPath { get; set; }
 
         /// <summary>
