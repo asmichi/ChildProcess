@@ -8,6 +8,7 @@ trigger:
     exclude:
     - BUILDING.md
     - README.md
+    - README.ja.md
 
 pr:
   branches:

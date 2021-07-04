@@ -1,5 +1,7 @@
+[日本語](README.ja.md)
+
 # Asmichi.ChildProcess
-A .NET library that provides functionality for creating child processes. Easier, less error-prone, more flexible than `System.Diagnostics.Process` at creating child processes.
+A .NET library that provides functionality for creating child processes. Easier, less error-prone, more flexible than `System.Diagnostics.Process` at creating and interacting with child processes.
 
 This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.ChildProcess/).
 
@@ -11,6 +13,7 @@ See the [Wiki](https://github.com/asmichi/ChildProcess/wiki) for the goals and t
 
 - Concentrates on creating a child process and obtaining its output.
     - Cannot query status of a process.
+    - Cannot create a resident process.
 - More destinations of redirection:
     - NUL
     - File (optionally appended)
@@ -51,10 +54,10 @@ NOTE: `osx-arm64` will be introduced on .NET 6. [dotnet/runtime#43313](https://g
 
 # Known Issues
 
-- On Windows 10 1809 (including Windows Server 2019), `SignalTermination` just kills the process tree (the same operation as `Kill`).
+- On Windows 10 1809 (including Windows Server 2019), `SignalTermination` just forcibly kills the process tree (the same operation as `Kill`).
     - This is due to a Windows pseudoconsole bug where [`ClosePseudoConsole`](https://docs.microsoft.com/en-us/windows/console/closepseudoconsole) does not terminate applications attached to the pseudoconsole.
-- On macOS prior to 11.0, `ExitCode` for killed processes will always be `-1`.
-    - This is due to a `waitid` bug where it returns `0` in `siginfo_t.si_status` for killed processes.
+- On macOS prior to 11.0, `ExitCode` for processes killed by a signal will always be `-1`.
+    - This is due to a `waitid` bug where it returns `0` in `siginfo_t.si_status` for such processes.
 
 # Notes
 
