@@ -5,6 +5,8 @@ This library can be obtained via [NuGet](https://www.nuget.org/packages/Asmichi.
 
 [![Build Status](https://dev.azure.com/asmichi/ChildProcess/_apis/build/status/ChildProcess-CI?branchName=master)](https://dev.azure.com/asmichi/ChildProcess/_build/latest?definitionId=5&branchName=master)
 
+See the [Wiki](https://github.com/asmichi/ChildProcess/wiki) for the goals and the roadmap.
+
 ## Comparison with `System.Diagnostics.Process`
 
 - Concentrates on creating a child process and obtaining its output.
