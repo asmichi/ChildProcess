@@ -16,7 +16,7 @@
     - 常駐プロセスを生成することはできない。
 - より多くのリダイレクト先をサポート:
     - NUL
-    - ファイル (追記するオプションあり)
+    - ファイル (追記も可能)
     - パイプ
     - ハンドル
 - リダイレクトのデフォルト値がより安全:
@@ -32,12 +32,12 @@
 
 # サポートされるランタイム
 
-- .NET Core 3.1以降
+- .NET Core 3.1 以降
 
 RIDs:
 
 - `win10-x86` (未テスト)
-- `win10-x64` (1809以降; 1809 でテスト済)
+- `win10-x64` (1809 以降; 1809 でテスト済)
 - `win10-arm` (未テスト)
 - `win10-arm64` (未テスト)
 - `linux-x64` (Ubuntu 18.04 でテスト済)
@@ -48,9 +48,9 @@ RIDs:
 - `osx-x64` (macOS 10.15 Catalina 以降; 10.15 でテスト済)
 - `osx-arm64` (macOS 11.0 Big Sur 以降; 未テスト)
 
-NOTE: glibc ベースの Linux では、glibc 2.x.y 以降と and libstdc++ 3.x.y or later.
+NOTE: glibc ベースの Linux では、glibc 2.x.y 以降と libstdc++ 3.x.y 以降が必要です。
 
-NOTE: `osx-arm64`は .NET 6で導入される予定です。[dotnet/runtime#43313](https://github.com/dotnet/runtime/issues/43313)
+NOTE: `osx-arm64` は .NET 6で導入される予定です。[dotnet/runtime#43313](https://github.com/dotnet/runtime/issues/43313)
 
 # Known Issues
 
