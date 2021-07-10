@@ -29,19 +29,19 @@ namespace Asmichi.ProcessManagement
 
         public Task<bool> Completion => _completionSource.Task;
 
-        public static WaitAsyncOperation Start(WaitHandle waitHandle, int millisecondsTimeout, CancellationToken cancellationToken)
+        public static WaitAsyncOperation Start(WaitHandle waitHandle, TimeSpan timeout, CancellationToken cancellationToken)
         {
             var value = new WaitAsyncOperation();
-            value.StartImpl(waitHandle, millisecondsTimeout, cancellationToken);
+            value.StartImpl(waitHandle, timeout, cancellationToken);
             return value;
         }
 
-        private void StartImpl(WaitHandle waitHandle, int millisecondsTimeout, CancellationToken cancellationToken)
+        private void StartImpl(WaitHandle waitHandle, TimeSpan timeout, CancellationToken cancellationToken)
         {
             lock (this)
             {
                 _waitRegistration = ThreadPool.RegisterWaitForSingleObject(
-                    waitHandle, CachedWaitForExitCompletedDelegate, this, millisecondsTimeout, executeOnlyOnce: true);
+                    waitHandle, CachedWaitForExitCompletedDelegate, this, timeout, executeOnlyOnce: true);
 
                 if (cancellationToken.CanBeCanceled)
                 {

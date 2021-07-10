@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Asmichi.Utilities;
+using static Asmichi.Utilities.ArgumentValidationUtil;
 
 namespace Asmichi.ProcessManagement
 {
@@ -63,11 +64,13 @@ namespace Asmichi.ProcessManagement
         /// </summary>
         internal WaitHandle ExitedWaitHandle => _stateHolder.State.ExitedWaitHandle;
 
-        public void WaitForExit() => WaitForExit(Timeout.Infinite);
+        public void WaitForExit() => WaitForExit(Timeout.InfiniteTimeSpan);
 
-        public bool WaitForExit(int millisecondsTimeout)
+        public bool WaitForExit(int millisecondsTimeout) => WaitForExit(TimeSpan.FromMilliseconds(ValidateTimeoutRange(millisecondsTimeout)));
+
+        public bool WaitForExit(TimeSpan timeout)
         {
-            ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
+            ValidateTimeoutRange(timeout);
             CheckNotDisposed();
 
             var state = _stateHolder.State;
@@ -77,7 +80,7 @@ namespace Asmichi.ProcessManagement
                 return true;
             }
 
-            if (!state.ExitedWaitHandle.WaitOne(millisecondsTimeout))
+            if (!state.ExitedWaitHandle.WaitOne(timeout))
             {
                 return false;
             }
@@ -87,11 +90,14 @@ namespace Asmichi.ProcessManagement
         }
 
         public Task WaitForExitAsync(CancellationToken cancellationToken = default) =>
-            WaitForExitAsync(Timeout.Infinite, cancellationToken);
+            WaitForExitAsync(Timeout.InfiniteTimeSpan, cancellationToken);
 
-        public Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default)
+        public Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default) =>
+            WaitForExitAsync(TimeSpan.FromMilliseconds(ValidateTimeoutRange(millisecondsTimeout)), cancellationToken);
+
+        public Task<bool> WaitForExitAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
         {
-            ArgumentValidationUtil.CheckTimeOutRange(millisecondsTimeout);
+            ValidateTimeoutRange(timeout);
             CheckNotDisposed();
 
             var state = _stateHolder.State;
@@ -116,7 +122,7 @@ namespace Asmichi.ProcessManagement
             }
 
             // Start an asynchronous wait operation.
-            var operation = WaitAsyncOperation.Start(waitHandle, millisecondsTimeout, cancellationToken);
+            var operation = WaitAsyncOperation.Start(waitHandle, timeout, cancellationToken);
             return operation.Completion;
         }
 
@@ -183,7 +189,7 @@ namespace Asmichi.ProcessManagement
         {
             if (!_stateHolder.State.HasExitCode)
             {
-                if (!WaitForExit(0))
+                if (!WaitForExit(TimeSpan.Zero))
                 {
                     throw new InvalidOperationException("The process has not exited. Call WaitForExit before accessing ExitCode.");
                 }

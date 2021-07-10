@@ -81,6 +81,13 @@ namespace Asmichi.ProcessManagement
         bool WaitForExit(int millisecondsTimeout);
 
         /// <summary>
+        /// Waits the specified amount of time for the process to exit.
+        /// </summary>
+        /// <param name="timeout">The amount of time to wait for the process to exit. <see cref="Timeout.InfiniteTimeSpan"/> means infinite amount of time.</param>
+        /// <returns>true if the process has exited. Otherwise false.</returns>
+        bool WaitForExit(TimeSpan timeout);
+
+        /// <summary>
         /// Asynchronously waits indefinitely for the process to exit.
         /// </summary>
         /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
@@ -94,6 +101,14 @@ namespace Asmichi.ProcessManagement
         /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous wait operation. true if the process has exited. Otherwise false.</returns>
         Task<bool> WaitForExitAsync(int millisecondsTimeout, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously waits the specified amount of time for the process to exit.
+        /// </summary>
+        /// <param name="timeout">The amount of time to wait for the process to exit. <see cref="Timeout.InfiniteTimeSpan"/> means infinite amount of time.</param>
+        /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the wait operation.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous wait operation. true if the process has exited. Otherwise false.</returns>
+        Task<bool> WaitForExitAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a value indicating whether this instance supports sending signals (was created without <see cref="ChildProcessFlags.AttachToCurrentConsole"/>).
