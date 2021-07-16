@@ -16,7 +16,7 @@ namespace Asmichi.PlatformAbstraction.Unix
     internal sealed class UnixFilePal : IFilePal
     {
         private static readonly string SocketPathPrefix = MakeSocketPathPrefix();
-        private static int pipeSerialNumber;
+        private static long pipeSerialNumber;
 
         public SafeFileHandle OpenNullDevice(FileAccess fileAccess)
         {
@@ -95,8 +95,8 @@ namespace Asmichi.PlatformAbstraction.Unix
 
         public static string CreateUniqueSocketPath()
         {
-            var thisPipeSerialNumber = Interlocked.Increment(ref pipeSerialNumber);
-            return SocketPathPrefix + thisPipeSerialNumber.ToString(CultureInfo.InvariantCulture);
+            long thisPipeSerialNumber = Interlocked.Increment(ref pipeSerialNumber);
+            return SocketPathPrefix + unchecked((ulong)thisPipeSerialNumber).ToString(CultureInfo.InvariantCulture);
         }
 
         private static string MakeSocketPathPrefix()

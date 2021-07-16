@@ -17,7 +17,7 @@ namespace Asmichi.PlatformAbstraction.Windows
     {
         private const string NullDeviceFileName = "NUL";
         private static readonly string PipePathPrefix = NamedPipeUtil.MakePipePathPrefix(@"\\.\pipe", Kernel32.GetCurrentProcessId());
-        private static int pipeSerialNumber;
+        private static long pipeSerialNumber;
 
         public SafeFileHandle OpenNullDevice(FileAccess fileAccess)
         {
@@ -69,8 +69,8 @@ namespace Asmichi.PlatformAbstraction.Windows
             while (true)
             {
                 // Make a unique name of a named pipe to create.
-                var thisPipeSerialNumber = Interlocked.Increment(ref pipeSerialNumber);
-                var pipeName = PipePathPrefix + thisPipeSerialNumber.ToString(CultureInfo.InvariantCulture);
+                long thisPipeSerialNumber = Interlocked.Increment(ref pipeSerialNumber);
+                var pipeName = PipePathPrefix + unchecked((ulong)thisPipeSerialNumber).ToString(CultureInfo.InvariantCulture);
 
                 var serverPipe = Kernel32.CreateNamedPipe(
                     pipeName,
