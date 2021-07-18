@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Asmichi.Utilities;
 using Xunit;
+using Xunit.Sdk;
 using static Asmichi.ProcessManagement.ChildProcessExecutionTestUtil;
 using KV = System.Collections.Generic.KeyValuePair<string, string>;
 
@@ -77,7 +78,18 @@ namespace Asmichi.ProcessManagement
             bool inheritFromContext)
         {
             var actual = ExecuteForEnvironmentVariables(context, extraEnvVars, inheritFromContext);
-            Assert.Equal(expected.OrderBy(x => x, EnvironmentVariablePairNameComparer.DefaultThenOrdinal), actual);
+            var orderedExpected = expected.OrderBy(x => x, EnvironmentVariablePairNameComparer.DefaultThenOrdinal).ToArray();
+            if (!orderedExpected.SequenceEqual(actual))
+            {
+                // To diagnose environment-dependent issues, print all environment variables.
+                var message =
+                    $"Expected: {ToString(orderedExpected)}\n" +
+                    $"Actual:   {ToString(actual)}";
+
+                throw new XunitException(message);
+            }
+
+            static string ToString(KV[] kvs) => "[" + string.Join(", ", kvs.Select(x => $"{x.Key}={x.Value}")) + "]";
         }
 
         private static KV[] ExecuteForEnvironmentVariables(
