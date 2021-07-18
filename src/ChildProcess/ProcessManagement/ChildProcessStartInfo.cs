@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Win32.SafeHandles;
+using System.Runtime.InteropServices;
 
 namespace Asmichi.ProcessManagement
 {
@@ -338,24 +338,24 @@ namespace Asmichi.ProcessManagement
 
         /// <summary>
         /// If <see cref="StdInputRedirection"/> is <see cref="InputRedirection.Handle"/>,
-        /// specifies the file handle where the stdin of the child process is redirected.
+        /// specifies the handle where the stdin of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle? StdInputHandle { get; set; }
+        public SafeHandle? StdInputHandle { get; set; }
 
         /// <summary>
         /// If <see cref="StdOutputRedirection"/> is <see cref="OutputRedirection.Handle"/>,
-        /// specifies the file handle where the stdout of the child process is redirected.
+        /// specifies the handle where the stdout of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle? StdOutputHandle { get; set; }
+        public SafeHandle? StdOutputHandle { get; set; }
 
         /// <summary>
         /// If <see cref="StdErrorRedirection"/> is <see cref="OutputRedirection.Handle"/>,
-        /// specifies the file handle where the stderr of the child process is redirected.
+        /// specifies the handle where the stderr of the child process is redirected.
         /// Otherwise not used.
         /// </summary>
-        public SafeFileHandle? StdErrorHandle { get; set; }
+        public SafeHandle? StdErrorHandle { get; set; }
 
         /// <summary>
         /// Specifies the context that should be used to create the child process.

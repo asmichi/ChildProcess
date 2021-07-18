@@ -27,9 +27,9 @@ namespace Asmichi.ProcessManagement
         public readonly string? StdInputFile;
         public readonly string? StdOutputFile;
         public readonly string? StdErrorFile;
-        public readonly SafeFileHandle? StdInputHandle;
-        public readonly SafeFileHandle? StdOutputHandle;
-        public readonly SafeFileHandle? StdErrorHandle;
+        public readonly SafeHandle? StdInputHandle;
+        public readonly SafeHandle? StdOutputHandle;
+        public readonly SafeHandle? StdErrorHandle;
 
         /// <summary>
         /// Indicates whether <see cref="EnvironmentVariables"/> should be used.

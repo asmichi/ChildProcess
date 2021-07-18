@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using Asmichi.PlatformAbstraction;
 using Microsoft.Win32.SafeHandles;
 
@@ -145,17 +146,17 @@ namespace Asmichi.ProcessManagement
         /// <summary>
         /// A handle that should be used as the stdin handle of the pipeline.
         /// </summary>
-        public SafeFileHandle PipelineStdIn { get; }
+        public SafeHandle PipelineStdIn { get; }
 
         /// <summary>
         /// A handle that should be used as the stdout handle of the pipeline.
         /// </summary>
-        public SafeFileHandle PipelineStdOut { get; }
+        public SafeHandle PipelineStdOut { get; }
 
         /// <summary>
         /// A handle that should be used as the stderr handle of the pipeline.
         /// </summary>
-        public SafeFileHandle PipelineStdErr { get; }
+        public SafeHandle PipelineStdErr { get; }
 
         /// <summary>
         /// An asynchronous <see cref="Stream"/> that writes to the pipeline.
@@ -183,11 +184,11 @@ namespace Asmichi.ProcessManagement
             ErrorStream = null;
         }
 
-        private SafeFileHandle ChooseInput(
+        private SafeHandle ChooseInput(
             InputRedirection redirection,
             string? fileName,
-            SafeFileHandle? handle,
-            SafeFileHandle? inputPipe,
+            SafeHandle? handle,
+            SafeHandle? inputPipe,
             bool createNewConsole)
         {
             return redirection switch
@@ -201,12 +202,12 @@ namespace Asmichi.ProcessManagement
             };
         }
 
-        private SafeFileHandle ChooseOutput(
+        private SafeHandle ChooseOutput(
             OutputRedirection redirection,
             string? fileName,
-            SafeFileHandle? handle,
-            SafeFileHandle? outputPipe,
-            SafeFileHandle? errorPipe,
+            SafeHandle? handle,
+            SafeHandle? outputPipe,
+            SafeHandle? errorPipe,
             bool createNewConsole)
         {
             return redirection switch
