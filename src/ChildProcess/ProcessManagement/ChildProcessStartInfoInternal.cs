@@ -15,21 +15,21 @@ namespace Asmichi.ProcessManagement
     [StructLayout(LayoutKind.Auto)]
     internal struct ChildProcessStartInfoInternal
     {
-        public string? FileName;
-        public IReadOnlyCollection<string> Arguments;
-        public string? WorkingDirectory;
-        public ChildProcessFlags Flags;
-        public int CodePage;
-        public IReadOnlyList<string>? SearchPath;
-        public InputRedirection StdInputRedirection;
-        public OutputRedirection StdOutputRedirection;
-        public OutputRedirection StdErrorRedirection;
-        public string? StdInputFile;
-        public string? StdOutputFile;
-        public string? StdErrorFile;
-        public SafeFileHandle? StdInputHandle;
-        public SafeFileHandle? StdOutputHandle;
-        public SafeFileHandle? StdErrorHandle;
+        public readonly string? FileName;
+        public readonly IReadOnlyCollection<string> Arguments;
+        public readonly string? WorkingDirectory;
+        public readonly ChildProcessFlags Flags;
+        public readonly int CodePage;
+        public readonly IReadOnlyList<string>? SearchPath;
+        public readonly InputRedirection StdInputRedirection;
+        public readonly OutputRedirection StdOutputRedirection;
+        public readonly OutputRedirection StdErrorRedirection;
+        public readonly string? StdInputFile;
+        public readonly string? StdOutputFile;
+        public readonly string? StdErrorFile;
+        public readonly SafeFileHandle? StdInputHandle;
+        public readonly SafeFileHandle? StdOutputHandle;
+        public readonly SafeFileHandle? StdErrorHandle;
 
         /// <summary>
         /// Indicates whether <see cref="EnvironmentVariables"/> should be used.
