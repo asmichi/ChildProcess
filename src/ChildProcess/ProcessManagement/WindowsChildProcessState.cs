@@ -20,11 +20,13 @@ namespace Asmichi.ProcessManagement
         private readonly InputWriterOnlyPseudoConsole? _pseudoConsole;
         private readonly bool _allowSignal;
         private readonly WaitHandle _exitedWaitHandle;
+        private readonly int _processId;
         private int _exitCode = -1;
         private bool _hasExitCode;
         private bool _isPseudoConsoleDisposed;
 
         public WindowsChildProcessState(
+            int processId,
             SafeProcessHandle processHandle,
             SafeJobObjectHandle jobObjectHandle,
             InputWriterOnlyPseudoConsole? pseudoConsole,
@@ -32,6 +34,7 @@ namespace Asmichi.ProcessManagement
         {
             Debug.Assert(!(allowSignal && pseudoConsole is null));
 
+            _processId = processId;
             _processHandle = processHandle;
             _jobObjectHandle = jobObjectHandle;
             _pseudoConsole = pseudoConsole;
@@ -52,6 +55,7 @@ namespace Asmichi.ProcessManagement
         }
 
         public IChildProcessState State => this;
+        public int ProcessId => _processId;
         public int ExitCode => GetExitCode();
         public WaitHandle ExitedWaitHandle => _exitedWaitHandle;
         public bool HasExitCode => _hasExitCode;

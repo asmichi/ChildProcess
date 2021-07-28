@@ -119,5 +119,24 @@ namespace Asmichi.ProcessManagement
                 return ExecuteForStandardOutput(si);
             }
         }
+
+        [Fact]
+        public void CanObtainProcessId()
+        {
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoBack")
+            {
+                StdInputRedirection = InputRedirection.InputPipe,
+                StdOutputRedirection = OutputRedirection.NullDevice,
+            };
+
+            using var sut = ChildProcess.Start(si);
+
+            using var p = System.Diagnostics.Process.GetProcessById(sut.Id);
+            Assert.StartsWith(Path.GetFileNameWithoutExtension(TestUtil.DotnetCommandName), p.ProcessName, StringComparison.OrdinalIgnoreCase);
+            sut.StandardInput.Close();
+
+            sut.WaitForExit();
+            Assert.Equal(0, sut.ExitCode);
+        }
     }
 }

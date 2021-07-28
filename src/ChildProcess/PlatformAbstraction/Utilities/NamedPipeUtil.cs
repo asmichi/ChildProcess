@@ -8,10 +8,10 @@ namespace Asmichi.PlatformAbstraction.Utilities
     internal static class NamedPipeUtil
     {
         // NOTE: There may be multiple instances of this assembly (AppDomain or AssemblyLoadContext).
-        //       Therefore embedding pid only does not provide uniqueness.
-        public static string MakePipePathPrefix(string pathPrefix, uint pid) =>
+        //       Therefore embedding the process id only does not provide uniqueness.
+        public static string MakePipePathPrefix(string pathPrefix, uint processId) =>
             Path.Combine(
                 pathPrefix,
-                string.Format(CultureInfo.InvariantCulture, "Asmichi.ChildProcess.{0:D5}.{1}.", pid, Path.GetRandomFileName()));
+                string.Format(CultureInfo.InvariantCulture, "Asmichi.ChildProcess.{0:D5}.{1}.", processId, Path.GetRandomFileName()));
     }
 }

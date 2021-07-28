@@ -80,7 +80,8 @@ namespace Asmichi.ProcessManagement
                         | Kernel32.EXTENDED_STARTUPINFO_PRESENT
                         | Kernel32.CREATE_SUSPENDED;
 
-                    (processHandle, threadHandle) = InvokeCreateProcess(
+                    int processId;
+                    (processId, processHandle, threadHandle) = InvokeCreateProcess(
                         commandLine,
                         CreationFlags,
                         environmentBlock,
@@ -102,7 +103,7 @@ namespace Asmichi.ProcessManagement
                         throw new Win32Exception();
                     }
 
-                    return new WindowsChildProcessState(processHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal);
+                    return new WindowsChildProcessState(processId, processHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal);
                 }
             }
             catch
@@ -155,7 +156,7 @@ namespace Asmichi.ProcessManagement
                         | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
 
                     SafeThreadHandle threadHandle;
-                    (processHandle, threadHandle) = InvokeCreateProcess(
+                    (_, processHandle, threadHandle) = InvokeCreateProcess(
                         commandLine,
                         CreationFlags,
                         null,
@@ -222,7 +223,7 @@ namespace Asmichi.ProcessManagement
             }
         }
 
-        private static unsafe (SafeProcessHandle processHandle, SafeThreadHandle threadHandle) InvokeCreateProcess(
+        private static unsafe (int processId, SafeProcessHandle processHandle, SafeThreadHandle threadHandle) InvokeCreateProcess(
             StringBuilder commandLine,
             int creationFlags,
             char[]? environmentBlock,
@@ -259,7 +260,7 @@ namespace Asmichi.ProcessManagement
                     throw new Win32Exception();
                 }
 
-                return (new SafeProcessHandle(pi.hProcess, true), new SafeThreadHandle(pi.hThread, true));
+                return (pi.dwProcessId, new SafeProcessHandle(pi.hProcess, true), new SafeThreadHandle(pi.hThread, true));
             }
         }
     }

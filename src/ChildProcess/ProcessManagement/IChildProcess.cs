@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace Asmichi.ProcessManagement
 {
+    // Not providing `Handle` since *nix does not provide a file descriptor of a process
+    // (except for a pidfd in linux).
+    //
+    // "everything is a file descriptor or a process" --- Linus Torvalds
+    // https://lore.kernel.org/lkml/Pine.LNX.4.44.0206091056550.13459-100000@home.transmeta.com/
+
     /// <summary>
     /// <para>
     /// Provides methods for accessing a child-process-like object.
@@ -19,6 +25,15 @@ namespace Asmichi.ProcessManagement
     /// </summary>
     public interface IChildProcess : IDisposable
     {
+        /// <summary>
+        /// Gets the system-generated process identifier for the process.
+        /// </summary>
+        /// <remarks>
+        /// On *nix, the identifier will get invalid as soon as the process exits.
+        /// Make sure to keep the process running when using the identifier.
+        /// </remarks>
+        int Id { get; }
+
         /// <summary>
         /// Gets a value indicating whether the exit code of the process is 0.
         /// </summary>

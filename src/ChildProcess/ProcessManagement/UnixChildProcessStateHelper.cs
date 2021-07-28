@@ -194,7 +194,7 @@ namespace Asmichi.ProcessManagement
                     GC.KeepAlive(stdOut);
                     GC.KeepAlive(stdErr);
 
-                    var (error, pid) = subchannel.ReceiveCommonResponse();
+                    var (error, processId) = subchannel.ReceiveCommonResponse();
                     if (error > 0)
                     {
                         throw new Win32Exception(error);
@@ -205,7 +205,7 @@ namespace Asmichi.ProcessManagement
                             string.Format(CultureInfo.InvariantCulture, "Internal logic error: Bad request {0}.", error));
                     }
 
-                    stateHolder.State.SetPid(pid);
+                    stateHolder.State.SetProcessId(processId);
 
                     return stateHolder;
                 }
@@ -237,7 +237,7 @@ namespace Asmichi.ProcessManagement
             {
                 subchannel.SendExactBytes(request);
 
-                var (error, pid) = subchannel.ReceiveCommonResponse();
+                var (error, _) = subchannel.ReceiveCommonResponse();
                 if (error > 0)
                 {
                     throw new Win32Exception(error);

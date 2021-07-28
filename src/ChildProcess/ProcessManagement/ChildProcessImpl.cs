@@ -126,6 +126,16 @@ namespace Asmichi.ProcessManagement
             return operation.Completion;
         }
 
+        public int Id
+        {
+            get
+            {
+                CheckNotDisposed();
+
+                return _stateHolder.State.ProcessId;
+            }
+        }
+
         public int ExitCode
         {
             get

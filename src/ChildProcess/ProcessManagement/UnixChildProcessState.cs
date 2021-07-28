@@ -55,7 +55,7 @@ namespace Asmichi.ProcessManagement
         private readonly bool _allowSignal;
         private int _refCount = 1;
         private bool _hasExited;
-        private int _pid = -1;
+        private int _processId = -1;
         private int _exitCode = -1;
 
         private UnixChildProcessState(UnixChildProcessStateHelper helper, long token, bool allowSignal)
@@ -65,11 +65,11 @@ namespace Asmichi.ProcessManagement
             _allowSignal = allowSignal;
         }
 
+        public int ProcessId => GetProcessId();
         public int ExitCode => GetExitCode();
         public bool HasExitCode => GetHasExited();
         public long Token => _token;
         public WaitHandle ExitedWaitHandle => _exitedEvent;
-        public int Pid => GetPid();
 
         public void Dispose()
         {
@@ -180,21 +180,21 @@ namespace Asmichi.ProcessManagement
             }
         }
 
-        private int GetPid()
+        private int GetProcessId()
         {
-            Debug.Assert(_pid != -1);
-            return _pid;
+            Debug.Assert(_processId != -1);
+            return _processId;
         }
 
         /// <summary>
-        /// Sets the PID of the child process.
+        /// Sets the process ID of the child process.
         /// The caller of <see cref="Create"/> must call this before returning <see cref="UnixChildProcessState"/> to <see cref="ChildProcessImpl"/>.
         /// </summary>
-        /// <param name="pid">The PID of the created child process.</param>
-        public void SetPid(int pid)
+        /// <param name="processId">The process ID of the created child process.</param>
+        public void SetProcessId(int processId)
         {
-            Debug.Assert(_pid == -1);
-            _pid = pid;
+            Debug.Assert(_processId == -1);
+            _processId = processId;
         }
 
         public void SetExited(int exitCode)

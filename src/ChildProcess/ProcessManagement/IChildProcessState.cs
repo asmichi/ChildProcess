@@ -19,6 +19,7 @@ namespace Asmichi.ProcessManagement
     // NOTE: A pipe to a process itself is not a part of the state of a child process (but of ours).
     internal interface IChildProcessState
     {
+        int ProcessId { get; }
         int ExitCode { get; }
         WaitHandle ExitedWaitHandle { get; }
         bool HasExitCode { get; }
