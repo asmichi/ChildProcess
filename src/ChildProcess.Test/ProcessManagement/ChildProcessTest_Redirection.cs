@@ -288,7 +288,7 @@ namespace Asmichi.ProcessManagement
                 using (var sut = ChildProcess.Start(si))
                 {
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
@@ -306,7 +306,7 @@ namespace Asmichi.ProcessManagement
                 using (var sut = ChildProcess.Start(si))
                 {
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
@@ -329,7 +329,7 @@ namespace Asmichi.ProcessManagement
                 using (var sut = ChildProcess.Start(si))
                 {
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal(text, File.ReadAllText(outFile));
@@ -356,7 +356,7 @@ namespace Asmichi.ProcessManagement
                 using (var sut = ChildProcess.Start(si))
                 {
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal("TestChild.OutTestChild.Error", File.ReadAllText(outFile));
@@ -373,7 +373,7 @@ namespace Asmichi.ProcessManagement
                 using (var sut = ChildProcess.Start(si))
                 {
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal("TestChild.OutTestChild.ErrorTestChild.OutTestChild.Error", File.ReadAllText(outFile));
@@ -404,7 +404,7 @@ namespace Asmichi.ProcessManagement
 
                     using var sut = ChildProcess.Start(si);
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal("TestChild.Out", File.ReadAllText(outFile));
@@ -428,7 +428,7 @@ namespace Asmichi.ProcessManagement
 
                     using var sut = ChildProcess.Start(si);
                     sut.WaitForExit();
-                    Assert.True(sut.IsSuccessful);
+                    Assert.Equal(0, sut.ExitCode);
                 }
 
                 Assert.Equal(text, File.ReadAllText(outFile));

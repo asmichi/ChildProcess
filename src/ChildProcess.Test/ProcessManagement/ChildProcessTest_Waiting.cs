@@ -24,7 +24,6 @@ namespace Asmichi.ProcessManagement
 
                 using var sut = ChildProcess.Start(si);
                 sut.WaitForExit();
-                Assert.True(sut.IsSuccessful);
                 Assert.Equal(0, sut.ExitCode);
             }
 
@@ -40,7 +39,7 @@ namespace Asmichi.ProcessManagement
 
                 using var sut = ChildProcess.Start(si);
                 sut.WaitForExit();
-                Assert.False(sut.IsSuccessful);
+                Assert.NotEqual(0, sut.ExitCode);
                 Assert.Equal(nonZeroExitCode, sut.ExitCode);
             }
         }
@@ -54,13 +53,11 @@ namespace Asmichi.ProcessManagement
             };
 
             using var sut = ChildProcess.Start(si);
-            Assert.Throws<InvalidOperationException>(() => sut.IsSuccessful);
             Assert.Throws<InvalidOperationException>(() => sut.ExitCode);
 
             sut.StandardInput.Close();
             sut.WaitForExit();
 
-            Assert.True(sut.IsSuccessful);
             Assert.Equal(0, sut.ExitCode);
         }
 

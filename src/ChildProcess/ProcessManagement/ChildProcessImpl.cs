@@ -50,7 +50,6 @@ namespace Asmichi.ProcessManagement
             }
         }
 
-        public bool IsSuccessful => ExitCode == 0;
         public bool HasStandardInput => _standardInput is not null;
         public bool HasStandardOutput => _standardOutput is not null;
         public bool HasStandardError => _standardError is not null;

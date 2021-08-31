@@ -23,7 +23,7 @@ namespace Asmichi.ProcessManagement
             using var sut = ChildProcess.Start(si);
             WaitForAsyncIsTrulyAsynchronous(sut);
             sut.WaitForExit();
-            Assert.True(sut.IsSuccessful);
+            Assert.Equal(0, sut.ExitCode);
         }
 
         private static void WaitForAsyncIsTrulyAsynchronous(IChildProcess sut)

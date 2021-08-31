@@ -35,12 +35,6 @@ namespace Asmichi.ProcessManagement
         int Id { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the exit code of the process is 0.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The process has not exited yet.</exception>
-        bool IsSuccessful { get; }
-
-        /// <summary>
         /// <para>Gets the exit code of the process.</para>
         /// <para>(Non-Windows-Specific) If the process was terminated by signal N, the exit code will be -N.</para>
         /// </summary>

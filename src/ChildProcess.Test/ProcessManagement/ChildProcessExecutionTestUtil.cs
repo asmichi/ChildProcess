@@ -26,7 +26,7 @@ namespace Asmichi.ProcessManagement
             var standardOutput = sr.ReadToEnd();
             p.WaitForExit();
 
-            if (!p.IsSuccessful)
+            if (p.ExitCode != 0)
             {
                 throw new ChildProcessFailedException($"Child process failed with exit code {p.ExitCode} (0x{p.ExitCode:X8}).");
             }
