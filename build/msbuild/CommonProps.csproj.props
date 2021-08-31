@@ -25,6 +25,7 @@
     <PackageOutputPath>$(BinDir)\nupkg\</PackageOutputPath>
   </PropertyGroup>
 
+  <!-- Compilation -->
   <PropertyGroup>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
@@ -37,6 +38,13 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 
+  <!-- Misc -->
+  <PropertyGroup>
+    <!-- https://github.com/dotnet/sdk/issues/774 -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Version Info -->
   <PropertyGroup>
     <AssemblyVersion>0.10.0.0</AssemblyVersion>
     <FileVersion>0.10.0.0</FileVersion>
@@ -44,6 +52,7 @@
     <Version>0.10.0-localbuild+unknown</Version>
   </PropertyGroup>
 
+  <!-- Package Info -->
   <PropertyGroup>
     <Authors>asmichi</Authors>
     <Company>asmichi</Company>
@@ -57,12 +66,14 @@
     <RepositoryUrl>https://github.com/asmichi/ChildProcess</RepositoryUrl>
   </PropertyGroup>
 
+  <!-- Package Generation -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
+  <!-- Strong Name -->
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(WorkTreeRoot)build\StrongNameKeyPair.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
