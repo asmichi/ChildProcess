@@ -80,6 +80,22 @@ namespace Asmichi.ProcessManagement
         /// This effectively gives you full control over the environment variables of the child process.
         /// </summary>
         DisableEnvironmentVariableInheritance = 0x0020,
+
+        /// <summary>
+        /// (Windows-specific) Allows the child process to show the Windows Error Reporting dialog.
+        /// This includes the "foo.dll was not found" dialog and the JIT debug dialog.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This flag does not work if the current process has the Windows Error Reporting dialog disabled
+        /// by calling SetErrorMode. The error mode will be inherited by the child process.
+        /// </para>
+        /// <para>
+        /// This is done by removing the <a href="https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_limit_information">
+        /// JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION</a> flag. (<see cref="ChildProcess"/> adds it by default.)
+        /// </para>
+        /// </remarks>
+        EnableWindowsErrorReportingDialog = 0x0040,
     }
 
     /// <summary>
@@ -93,6 +109,7 @@ namespace Asmichi.ProcessManagement
         public static bool HasAttachToCurrentConsole(this ChildProcessFlags flags) => (flags & ChildProcessFlags.AttachToCurrentConsole) != 0;
         public static bool HasDisableArgumentQuoting(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableArgumentQuoting) != 0;
         public static bool HasDisableEnvironmentVariableInheritance(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableEnvironmentVariableInheritance) != 0;
+        public static bool HasEnableWindowsErrorReportingDialog(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableWindowsErrorReportingDialog) != 0;
     }
 
     /// <summary>

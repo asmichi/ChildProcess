@@ -98,5 +98,6 @@ namespace Asmichi.ProcessManagement
         }
 
         public bool AllowSignal => !Flags.HasAttachToCurrentConsole();
+        public bool DisableWindowsErrorReportingDialog => !Flags.HasEnableWindowsErrorReportingDialog();
     }
 }
