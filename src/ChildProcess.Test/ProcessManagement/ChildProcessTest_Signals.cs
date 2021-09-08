@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Asmichi.ProcessManagement
 {
-    public sealed class ChildProcessTest_Windows
+    public sealed class ChildProcessTest_Signals
     {
         [Fact]
         public void CanSendSignal()

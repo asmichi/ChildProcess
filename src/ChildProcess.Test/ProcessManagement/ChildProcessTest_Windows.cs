@@ -9,7 +9,7 @@ using static Asmichi.ProcessManagement.ChildProcessExecutionTestUtil;
 
 namespace Asmichi.ProcessManagement
 {
-    public sealed class ChildProcessTest_Signals
+    public sealed class ChildProcessTest_Windows
     {
         [Fact]
         public void CanChangeCodePage()
