@@ -39,6 +39,21 @@ namespace Asmichi.Interop.Windows
             }
         }
 
+        public unsafe void UpdateJobList(IntPtr* handles, int count)
+        {
+            if (!Kernel32.UpdateProcThreadAttribute(
+                _unmanaged,
+                0,
+                Kernel32.PROC_THREAD_ATTRIBUTE_JOB_LIST,
+                handles,
+                sizeof(IntPtr) * count,
+                IntPtr.Zero,
+                IntPtr.Zero))
+            {
+                throw new Win32Exception();
+            }
+        }
+
         public unsafe void UpdatePseudoConsole(IntPtr hPC)
         {
             if (!Kernel32.UpdateProcThreadAttribute(

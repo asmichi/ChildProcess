@@ -22,11 +22,6 @@ namespace Asmichi.Interop.Windows
              [In] char[]? lpName);
 
         [DllImport(DllName, SetLastError = true)]
-        public static extern bool AssignProcessToJobObject(
-            [In] SafeJobObjectHandle hJob,
-            [In] SafeProcessHandle hProcess);
-
-        [DllImport(DllName, SetLastError = true)]
         public static extern unsafe bool SetInformationJobObject(
             [In] SafeJobObjectHandle hJob,
             [In] JOBOBJECTINFOCLASS jobObjectInformationClass,

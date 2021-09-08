@@ -63,22 +63,23 @@ namespace Asmichi.ProcessManagement
                 var childStdOut = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
                 var childStdErr = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
 
+                IntPtr jobObjectHandles = jobObjectHandle.DangerousGetHandle();
+
                 Span<IntPtr> inheritableHandles = stackalloc IntPtr[inheritableHandleStore.Count];
                 inheritableHandleStore.DangerousGetHandles(inheritableHandles);
                 fixed (IntPtr* pInheritableHandles = inheritableHandles)
                 {
-                    using var attr = new ProcThreadAttributeList(2);
+                    using var attr = new ProcThreadAttributeList(3);
                     if (pseudoConsole is not null)
                     {
                         attr.UpdatePseudoConsole(pseudoConsole.Handle.DangerousGetHandle());
                     }
                     attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
+                    attr.UpdateJobList(&jobObjectHandles, 1);
 
-                    // Create the process suspended so that it will not create a grandchild process before we assign it to the job object.
                     const int CreationFlags =
                         Kernel32.CREATE_UNICODE_ENVIRONMENT
-                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT
-                        | Kernel32.CREATE_SUSPENDED;
+                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
 
                     int processId;
                     (processId, processHandle, threadHandle) = InvokeCreateProcess(
@@ -90,18 +91,6 @@ namespace Asmichi.ProcessManagement
                         childStdOut,
                         childStdErr,
                         attr);
-
-                    if (!Kernel32.AssignProcessToJobObject(jobObjectHandle, processHandle))
-                    {
-                        // Normally this will not fail...
-                        throw new Win32Exception();
-                    }
-
-                    if (Kernel32.ResumeThread(threadHandle) == -1)
-                    {
-                        // Normally this will not fail...
-                        throw new Win32Exception();
-                    }
 
                     return new WindowsChildProcessState(processId, processHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal);
                 }
