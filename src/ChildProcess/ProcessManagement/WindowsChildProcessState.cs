@@ -10,7 +10,7 @@ namespace Asmichi.ProcessManagement
 {
     internal class WindowsChildProcessState : IChildProcessStateHolder, IChildProcessState
     {
-        // The exit code to be passed to TerminateProcess.
+        // The exit code to be passed to TerminateProcess (same as Process.Kill).
         private const int TerminateProcessExitCode = -1;
         // ASCII code of Ctrl+C: 'C' - 0x40
         private const int CtrlCCharacter = 0x03;
@@ -49,7 +49,15 @@ namespace Asmichi.ProcessManagement
 
             if (!_isPseudoConsoleDisposed)
             {
+                // This will terminate the process tree (unless we are on Windows 1809).
                 _pseudoConsole?.Dispose();
+
+                if (WindowsVersion.NeedsWorkaroundForWindows1809)
+                {
+                    // Should always succeed.
+                    Kill();
+                }
+
                 _isPseudoConsoleDisposed = true;
             }
         }
