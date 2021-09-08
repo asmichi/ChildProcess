@@ -23,53 +23,26 @@ namespace Asmichi
             var command = args[0];
             switch (command)
             {
-                case "ExitCode":
-                    return CommandExitCode(args);
-                case "EchoOutAndError":
-                    return CommandEchoOutAndError();
-                case "EchoBack":
-                    return CommandEchoBack();
-                case "Sleep":
-                    return CommandSleep(args);
                 case "DumpEnvironmentVariables":
                     return CommandDumpEnvironmentVariables();
-                case "EchoWorkingDirectory":
-                    return CommandEchoWorkingDirectory();
+                case "EchoBack":
+                    return CommandEchoBack();
                 case "EchoCodePage":
                     return CommandEchoCodePage();
+                case "EchoOutAndError":
+                    return CommandEchoOutAndError();
+                case "EchoWorkingDirectory":
+                    return CommandEchoWorkingDirectory();
+                case "ExitCode":
+                    return CommandExitCode(args);
+                case "Sleep":
+                    return CommandSleep(args);
                 case "ToResolvedCurrentDirectory":
                     return CommandToResolvedCurrentDirectory(args);
                 default:
                     Console.WriteLine("Unknown command: {0}", command);
                     return 1;
             }
-        }
-
-        private static int CommandExitCode(string[] args)
-        {
-            return int.Parse(args[1], CultureInfo.InvariantCulture);
-        }
-
-        private static int CommandEchoOutAndError()
-        {
-            Console.Write("TestChild.Out");
-            Console.Error.Write("TestChild.Error");
-            return 0;
-        }
-
-        private static int CommandEchoBack()
-        {
-            var text = Console.In.ReadToEnd();
-            Console.Write(text);
-
-            return 0;
-        }
-
-        private static int CommandSleep(string[] args)
-        {
-            int duration = int.Parse(args[1], CultureInfo.InvariantCulture);
-            Thread.Sleep(duration);
-            return 0;
         }
 
         private static int CommandDumpEnvironmentVariables()
@@ -86,9 +59,11 @@ namespace Asmichi
             return 0;
         }
 
-        private static int CommandEchoWorkingDirectory()
+        private static int CommandEchoBack()
         {
-            Console.Write(Environment.CurrentDirectory);
+            var text = Console.In.ReadToEnd();
+            Console.Write(text);
+
             return 0;
         }
 
@@ -101,6 +76,31 @@ namespace Asmichi
             }
 
             Console.Write("{0}", codePage);
+            return 0;
+        }
+
+        private static int CommandEchoOutAndError()
+        {
+            Console.Write("TestChild.Out");
+            Console.Error.Write("TestChild.Error");
+            return 0;
+        }
+
+        private static int CommandEchoWorkingDirectory()
+        {
+            Console.Write(Environment.CurrentDirectory);
+            return 0;
+        }
+
+        private static int CommandExitCode(string[] args)
+        {
+            return int.Parse(args[1], CultureInfo.InvariantCulture);
+        }
+
+        private static int CommandSleep(string[] args)
+        {
+            int duration = int.Parse(args[1], CultureInfo.InvariantCulture);
+            Thread.Sleep(duration);
             return 0;
         }
 
