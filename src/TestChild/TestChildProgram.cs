@@ -1,6 +1,7 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace Asmichi
             {
                 case "DumpEnvironmentVariables":
                     return CommandDumpEnvironmentVariables();
+                case "EchoAndSleepAndEcho":
+                    return CommandEchoAndSleepAndEcho(args);
                 case "EchoBack":
                     return CommandEchoBack();
                 case "EchoCodePage":
@@ -37,6 +40,8 @@ namespace Asmichi
                     return CommandExitCode(args);
                 case "Sleep":
                     return CommandSleep(args);
+                case "SpawnAndWait":
+                    return CommandSpawnAndWait(args);
                 case "ToResolvedCurrentDirectory":
                     return CommandToResolvedCurrentDirectory(args);
                 default:
@@ -55,6 +60,20 @@ namespace Asmichi
             {
                 sw.Write("{0}={1}\0", key, (string?)envVars[key]);
             }
+
+            return 0;
+        }
+
+        private static int CommandEchoAndSleepAndEcho(string[] args)
+        {
+            Console.Out.Write(args[1]);
+            Console.Out.Flush();
+
+            int duration = int.Parse(args[2], CultureInfo.InvariantCulture);
+            Thread.Sleep(duration);
+
+            Console.Out.Write(args[3]);
+            Console.Out.Flush();
 
             return 0;
         }
@@ -102,6 +121,24 @@ namespace Asmichi
             int duration = int.Parse(args[1], CultureInfo.InvariantCulture);
             Thread.Sleep(duration);
             return 0;
+        }
+
+        private static int CommandSpawnAndWait(string[] args)
+        {
+            var psi = new ProcessStartInfo()
+            {
+                FileName = args[1],
+                CreateNoWindow = false,
+            };
+
+            foreach (var arg in args.Skip(2))
+            {
+                psi.ArgumentList.Add(arg);
+            }
+
+            using var p = Process.Start(psi);
+            p.WaitForExit();
+            return p.ExitCode;
         }
 
         /// <summary>

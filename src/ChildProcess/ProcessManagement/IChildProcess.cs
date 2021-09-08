@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Asmichi.ProcessManagement
 {
     // Not providing `Handle` since *nix does not provide a file descriptor of a process
-    // (except for a pidfd in linux).
+    // (except for a pidfd in Linux).
     //
     // "everything is a file descriptor or a process" --- Linus Torvalds
     // https://lore.kernel.org/lkml/Pine.LNX.4.44.0206091056550.13459-100000@home.transmeta.com/
