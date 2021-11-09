@@ -164,6 +164,7 @@ dotnet_diagnostic.CA1819.severity = warning # Properties should not return array
 dotnet_diagnostic.CA1820.severity = warning # Test for empty strings using string length
 dotnet_diagnostic.CA1821.severity = warning # Remove empty Finalizers
 dotnet_diagnostic.CA1822.severity = warning # Mark members as static
+dotnet_code_quality.CA1822.api_surface = internal,private
 dotnet_diagnostic.CA1823.severity = warning # Avoid unused private fields
 dotnet_diagnostic.CA1824.severity = warning # Mark assemblies with NeutralResourcesLanguageAttribute
 dotnet_diagnostic.CA1825.severity = warning # Avoid zero-length array allocations.
