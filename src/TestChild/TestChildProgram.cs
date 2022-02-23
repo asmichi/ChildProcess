@@ -24,8 +24,6 @@ namespace Asmichi
             var command = args[0];
             switch (command)
             {
-                case "DumpEnvironmentVariables":
-                    return CommandDumpEnvironmentVariables();
                 case "EchoAndSleepAndEcho":
                     return CommandEchoAndSleepAndEcho(args);
                 case "EchoBack":
@@ -48,20 +46,6 @@ namespace Asmichi
                     Console.WriteLine("Unknown command: {0}", command);
                     return 1;
             }
-        }
-
-        private static int CommandDumpEnvironmentVariables()
-        {
-            // Output in UTF-8 so that the output will not be affected by the current code page.
-            using var sw = new StreamWriter(Console.OpenStandardOutput(), Encoding.UTF8);
-
-            var envVars = Environment.GetEnvironmentVariables();
-            foreach (var key in envVars.Keys.Cast<string>().OrderBy(x => x, StringComparer.Ordinal))
-            {
-                sw.Write("{0}={1}\0", key, (string?)envVars[key]);
-            }
-
-            return 0;
         }
 
         private static int CommandEchoAndSleepAndEcho(string[] args)
