@@ -7,7 +7,7 @@
 
 extern char** environ;
 
-int TestCommandDumpEnvironmentvariables(int, const char* const*)
+int TestCommandDumpEnvironmentVariables(int, const char* const*)
 {
     for (char** p = environ; *p != nullptr; p++)
     {

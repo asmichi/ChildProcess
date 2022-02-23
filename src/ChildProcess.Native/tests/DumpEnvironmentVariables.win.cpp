@@ -7,10 +7,18 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <fcntl.h>
+#include <io.h>
 #include <memory>
 
-int TestCommandDumpEnvironmentvariables(int argc, const char* const* argv)
+int TestCommandDumpEnvironmentVariables(int argc, const char* const* argv)
 {
+    if (_setmode(_fileno(stdout), O_BINARY) == -1)
+    {
+        perror("_setmode");
+        return 1;
+    }
+
     wchar_t* pFirstEnv = GetEnvironmentStringsW();
     if (pFirstEnv == nullptr)
     {

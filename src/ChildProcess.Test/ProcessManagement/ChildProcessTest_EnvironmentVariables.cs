@@ -30,6 +30,8 @@ namespace Asmichi.ProcessManagement
             {
                 new("A", "A"),
                 new("BB", "BB"),
+                // This is actually testing if TestChildNative writes to stdout in the binary mode.
+                new("C", "C\nC\n"),
             };
 
             var expected = GetProcessEnvVars().Concat(extraEnvVars);
