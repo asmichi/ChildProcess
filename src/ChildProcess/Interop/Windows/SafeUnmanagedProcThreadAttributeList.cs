@@ -9,7 +9,7 @@ namespace Asmichi.Interop.Windows
 {
     internal sealed class SafeUnmanagedProcThreadAttributeList : SafeHandleZeroOrMinusOneIsInvalid
     {
-        private SafeUnmanagedProcThreadAttributeList()
+        internal SafeUnmanagedProcThreadAttributeList()
             : this(IntPtr.Zero)
         {
         }

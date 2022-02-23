@@ -7,7 +7,6 @@
   <!-- See https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/code-quality-rule-options. -->
   <ItemGroup>
     <AdditionalFiles Include="$(WorkTreeRoot)\src\stylecop.json" Visible="false" />
-    <AdditionalFiles Include="$(WorkTreeRoot)\.editorconfig" />
   </ItemGroup>
 
 </Project>

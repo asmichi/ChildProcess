@@ -15,7 +15,12 @@ namespace Asmichi.Interop.Linux
         public const int FileAccessRead = 1;
         public const int FileAccessWrite = 2;
 
+        // https://github.com/dotnet/roslyn-analyzers/issues/2886
+        // CharSet.Ansi means UTF-8 on *unix, so this is OK.
+        // Also, there should not be any security issues when BestFitMapping = false and ThrowOnUnmappableChar = true.
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport(DllName, SetLastError = false, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         public static extern bool ConnectToUnixSocket(
             [In] string path,
             [Out] out SafeFileHandle sock);
@@ -36,7 +41,12 @@ namespace Asmichi.Interop.Linux
             [Out] out SafeFileHandle sock1,
             [Out] out SafeFileHandle sock2);
 
+        // https://github.com/dotnet/roslyn-analyzers/issues/2886
+        // CharSet.Ansi means UTF-8 on *unix, so this is OK.
+        // Also, there should not be any security issues when BestFitMapping = false and ThrowOnUnmappableChar = true.
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport(DllName, SetLastError = true, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         public static extern int GetDllPath(
             [Out] StringBuilder? buf,
             [In] int len);
