@@ -17,7 +17,7 @@ pr:
     - release/*
 
 variables:
-  SolutionFile: 'src/ChildProcess.sln'
+  SolutionFile: 'ChildProcess.sln'
 
 jobs:
 - job: build_native_linux

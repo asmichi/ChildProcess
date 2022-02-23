@@ -21,7 +21,7 @@ Import-Module "$PSScriptRoot\psm\Build.psm1"
 
 $worktreeRoot = Resolve-Path "$PSScriptRoot\.."
 . $worktreeRoot\Build\Common.ps1
-$slnFile = "$worktreeRoot\src\ChildProcess.sln"
+$slnFile = "$worktreeRoot\ChildProcess.sln"
 
 $commitHash = $(git rev-parse HEAD)
 $branchName = $(git rev-parse --abbrev-ref HEAD)

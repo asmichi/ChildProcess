@@ -13,7 +13,7 @@
 ## Writing and Testing code
 
 - `pwsh .\build\FetchNativeLib.ps1`
-- Open src/ChildProcess.sln with Visual Studio 2019.
+- Open ChildProcess.sln with Visual Studio 2019.
 
 In order to edit the native implementation:
 
