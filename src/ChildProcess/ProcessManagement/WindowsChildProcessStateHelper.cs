@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Asmichi.Interop.Windows;
 using Asmichi.PlatformAbstraction;
 using Asmichi.Utilities;
@@ -16,6 +17,10 @@ namespace Asmichi.ProcessManagement
 {
     internal sealed class WindowsChildProcessStateHelper : IChildProcessStateHelper
     {
+        private const int RetryIntervalMilliseconds = 10;
+        private const int MaxRetryIntervalMilliseconds = 160;
+        private const int MaxAttemptCount = 50;
+
         private static readonly string ChcpPath = Path.Join(
             Environment.GetFolderPath(Environment.SpecialFolder.System, Environment.SpecialFolderOption.DoNotVerify),
             "chcp.com");
@@ -240,22 +245,40 @@ namespace Asmichi.ProcessManagement
 
             fixed (char* pEnvironmentBlock = environmentBlock)
             {
-                if (!Kernel32.CreateProcess(
-                     null,
-                     commandLine,
-                     IntPtr.Zero,
-                     IntPtr.Zero,
-                     true,
-                     creationFlags,
-                     pEnvironmentBlock,
-                     workingDirectory,
-                     ref nativeSi,
-                     out var pi))
+                int currentRetryInterval = RetryIntervalMilliseconds;
+
+                for (int i = 0; i < MaxAttemptCount; i++)
                 {
-                    throw new Win32Exception();
+                    if (!Kernel32.CreateProcess(
+                         null,
+                         commandLine,
+                         IntPtr.Zero,
+                         IntPtr.Zero,
+                         true,
+                         creationFlags,
+                         pEnvironmentBlock,
+                         workingDirectory,
+                         ref nativeSi,
+                         out var pi))
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+
+                        if (errorCode == Kernel32.ERROR_NOT_ENOUGH_MEMORY && i < MaxAttemptCount - 1)
+                        {
+                            // Massively concurrent invocation of CreateProcess within one process intermittently fails with ERROR_NOT_ENOUGH_MEMORY.
+                            // Retry on such failure.
+                            Thread.Sleep(currentRetryInterval);
+                            currentRetryInterval = Math.Min(currentRetryInterval * 2, MaxRetryIntervalMilliseconds);
+                            continue;
+                        }
+
+                        throw new Win32Exception();
+                    }
+
+                    return (pi.dwProcessId, new SafeProcessHandle(pi.hProcess, true), new SafeThreadHandle(pi.hThread, true));
                 }
 
-                return (pi.dwProcessId, new SafeProcessHandle(pi.hProcess, true), new SafeThreadHandle(pi.hThread, true));
+                throw new AsmichiChildProcessInternalLogicErrorException();
             }
         }
     }

@@ -11,6 +11,7 @@ namespace Asmichi.Interop.Windows
     internal static partial class Kernel32
     {
         public const int ERROR_FILE_NOT_FOUND = 2;
+        public const int ERROR_NOT_ENOUGH_MEMORY = 8;
         public const int ERROR_PIPE_BUSY = 231;
 
         public const uint GENERIC_READ = 0x80000000;
