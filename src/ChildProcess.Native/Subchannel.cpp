@@ -423,7 +423,7 @@ void Subchannel::RecvRawRequest(RawRequest* r)
     const RequestCommand command = static_cast<RequestCommand>(commandAndLength[0]);
     const std::uint32_t bodyLength = commandAndLength[1];
 
-    if (bodyLength > MaxReqeuestLength)
+    if (bodyLength > MaxRequestLength)
     {
         TRACE_ERROR("Request too big: %u\n", static_cast<unsigned int>(bodyLength));
 

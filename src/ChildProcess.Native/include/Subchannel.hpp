@@ -9,7 +9,8 @@
 #include <optional>
 #include <tuple>
 
-const std::uint32_t MaxReqeuestLength = 2 * 1024 * 1024;
+// Random big value to prevent exhausting memory (by storing a request in memory).
+const std::uint32_t MaxRequestLength = 2 * 1024 * 1024;
 
 struct RawRequest final
 {
