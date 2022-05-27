@@ -437,7 +437,7 @@ void Subchannel::RecvRawRequest(RawRequest* r)
             ssize_t receivedBytes = sock_.Recv(buf.get(), bytesToReceive, BlockingFlag::Blocking);
             if (receivedBytes <= 0)
             {
-                throw new CommunicationError(errno);
+                throw CommunicationError(errno);
             }
             totalReceivedBytes += receivedBytes;
         }
