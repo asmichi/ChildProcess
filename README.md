@@ -90,6 +90,8 @@ See [ChildProcess.Example](src/ChildProcess.Example/) for more examples.
 var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
 {
     StdOutputRedirection = OutputRedirection.OutputPipe,
+    // Works like 2>&1
+    StdErrorRedirection = OutputRedirection.OutputPipe,
 };
 
 using (var p = ChildProcess.Start(si))
@@ -112,7 +114,9 @@ var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
     ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
     StdOutputRedirection = OutputRedirection.File,
-    StdOutputFile = "env.txt"
+    StdErrorRedirection = OutputRedirection.File,
+    StdOutputFile = "env.txt",
+    StdErrorFile = "env.txt",
     Flags = ChildProcessFlags.UseCustomCodePage,
     CodePage = Encoding.Default.CodePage, // UTF-8
 };

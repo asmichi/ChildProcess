@@ -90,6 +90,8 @@ NOTE: `osx-arm64` は .NET 6で導入される予定です。[dotnet/runtime#433
 var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
 {
     StdOutputRedirection = OutputRedirection.OutputPipe,
+    // 2>&1 のような効果
+    StdErrorRedirection = OutputRedirection.OutputPipe,
 };
 
 using (var p = ChildProcess.Start(si))
@@ -112,7 +114,9 @@ var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
     ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
     StdOutputRedirection = OutputRedirection.File,
-    StdOutputFile = "env.txt"
+    StdErrorRedirection = OutputRedirection.File,
+    StdOutputFile = "env.txt",
+    StdErrorFile = "env.txt",
     Flags = ChildProcessFlags.UseCustomCodePage,
     CodePage = Encoding.Default.CodePage, // UTF-8
 };

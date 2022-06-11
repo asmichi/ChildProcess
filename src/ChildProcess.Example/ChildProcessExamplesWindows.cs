@@ -35,6 +35,7 @@ namespace Asmichi
             var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
             {
                 StdOutputRedirection = OutputRedirection.OutputPipe,
+                // Works like 2>&1
                 StdErrorRedirection = OutputRedirection.OutputPipe,
             };
 
