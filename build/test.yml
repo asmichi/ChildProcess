@@ -49,13 +49,13 @@ steps:
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/${{ parameters.rid }}/${{ parameters.configuration }}'
       contents: '*'
-      targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/netcoreapp3.1'
+      targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0'
       overwrite: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test'
     inputs:
       command: test
-      projects: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/netcoreapp3.1/Asmichi.ChildProcess.Test.dll'
+      projects: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0/Asmichi.ChildProcess.Test.dll'
       arguments: '-- RunConfiguration.TestSessionTimeout=${{ parameters.testTimeoutMilliseconds }}'
       testRunTitle: ${{ parameters.rid }}

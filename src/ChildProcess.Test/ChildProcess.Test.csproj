@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
@@ -27,10 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.deps.json" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.dll" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.runtimeconfig.dev.json" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\netcoreapp3.1\TestChild.runtimeconfig.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.deps.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.dll" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.runtimeconfig.json" />
     <Content Include="@(TestChildBin)">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

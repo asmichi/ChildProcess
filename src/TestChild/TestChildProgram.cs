@@ -121,6 +121,11 @@ namespace Asmichi
             }
 
             using var p = Process.Start(psi);
+            if (p is null)
+            {
+                return 127;
+            }
+
             p.WaitForExit();
             return p.ExitCode;
         }
