@@ -2,22 +2,23 @@
 
 ## Environment
 
-- Windows 10
+- Windows 10 or 11
     - WSL2 required
 - PowerShell Core 7
-- Visual Studio 2019
+- Visual Studio 2019 (only if you are modifying the native implementation)
     - The Microsoft.VisualStudio.Workload.NativeDesktop workload required
-- Docker for Windows
+- Visual Studio 2022
+- Docker for Windows (only if you are modifying the native implementation)
 - (TBD)
 
 ## Writing and Testing code
 
 - `pwsh .\build\FetchNativeLib.ps1`
-- Open ChildProcess.sln with Visual Studio 2019.
+- Open ChildProcess.sln with Visual Studio 2022.
 
 In order to edit the native implementation:
 
-- Set up an Ubuntu host (18.04 recommended)
+- Set up an Ubuntu host (20.04 recommended)
     - Execute:
         ```
         apt-get install clang-10 lld-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu make
@@ -28,8 +29,17 @@ In order to edit the native implementation:
     - Have `cmakeExecutable` in `CMakeSettings.json` points to the CMake executable.
 - Launch Visual Studio 2019 and "Open CMake" at src\ChildProcess.Native\CMakeLists.txt.
 
+## Building Native Implementation
+```
+pwsh .\build\BuildNativeLibWin.ps1
+```
+or
+```
+pwsh .\build\BuildNativeLibUnix.ps1
+```
+
 ## Building Package
 
 ```powershell
-.\build\BuildPackage.ps1
+pwsh .\build\BuildPackage.ps1
 ```
