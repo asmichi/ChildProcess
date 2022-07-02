@@ -40,6 +40,7 @@ insert_final_newline = true
 [*.{nuspec,props,ruleset,targets,xaml}]
 indent_size = 2
 trim_trailing_whitespace = true
+insert_final_newline = true
 
 # Visual-Studio-generated XML files
 [*.{csproj,fsproj,resx,shproj,vbproj,vcxproj,vcxproj.filters,vsct,vsixmanifest}]
@@ -105,8 +106,6 @@ dotnet_code_quality.CA1711.allowed_suffixes = Flags
 dotnet_diagnostic.CA1303.severity = none # Do not pass literals as localized parameters
 dotnet_diagnostic.CA1838.severity = none # Avoid 'StringBuilder' parameters for P/Invokes.
 dotnet_diagnostic.CA2000.severity = none # Dispose objects before losing scope
-# Workaround for https://github.com/dotnet/sdk/issues/1088.
-dotnet_diagnostic.CA5393.severity = none # Use of unsafe DllImportSearchPath value AssemblyDirectory
 
 dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
 dotnet_diagnostic.CA1001.severity = warning # Types that own disposable fields should be disposable

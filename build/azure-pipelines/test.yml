@@ -38,17 +38,18 @@ steps:
       artifact: 'ChildProcess.Test'
       path: '$(Build.SourcesDirectory)/bin/ChildProcess.Test'
 
+  # Azure DevOps's artifacts do not preserve permissions. Add +x here.
   - task: Bash@3
     condition: ${{ ne(parameters.platform, 'win') }}
     inputs:
       targetType: 'inline'
-      script: 'chmod -R +x $(Build.SourcesDirectory)/bin/ChildProcess.Native'
+      script: 'chmod -R +x $(Build.SourcesDirectory)/bin/ChildProcess.Native $(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0/runtimes'
 
-  # Workaround for https://github.com/dotnet/sdk/issues/1088
+  # Our Alpine container cannot build, so copy TestChildNative here.
   - task: CopyFiles@2
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/${{ parameters.rid }}/${{ parameters.configuration }}'
-      contents: '*'
+      contents: 'TestChildNative*'
       targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0'
       overwrite: true
 

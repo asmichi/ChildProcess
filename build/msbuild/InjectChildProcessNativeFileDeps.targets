@@ -1,0 +1,24 @@
+<Project>
+  <!--
+    An *insane hack* to inject runtime assets into deps.json by injecting RuntimeTargetsCopyLocalItems items into the GenerateDepsFile task.
+    This is a workaround for https://github.com/dotnet/sdk/issues/1088 "Runtime assets from reference projects do not appear in deps.json".
+
+    WARNING: This plays with the implementation details deep inside the .NET SDK. It is likely that this will break even by a minor version update of the .NET SDK.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Asmichi.InjectNativeFileDepsHack" Version="0.1.0" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
+  </ItemGroup>
+
+  <Import Project="ChildProcessNativeFiles.targets" />
+
+  <Target Name="TransformChildProcessNativeFileToInjectNativeFileDepsHack" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <!-- This is here because item transforms only work within a target. -->
+      <InjectNativeFileDepsHack Include="@(ChildProcessNativeFile -> '$(OutputPath)%(Identity)')">
+        <DestinationSubDirectory>%(ChildProcessNativeFile.RelativeDir)</DestinationSubDirectory>
+        <RuntimeIdentifier>%(ChildProcessNativeFile.RuntimeIdentifier)</RuntimeIdentifier>
+      </InjectNativeFileDepsHack>
+    </ItemGroup>
+  </Target>
+
+</Project>

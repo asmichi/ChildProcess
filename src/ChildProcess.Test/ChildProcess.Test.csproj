@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <AssemblyName>Asmichi.ChildProcess.Test</AssemblyName>
@@ -26,10 +26,31 @@
     </None>
   </ItemGroup>
 
+  <PropertyGroup>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">x64</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86'">x86</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'">arm</NativeAssetsArch>
+    <NativeAssetsArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</NativeAssetsArch>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <NativeAssetsRid>win-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsExeExtension>.exe</NativeAssetsExeExtension>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <NativeAssetsRid>linux-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsExeExtension></NativeAssetsExeExtension>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <NativeAssetsRid>osx-$(NativeAssetsArch)</NativeAssetsRid>
+    <NativeAssetsExeExtension></NativeAssetsExeExtension>
+  </PropertyGroup>
+
   <ItemGroup>
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.deps.json" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.dll" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(ConfigurationName)\net6.0\TestChild.runtimeconfig.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.deps.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.dll" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.runtimeconfig.json" />
+    <!-- Copy the TestChildNative executable for the current runtime so that our tests can pick it. -->
+    <TestChildBin Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\TestChildNative$(NativeAssetsExeExtension)" />
     <Content Include="@(TestChildBin)">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -38,12 +59,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
-    <!-- Workaround for expressing BuildOderingOnly: https://github.com/microsoft/msbuild/issues/3843 -->
+    <!-- Workaround for expressing BuildOrderingOnly: https://github.com/microsoft/msbuild/issues/3843 -->
     <!-- NOTE: This workaround does not work in Visual Studio when the target project uses TargetFramework*s*. -->
     <ProjectReference Include="..\TestChild\TestChild.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework" />
   </ItemGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
-  <Import Project="$(WorktreeRoot)\build\msbuild\CopyNativeAssets.targets" />
+  <Import Project="$(WorktreeRoot)\build\msbuild\InjectChildProcessNativeFileDeps.targets" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

@@ -1,0 +1,18 @@
+<Project>
+  <ItemGroup>
+    <ChildProcessNativeFile RuntimeIdentifier="linux-x64" Include="runtimes\linux-x64\native\libAsmichiChildProcess.so" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-x64" Include="runtimes\linux-x64\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-arm" Include="runtimes\linux-arm\native\libAsmichiChildProcess.so" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-arm" Include="runtimes\linux-arm\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-arm64" Include="runtimes\linux-arm64\native\libAsmichiChildProcess.so" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-arm64" Include="runtimes\linux-arm64\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-musl-x64" Include="runtimes\linux-musl-x64\native\libAsmichiChildProcess.so" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-musl-x64" Include="runtimes\linux-musl-x64\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-musl-arm64" Include="runtimes\linux-musl-arm64\native\libAsmichiChildProcess.so" />
+    <ChildProcessNativeFile RuntimeIdentifier="linux-musl-arm64" Include="runtimes\linux-musl-arm64\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="osx-x64" Include="runtimes\osx-x64\native\libAsmichiChildProcess.dylib" />
+    <ChildProcessNativeFile RuntimeIdentifier="osx-x64" Include="runtimes\osx-x64\native\AsmichiChildProcessHelper" />
+    <ChildProcessNativeFile RuntimeIdentifier="osx-arm64" Include="runtimes\osx-arm64\native\libAsmichiChildProcess.dylib" />
+    <ChildProcessNativeFile RuntimeIdentifier="osx-arm64" Include="runtimes\osx-arm64\native\AsmichiChildProcessHelper" />
+  </ItemGroup>
+</Project>

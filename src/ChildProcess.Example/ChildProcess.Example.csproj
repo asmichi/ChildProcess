@@ -17,7 +17,8 @@
     <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
   </ItemGroup>
 
+  <Import Project="$(WorktreeRoot)\build\msbuild\InjectChildProcessNativeFileDeps.targets" />
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="$(WorktreeRoot)\build\msbuild\CopyNativeAssets.targets" />
 
 </Project>
