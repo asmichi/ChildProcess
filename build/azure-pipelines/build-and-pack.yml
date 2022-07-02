@@ -1,0 +1,67 @@
+parameters: []
+
+steps:
+  - template: 'prepare-variables.yml'
+  - template: 'prepare-dotnet.yml'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-linux'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-osx'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: current
+      artifact: 'ChildProcess.Native-win'
+      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      projects: '$(SolutionFile)'
+      arguments: '$(CommonBuildOptions)'
+      verbosityRestore: Quiet
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 5.8.1'
+    inputs:
+      versionSpec: 5.8.1
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet pack'
+    inputs:
+      command: custom
+      custom: pack
+      arguments: '$(Build.SourcesDirectory)/src/ChildProcess/ChildProcess.csproj $(CommonBuildOptions) --output $(Build.ArtifactStagingDirectory)'
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet push'
+    inputs:
+      command: push
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
+      allowPackageConflicts: true
+      configurationToPack: 'Release'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'ChildProcess/CI'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      projects: '$(SolutionFile)'
+      arguments: '$(CommonBuildOptions) -p:AddImportSearchPathAssemblyDirectory=true' # Workaround for https://github.com/dotnet/sdk/issues/1088
+      verbosityRestore: Quiet
+
+  - publish: 'bin/ChildProcess.Test'
+    artifact: 'ChildProcess.Test'

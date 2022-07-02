@@ -98,70 +98,7 @@ jobs:
     vmImage: 'ubuntu-18.04'
 
   steps:
-  - template: 'build/prepare-variables.yml'
-  - template: 'build/prepare-dotnet.yml'
-
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      source: current
-      artifact: 'ChildProcess.Native-linux'
-      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
-
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      source: current
-      artifact: 'ChildProcess.Native-osx'
-      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
-
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      source: current
-      artifact: 'ChildProcess.Native-win'
-      path: '$(Build.SourcesDirectory)/bin/ChildProcess.Native'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet build'
-    inputs:
-      projects: '$(SolutionFile)'
-      arguments: '$(CommonBuildOptions)'
-      verbosityRestore: Quiet
-
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 5.8.1'
-    inputs:
-      versionSpec: 5.8.1
-
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet pack'
-    inputs:
-      command: custom
-      custom: pack
-      arguments: '$(Build.SourcesDirectory)/src/ChildProcess/ChildProcess.csproj $(CommonBuildOptions) --output $(Build.ArtifactStagingDirectory)'
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet push'
-    inputs:
-      command: push
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
-      allowPackageConflicts: true
-      configurationToPack: 'Release'
-      nuGetFeedType: 'internal'
-      publishVstsFeed: 'ChildProcess/CI'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'dotnet build'
-    inputs:
-      projects: '$(SolutionFile)'
-      arguments: '$(CommonBuildOptions) -p:AddImportSearchPathAssemblyDirectory=true' # Workaround for https://github.com/dotnet/sdk/issues/1088
-      verbosityRestore: Quiet
-
-  - publish: 'bin/ChildProcess.Test'
-    artifact: 'ChildProcess.Test'
+  - template: 'build/azure-pipelines/build-and-pack.yml'
 
 - job: test_linux_x64
 
@@ -173,7 +110,7 @@ jobs:
     vmImage: 'ubuntu-18.04'
 
   steps:
-  - template: 'build/test.yml'
+  - template: 'build/azure-pipelines/test.yml'
     parameters:
       platform: linux
       rid: linux-x64
@@ -190,7 +127,7 @@ jobs:
   container: 'asmichi/node-azuredevops:14-alpine'
 
   steps:
-  - template: 'build/test.yml'
+  - template: 'build/azure-pipelines/test.yml'
     parameters:
       platform: linux
       rid: linux-musl-x64
@@ -205,7 +142,7 @@ jobs:
     vmImage: 'macOS-10.15'
 
   steps:
-  - template: 'build/test.yml'
+  - template: 'build/azure-pipelines/test.yml'
     parameters:
       platform: osx
       rid: osx-x64
@@ -220,7 +157,7 @@ jobs:
     vmImage: 'windows-2019'
 
   steps:
-  - template: 'build/test.yml'
+  - template: 'build/azure-pipelines/test.yml'
     parameters:
       platform: win
       rid: win-x64
