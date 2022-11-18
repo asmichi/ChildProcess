@@ -86,6 +86,8 @@ NOTE: `osx-arm64` は .NET 6で導入される予定です。[dotnet/runtime#433
 
 ## 基本
 
+子プロセスの出力を読み取ることができます。その際、 stdout と stderr を結合することもできます。
+
 ```cs
 var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
 {
@@ -109,6 +111,8 @@ using (var p = ChildProcess.Start(si))
 
 ## ファイルへのリダイレクト
 
+子プロセスの出力をファイルにリダイレクトできます。その際、子プロセスの出力を読む必要はありません。
+
 ```cs
 var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
@@ -130,4 +134,53 @@ using (var p = ChildProcess.Start(si))
 // ALLUSERSPROFILE=C:\ProgramData
 // ...
 Console.WriteLine(File.ReadAllText("env.txt"));
+```
+
+## 真のパイプ
+
+子プロセスの出力を、ほかの子プロセスの入力にパイプできます。その際、子プロセスの出力を読む必要はありません。
+
+```cs
+// 匿名パイプを作る
+using var inPipe = new AnonymousPipeServerStream(PipeDirection.In);
+
+var si1 = new ChildProcessStartInfo("cmd", "/C", "set")
+{
+    // 出力をパイプの書き込み側に接続する
+    StdOutputRedirection = OutputRedirection.Handle,
+    StdErrorRedirection = OutputRedirection.Handle,
+    StdOutputHandle = inPipe.ClientSafePipeHandle,
+    StdErrorHandle = inPipe.ClientSafePipeHandle,
+    Flags = ChildProcessFlags.UseCustomCodePage,
+    CodePage = Encoding.Default.CodePage, // UTF-8
+};
+
+var si2 = new ChildProcessStartInfo("findstr", "Windows")
+{
+    // 入力をパイプの読み取り側に接続する
+    StdInputRedirection = InputRedirection.Handle,
+    StdInputHandle = inPipe.SafePipeHandle,
+    StdOutputRedirection = OutputRedirection.OutputPipe,
+    StdErrorRedirection = OutputRedirection.OutputPipe,
+    Flags = ChildProcessFlags.UseCustomCodePage,
+    CodePage = Encoding.Default.CodePage, // UTF-8
+};
+
+using var p1 = ChildProcess.Start(si1);
+using var p2 = ChildProcess.Start(si2);
+
+// パイプハンドルのコピーを閉じる。 (そうしないと、 p2 はパイプからの読み取りでブロックし続ける。)
+inPipe.DisposeLocalCopyOfClientHandle();
+inPipe.Close();
+
+using (var sr = new StreamReader(p2.StandardOutput))
+{
+    // ...
+    // OS=Windows_NT
+    // ...
+    Console.Write(await sr.ReadToEndAsync());
+}
+
+await p1.WaitForExitAsync();
+await p2.WaitForExitAsync();
 ```

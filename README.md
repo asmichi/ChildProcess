@@ -86,6 +86,8 @@ See [ChildProcess.Example](src/ChildProcess.Example/) for more examples.
 
 ## Basic
 
+You can read the output of a child, optionally combining stdout and stderr.
+
 ```cs
 var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
 {
@@ -109,6 +111,8 @@ using (var p = ChildProcess.Start(si))
 
 ## Redirection to File
 
+You can redirect the output of a child into a file without ever reading the output.
+
 ```cs
 var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
@@ -130,4 +134,53 @@ using (var p = ChildProcess.Start(si))
 // ALLUSERSPROFILE=C:\ProgramData
 // ...
 Console.WriteLine(File.ReadAllText("env.txt"));
+```
+
+## True piping
+
+You can pipe the output of a child into another child without ever reading the output.
+
+```cs
+// Create an anonymous pipe.
+using var inPipe = new AnonymousPipeServerStream(PipeDirection.In);
+
+var si1 = new ChildProcessStartInfo("cmd", "/C", "set")
+{
+    // Connect the output to writer side of the pipe.
+    StdOutputRedirection = OutputRedirection.Handle,
+    StdErrorRedirection = OutputRedirection.Handle,
+    StdOutputHandle = inPipe.ClientSafePipeHandle,
+    StdErrorHandle = inPipe.ClientSafePipeHandle,
+    Flags = ChildProcessFlags.UseCustomCodePage,
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
+};
+
+var si2 = new ChildProcessStartInfo("findstr", "Windows")
+{
+    // Connect the input to the reader side of the pipe.
+    StdInputRedirection = InputRedirection.Handle,
+    StdInputHandle = inPipe.SafePipeHandle,
+    StdOutputRedirection = OutputRedirection.OutputPipe,
+    StdErrorRedirection = OutputRedirection.OutputPipe,
+    Flags = ChildProcessFlags.UseCustomCodePage,
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
+};
+
+using var p1 = ChildProcess.Start(si1);
+using var p2 = ChildProcess.Start(si2);
+
+// Close our copy of the pipe handles. (Otherwise p2 will get stuck while reading from the pipe.)
+inPipe.DisposeLocalCopyOfClientHandle();
+inPipe.Close();
+
+using (var sr = new StreamReader(p2.StandardOutput))
+{
+    // ...
+    // OS=Windows_NT
+    // ...
+    Console.Write(await sr.ReadToEndAsync());
+}
+
+await p1.WaitForExitAsync();
+await p2.WaitForExitAsync();
 ```
