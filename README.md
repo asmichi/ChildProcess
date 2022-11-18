@@ -82,7 +82,7 @@ This library assumes that the underlying runtime has the following characteristi
 
 # Examples
 
-See [ChildProcess.ExamplePreview](src/ChildProcess.ExamplePreview/) for more examples.
+Open [ChildProcessExample.sln](ChildProcessExample.sln) or see [ChildProcess.Example](src/ChildProcess.Example/) for more examples.
 
 ## Basic
 

@@ -1,0 +1,23 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <AssemblyName>Asmichi.ChildProcess.Example</AssemblyName>
+    <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Asmichi</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use the latest published version. -->
+    <PackageReference Include="Asmichi.ChildProcess" Version="0.13.0"/>
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

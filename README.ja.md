@@ -82,7 +82,7 @@ NOTE: `osx-arm64` は .NET 6で導入される予定です。[dotnet/runtime#433
 
 # サンプル
 
-追加のサンプルは [ChildProcess.ExamplePreview](src/ChildProcess.ExamplePreview/) を参照してください。
+追加のサンプルは [ChildProcessExample.sln](ChildProcessExample.sln) を開くか、[ChildProcess.Example](src/ChildProcess.Example/) を参照してください。
 
 ## 基本
 
