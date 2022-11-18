@@ -45,12 +45,10 @@ RIDs:
 - `linux-arm64` (未テスト)
 - `linux-musl-arm64` (未テスト)
 - `linux-musl-x64` (Alpine 3.13 でテスト済)
-- `osx-x64` (macOS 10.15 Catalina 以降; 10.15 でテスト済)
+- `osx-x64` (macOS 10.15 Catalina 以降; 11 でテスト済)
 - `osx-arm64` (macOS 11.0 Big Sur 以降; 未テスト)
 
 NOTE: glibc ベースの Linux では、glibc 2.x.y 以降と libstdc++ 3.x.y 以降が必要です。
-
-NOTE: `osx-arm64` は .NET 6で導入される予定です。[dotnet/runtime#43313](https://github.com/dotnet/runtime/issues/43313)
 
 # Known Issues
 

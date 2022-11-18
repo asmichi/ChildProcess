@@ -23,7 +23,7 @@ jobs:
 - job: build_native_linux
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   container: 'asmichi/childprocess-buildtools-ubuntu-crosssysroot:18.04.20210612.1'
 
@@ -41,7 +41,7 @@ jobs:
 - job: build_native_osx
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-11'
 
   steps:
   - task: Bash@3
@@ -95,7 +95,7 @@ jobs:
     - build_native_win
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   steps:
   - template: 'build/azure-pipelines/build-and-pack.yml'
@@ -107,7 +107,7 @@ jobs:
     - build_native_linux
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   steps:
   - template: 'build/azure-pipelines/test.yml'
@@ -122,7 +122,7 @@ jobs:
     - build_native_linux
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   container: 'asmichi/node-azuredevops:14-alpine'
 
@@ -139,7 +139,7 @@ jobs:
     - build_native_osx
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-11'
 
   steps:
   - template: 'build/azure-pipelines/test.yml'
