@@ -7,7 +7,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <AssemblyName>Asmichi.ChildProcess.Example</AssemblyName>
+    <AssemblyName>Asmichi.ChildProcess.ExamplePreview</AssemblyName>
     <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
     <OutputType>Exe</OutputType>
     <RootNamespace>Asmichi</RootNamespace>
