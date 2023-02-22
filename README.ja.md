@@ -48,7 +48,7 @@ RIDs:
 - `osx-x64` (macOS 10.15 Catalina 以降; 11 でテスト済)
 - `osx-arm64` (macOS 11.0 Big Sur 以降; 未テスト)
 
-NOTE: glibc ベースの Linux では、glibc 2.x.y 以降と libstdc++ 3.x.y 以降が必要です。
+NOTE: glibc ベースの Linux では、glibc 2.27 以降と libstdc++ 3.4.25 以降が必要です。
 
 # Known Issues
 
