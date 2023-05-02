@@ -64,7 +64,8 @@ function FetchArchive {
 }
 
 if ([String]::IsNullOrEmpty($Revision)) {
-    $Revision = $(git merge-base HEAD "${sourceRemote}/${sourceBranchName}")
+    $mergeBase = $(git merge-base HEAD "${sourceRemote}/${sourceBranchName}")
+    $Revision = $(git log $mergeBase -1 --pretty=format:%H :!BUILDING.md :!README*.md)
 }
 
 $cacheDir = Join-Path $cacheBaseDir $Revision

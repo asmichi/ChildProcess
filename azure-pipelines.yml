@@ -5,6 +5,7 @@ trigger:
     - master
     - release/*
   paths:
+    # Sync with FetchNativeLib.ps1
     exclude:
     - BUILDING.md
     - README.md
