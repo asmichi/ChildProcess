@@ -74,6 +74,12 @@ namespace Asmichi.ProcessManagement
         public void ValidatePlatformSpecificStartInfo(in ChildProcessStartInfoInternal startInfo)
         {
             // We do not reject Windows-specific flags that obviously does not make sense on non-Windows.
+            if (startInfo.Flags.HasDisableArgumentQuoting())
+            {
+                // Calling code should be quoting the arguments, which must be a bug on non-Windows.
+                throw new PlatformNotSupportedException(
+                    $"{nameof(ChildProcessFlags)}.{nameof(ChildProcessFlags.DisableArgumentQuoting)} is supported only on Windows.");
+            }
             if (startInfo.Flags.HasEnableHandle())
             {
                 // Calling code expects Handle which is not available.
