@@ -317,3 +317,8 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
+
+[src/ChildProcess.Test/**.cs]
+# Suppress false CA1825 on MemberData when using .NET 6 analyers
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1825
+dotnet_diagnostic.CA1825.severity = none # Avoid zero-length array allocations.
