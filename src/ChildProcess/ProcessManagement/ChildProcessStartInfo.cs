@@ -96,6 +96,11 @@ namespace Asmichi.ProcessManagement
         /// </para>
         /// </remarks>
         EnableWindowsErrorReportingDialog = 0x0040,
+
+        /// <summary>
+        /// (Currently Windows-specific) Allows obtaining the native handle to the child process.
+        /// </summary>
+        EnableHandle = 0x0080,
     }
 
     /// <summary>
@@ -110,6 +115,7 @@ namespace Asmichi.ProcessManagement
         public static bool HasDisableArgumentQuoting(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableArgumentQuoting) != 0;
         public static bool HasDisableEnvironmentVariableInheritance(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableEnvironmentVariableInheritance) != 0;
         public static bool HasEnableWindowsErrorReportingDialog(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableWindowsErrorReportingDialog) != 0;
+        public static bool HasEnableHandle(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableHandle) != 0;
     }
 
     /// <summary>

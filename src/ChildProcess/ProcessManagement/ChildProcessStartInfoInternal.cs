@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Asmichi.PlatformAbstraction;
-using Microsoft.Win32.SafeHandles;
 using static Asmichi.ProcessManagement.EnvironmentVariableListCreation;
 
 namespace Asmichi.ProcessManagement

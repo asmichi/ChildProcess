@@ -40,6 +40,8 @@ namespace Asmichi.ProcessManagement
                     $"{nameof(ChildProcessFlags.UseCustomCodePage)} cannot be combined with {nameof(ChildProcessFlags.AttachToCurrentConsole)}.", nameof(startInfo));
             }
 
+            ChildProcessHelper.Shared.ValidatePlatformSpecificStartInfo(in startInfoInternal);
+
             var resolvedPath = ResolveExecutablePath(startInfoInternal.FileName, startInfoInternal.Flags);
 
             using var stdHandles = new PipelineStdHandleCreator(ref startInfoInternal);

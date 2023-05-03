@@ -14,6 +14,9 @@ namespace Asmichi.ProcessManagement
     /// </summary>
     internal interface IChildProcessStateHelper : IDisposable
     {
+        void ValidatePlatformSpecificStartInfo(
+            in ChildProcessStartInfoInternal startInfo);
+
         IChildProcessStateHolder SpawnProcess(
             ref ChildProcessStartInfoInternal startInfo,
             string resolvedPath,

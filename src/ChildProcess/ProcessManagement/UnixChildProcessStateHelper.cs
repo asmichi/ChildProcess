@@ -2,7 +2,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -69,6 +68,17 @@ namespace Asmichi.ProcessManagement
             }
             catch (OperationCanceledException)
             {
+            }
+        }
+
+        public void ValidatePlatformSpecificStartInfo(in ChildProcessStartInfoInternal startInfo)
+        {
+            // We do not reject Windows-specific flags that obviously does not make sense on non-Windows.
+            if (startInfo.Flags.HasEnableHandle())
+            {
+                // Calling code expects Handle which is not available.
+                throw new PlatformNotSupportedException(
+                    $"{nameof(ChildProcessFlags)}.{nameof(ChildProcessFlags.EnableHandle)} is supported only on Windows.");
             }
         }
 

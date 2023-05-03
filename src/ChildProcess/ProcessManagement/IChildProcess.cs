@@ -2,8 +2,10 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.ProcessManagement
 {
@@ -76,6 +78,33 @@ namespace Asmichi.ProcessManagement
         /// If no such pipe has been created (<see cref="HasStandardError"/> is <see langword="false"/>), throws <see cref="InvalidOperationException"/>.
         /// </summary>
         Stream StandardError { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="Handle"/> can be read, that is,
+        /// the process was created with <see cref="ChildProcessFlags.EnableHandle"/>.
+        /// </summary>
+        bool HasHandle { get; }
+
+        /// <summary>
+        /// Gets the native handle to the process.
+        /// Only available when the process was created with <see cref="ChildProcessFlags.EnableHandle"/>.
+        /// </summary>
+        /// <remarks>
+        /// Do not dispose the returned handle.
+        /// </remarks>
+        /// <exception cref="NotSupportedException">The process was created without <see cref="ChildProcessFlags.EnableHandle"/>.</exception>
+        SafeProcessHandle Handle { get; }
+
+        /// <summary>
+        /// (Windows-specific) Gets the native handle to the primary thread of the process.
+        /// Only available when the process was created with <see cref="ChildProcessFlags.EnableHandle"/>.
+        /// </summary>
+        /// <remarks>
+        /// Do not dispose the returned handle.
+        /// </remarks>
+        /// <exception cref="NotSupportedException">The process was created without <see cref="ChildProcessFlags.EnableHandle"/>.</exception>
+        /// <exception cref="PlatformNotSupportedException">Not supported on this platform.</exception>
+        SafeHandle PrimaryThreadHandle { get; }
 
         /// <summary>
         /// Waits indefinitely for the process to exit.

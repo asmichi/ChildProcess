@@ -1,5 +1,6 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
@@ -16,9 +17,11 @@ namespace Asmichi.ProcessManagement
         private const int CtrlCCharacter = 0x03;
 
         private readonly SafeProcessHandle _processHandle;
+        private readonly SafeThreadHandle? _primaryThreadHandle;
         private readonly SafeJobObjectHandle _jobObjectHandle;
         private readonly InputWriterOnlyPseudoConsole? _pseudoConsole;
         private readonly bool _allowSignal;
+        private readonly bool _allowHandle;
         private readonly WaitHandle _exitedWaitHandle;
         private readonly int _processId;
         private int _exitCode = -1;
@@ -28,23 +31,37 @@ namespace Asmichi.ProcessManagement
         public WindowsChildProcessState(
             int processId,
             SafeProcessHandle processHandle,
+            SafeThreadHandle primaryThreadHandle,
             SafeJobObjectHandle jobObjectHandle,
             InputWriterOnlyPseudoConsole? pseudoConsole,
-            bool allowSignal)
+            bool allowSignal,
+            bool allowHandle)
         {
             Debug.Assert(!(allowSignal && pseudoConsole is null));
 
             _processId = processId;
             _processHandle = processHandle;
+
+            if (allowHandle)
+            {
+                _primaryThreadHandle = primaryThreadHandle;
+            }
+            else
+            {
+                primaryThreadHandle.Dispose();
+            }
+
             _jobObjectHandle = jobObjectHandle;
             _pseudoConsole = pseudoConsole;
             _allowSignal = allowSignal;
+            _allowHandle = allowHandle;
             _exitedWaitHandle = new WindowsProcessWaitHandle(_processHandle);
         }
 
         public void Dispose()
         {
             _processHandle.Dispose();
+            _primaryThreadHandle?.Dispose();
             _exitedWaitHandle.Dispose();
 
             if (!_isPseudoConsoleDisposed)
@@ -85,6 +102,35 @@ namespace Asmichi.ProcessManagement
         {
             Debug.Assert(_hasExitCode);
             return _exitCode;
+        }
+
+        public bool HasHandle => _allowHandle;
+
+        public SafeProcessHandle ProcessHandle
+        {
+            get
+            {
+                if (!_allowHandle)
+                {
+                    throw new NotSupportedException();
+                }
+
+                return _processHandle;
+            }
+        }
+
+        public SafeThreadHandle PrimaryThreadHandle
+        {
+            get
+            {
+                if (!_allowHandle)
+                {
+                    throw new NotSupportedException();
+                }
+
+                Debug.Assert(_primaryThreadHandle is not null);
+                return _primaryThreadHandle;
+            }
         }
 
         public bool CanSignal => _allowSignal;

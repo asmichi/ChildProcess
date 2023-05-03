@@ -2,9 +2,11 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Asmichi.Utilities;
+using Microsoft.Win32.SafeHandles;
 using static Asmichi.Utilities.ArgumentValidationUtil;
 
 namespace Asmichi.ProcessManagement
@@ -143,6 +145,33 @@ namespace Asmichi.ProcessManagement
                 RetrieveExitCode();
 
                 return _stateHolder.State.ExitCode;
+            }
+        }
+
+        public bool HasHandle
+        {
+            get
+            {
+                CheckNotDisposed();
+                return _stateHolder.State.HasHandle;
+            }
+        }
+
+        public SafeProcessHandle Handle
+        {
+            get
+            {
+                CheckNotDisposed();
+                return _stateHolder.State.ProcessHandle;
+            }
+        }
+
+        public SafeHandle PrimaryThreadHandle
+        {
+            get
+            {
+                CheckNotDisposed();
+                return _stateHolder.State.PrimaryThreadHandle;
             }
         }
 

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Asmichi.Interop.Windows;
+using Microsoft.Win32.SafeHandles;
 
 namespace Asmichi.ProcessManagement
 {
@@ -70,6 +72,9 @@ namespace Asmichi.ProcessManagement
         public bool HasExitCode => GetHasExited();
         public long Token => _token;
         public WaitHandle ExitedWaitHandle => _exitedEvent;
+        public bool HasHandle => false;
+        public SafeProcessHandle ProcessHandle => throw new NotSupportedException();
+        public SafeThreadHandle PrimaryThreadHandle => throw new NotSupportedException();
 
         public void Dispose()
         {

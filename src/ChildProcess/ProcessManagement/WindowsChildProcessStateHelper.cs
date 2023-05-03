@@ -29,6 +29,10 @@ namespace Asmichi.ProcessManagement
         {
         }
 
+        public void ValidatePlatformSpecificStartInfo(in ChildProcessStartInfoInternal startInfo)
+        {
+        }
+
         public unsafe IChildProcessStateHolder SpawnProcess(
             ref ChildProcessStartInfoInternal startInfo,
             string resolvedPath,
@@ -97,7 +101,7 @@ namespace Asmichi.ProcessManagement
                         childStdErr,
                         attr);
 
-                    return new WindowsChildProcessState(processId, processHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal);
+                    return new WindowsChildProcessState(processId, processHandle, threadHandle, jobObjectHandle, pseudoConsole, startInfo.AllowSignal, startInfo.Flags.HasEnableHandle());
                 }
             }
             catch
@@ -107,13 +111,10 @@ namespace Asmichi.ProcessManagement
                     Kernel32.TerminateProcess(processHandle, -1);
                     processHandle.Dispose();
                 }
+                threadHandle?.Dispose();
                 pseudoConsole?.Dispose();
                 jobObjectHandle?.Dispose();
                 throw;
-            }
-            finally
-            {
-                threadHandle?.Dispose();
             }
         }
 
