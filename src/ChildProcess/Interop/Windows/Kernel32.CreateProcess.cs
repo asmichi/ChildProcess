@@ -12,6 +12,7 @@ namespace Asmichi.Interop.Windows
     internal static partial class Kernel32
     {
         // Process Creation Flags
+        public const int CREATE_SUSPENDED = 0x00000004;
         public const int CREATE_UNICODE_ENVIRONMENT = 0x00000400;
         public const int EXTENDED_STARTUPINFO_PRESENT = 0x00080000;
         public const int CREATE_NO_WINDOW = 0x08000000;

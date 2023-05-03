@@ -101,6 +101,11 @@ namespace Asmichi.ProcessManagement
         /// (Currently Windows-specific) Allows obtaining the native handle to the child process.
         /// </summary>
         EnableHandle = 0x0080,
+
+        /// <summary>
+        /// (Windows-specific) Create the child process with the CREATE_SUSPENDED flag.
+        /// </summary>
+        CreateSuspended = 0x0100,
     }
 
     /// <summary>
@@ -116,6 +121,7 @@ namespace Asmichi.ProcessManagement
         public static bool HasDisableEnvironmentVariableInheritance(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableEnvironmentVariableInheritance) != 0;
         public static bool HasEnableWindowsErrorReportingDialog(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableWindowsErrorReportingDialog) != 0;
         public static bool HasEnableHandle(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableHandle) != 0;
+        public static bool HasCreateSuspended(this ChildProcessFlags flags) => (flags & ChildProcessFlags.CreateSuspended) != 0;
     }
 
     /// <summary>

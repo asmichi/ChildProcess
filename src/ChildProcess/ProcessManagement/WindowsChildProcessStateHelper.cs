@@ -86,14 +86,15 @@ namespace Asmichi.ProcessManagement
                     attr.UpdateHandleList(pInheritableHandles, inheritableHandles.Length);
                     attr.UpdateJobList(&jobObjectHandles, 1);
 
-                    const int CreationFlags =
+                    int creationFlags =
                         Kernel32.CREATE_UNICODE_ENVIRONMENT
-                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT;
+                        | Kernel32.EXTENDED_STARTUPINFO_PRESENT
+                        | (startInfo.Flags.HasCreateSuspended() ? Kernel32.CREATE_SUSPENDED : 0);
 
                     int processId;
                     (processId, processHandle, threadHandle) = InvokeCreateProcess(
                         commandLine,
-                        CreationFlags,
+                        creationFlags,
                         environmentBlock,
                         workingDirectory,
                         childStdIn,
