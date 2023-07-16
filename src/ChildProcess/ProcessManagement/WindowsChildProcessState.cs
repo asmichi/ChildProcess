@@ -60,19 +60,15 @@ namespace Asmichi.ProcessManagement
 
         public void Dispose()
         {
-            if (!_isPseudoConsoleDisposed)
+            if (WindowsVersion.NeedsWorkaroundForWindows1809 && !_isPseudoConsoleDisposed && _pseudoConsole is not null)
             {
-                if (WindowsVersion.NeedsWorkaroundForWindows1809)
-                {
-                    // Should always succeed.
-                    Kill();
-                }
-
-                // This will terminate the process tree (unless we are on Windows 1809).
-                _pseudoConsole?.Dispose();
-
-                _isPseudoConsoleDisposed = true;
+                // Should always succeed.
+                Kill();
             }
+
+            // This will terminate the process tree (unless we are on Windows 1809).
+            _pseudoConsole?.Dispose();
+            _isPseudoConsoleDisposed = true;
 
             _processHandle.Dispose();
             _primaryThreadHandle?.Dispose();
