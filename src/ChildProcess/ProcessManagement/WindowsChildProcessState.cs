@@ -72,6 +72,7 @@ namespace Asmichi.ProcessManagement
 
             _processHandle.Dispose();
             _primaryThreadHandle?.Dispose();
+            _jobObjectHandle.Dispose();
             _exitedWaitHandle.Dispose();
         }
 
