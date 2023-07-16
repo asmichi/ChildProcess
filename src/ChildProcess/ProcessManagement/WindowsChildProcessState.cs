@@ -60,23 +60,23 @@ namespace Asmichi.ProcessManagement
 
         public void Dispose()
         {
-            _processHandle.Dispose();
-            _primaryThreadHandle?.Dispose();
-            _exitedWaitHandle.Dispose();
-
             if (!_isPseudoConsoleDisposed)
             {
-                // This will terminate the process tree (unless we are on Windows 1809).
-                _pseudoConsole?.Dispose();
-
                 if (WindowsVersion.NeedsWorkaroundForWindows1809)
                 {
                     // Should always succeed.
                     Kill();
                 }
 
+                // This will terminate the process tree (unless we are on Windows 1809).
+                _pseudoConsole?.Dispose();
+
                 _isPseudoConsoleDisposed = true;
             }
+
+            _processHandle.Dispose();
+            _primaryThreadHandle?.Dispose();
+            _exitedWaitHandle.Dispose();
         }
 
         public IChildProcessState State => this;
