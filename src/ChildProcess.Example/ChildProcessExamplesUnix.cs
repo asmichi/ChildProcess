@@ -8,6 +8,8 @@ using System.IO.Pipes;
 using System.Threading.Tasks;
 using Asmichi.ProcessManagement;
 
+#pragma warning disable CA1849 // Call async methods when in an async method
+
 namespace Asmichi
 {
     public static class ChildProcessExamplesUnix

@@ -243,13 +243,13 @@ namespace Asmichi.ProcessManagement
 
             using (var sr = new StreamReader(sut.StandardOutput))
             {
-                const string text = "foobar";
+                const string Text = "foobar";
                 var stdoutTask = sr.ReadToEndAsync();
                 using (var sw = new StreamWriter(sut.StandardInput))
                 {
-                    await sw.WriteAsync(text);
+                    await sw.WriteAsync(Text);
                 }
-                Assert.Equal(text, await stdoutTask);
+                Assert.Equal(Text, await stdoutTask);
             }
 
             sut.WaitForExit();
@@ -315,8 +315,8 @@ namespace Asmichi.ProcessManagement
 
             // StdInputFile
             {
-                const string text = "foobar";
-                File.WriteAllText(inFile, text);
+                const string Text = "foobar";
+                File.WriteAllText(inFile, Text);
 
                 var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "EchoBack")
                 {
@@ -332,7 +332,7 @@ namespace Asmichi.ProcessManagement
                     Assert.Equal(0, sut.ExitCode);
                 }
 
-                Assert.Equal(text, File.ReadAllText(outFile));
+                Assert.Equal(Text, File.ReadAllText(outFile));
             }
         }
 
@@ -413,8 +413,8 @@ namespace Asmichi.ProcessManagement
 
             // StdInputHandle
             {
-                const string text = "foobar";
-                File.WriteAllText(inFile, text);
+                const string Text = "foobar";
+                File.WriteAllText(inFile, Text);
 
                 using (var fsIn = File.OpenRead(inFile))
                 {
@@ -431,7 +431,7 @@ namespace Asmichi.ProcessManagement
                     Assert.Equal(0, sut.ExitCode);
                 }
 
-                Assert.Equal(text, File.ReadAllText(outFile));
+                Assert.Equal(Text, File.ReadAllText(outFile));
             }
         }
     }

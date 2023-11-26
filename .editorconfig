@@ -227,6 +227,16 @@ dotnet_naming_symbols.constants.required_modifiers = const
 
 dotnet_naming_style.constant_style.capitalization = pascal_case
 
+# Static fields are PascalCase
+dotnet_naming_rule.statics_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.statics_should_be_pascal_case.symbols = static_fields
+dotnet_naming_rule.statics_should_be_pascal_case.style = static_field_style
+
+dotnet_naming_symbols.static_fields.applicable_kinds = field
+dotnet_naming_symbols.static_fields.required_modifiers = static
+
+dotnet_naming_style.static_field_style.capitalization = pascal_case
+
 # Public instance fields are PascalCase
 dotnet_naming_rule.public_instance_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.public_instance_fields_should_be_pascal_case.symbols = public_instance_fields
@@ -247,6 +257,7 @@ dotnet_naming_symbols.instance_fields.applicable_accessibilities = protected, in
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
 dotnet_naming_style.instance_field_style.required_prefix = _
+
 
 ###############################
 # C# Coding Conventions       #
