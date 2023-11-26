@@ -1,7 +1,6 @@
 // Copyright (c) @asmichi (https://github.com/asmichi). Licensed under the MIT License. See LICENCE in the project root for details.
 
 using System.IO;
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace Asmichi.ProcessManagement
@@ -48,11 +47,6 @@ namespace Asmichi.ProcessManagement
 
         public ChildProcessFailedException(string message, System.Exception inner)
             : base(message, inner)
-        {
-        }
-
-        protected ChildProcessFailedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }

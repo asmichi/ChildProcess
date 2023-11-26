@@ -2,7 +2,7 @@ parameters: []
 
 steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET SDK 6.0.412'
+    displayName: 'Use .NET SDK 8.0.203'
     inputs:
       packageType: sdk
-      version: 6.0.412
+      version: 8.0.203

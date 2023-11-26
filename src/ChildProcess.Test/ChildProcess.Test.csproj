@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -46,9 +46,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.deps.json" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.dll" />
-    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net6.0\TestChild.runtimeconfig.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net8.0\TestChild.deps.json" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net8.0\TestChild.dll" />
+    <TestChildBin Include="$(BinDir)TestChild\AnyCPU\$(Configuration)\net8.0\TestChild.runtimeconfig.json" />
     <!-- Copy the TestChildNative executable for the current runtime so that our tests can pick it. -->
     <TestChildBin Include="$(BinDir)ChildProcess.Native\$(NativeAssetsRid)\$(Configuration)\TestChildNative$(NativeAssetsExeExtension)" />
     <Content Include="@(TestChildBin)">

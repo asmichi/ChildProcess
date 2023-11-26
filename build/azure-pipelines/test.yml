@@ -43,20 +43,20 @@ steps:
     condition: ${{ ne(parameters.platform, 'win') }}
     inputs:
       targetType: 'inline'
-      script: 'chmod -R +x $(Build.SourcesDirectory)/bin/ChildProcess.Native $(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0/runtimes'
+      script: 'chmod -R +x $(Build.SourcesDirectory)/bin/ChildProcess.Native $(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net8.0/runtimes'
 
   # Our Alpine container cannot build, so copy TestChildNative here.
   - task: CopyFiles@2
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Native/${{ parameters.rid }}/${{ parameters.configuration }}'
       contents: 'TestChildNative*'
-      targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0'
+      targetFolder: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net8.0'
       overwrite: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test'
     inputs:
       command: test
-      projects: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net6.0/Asmichi.ChildProcess.Test.dll'
+      projects: '$(Build.SourcesDirectory)/bin/ChildProcess.Test/AnyCPU/${{ parameters.configuration }}/net8.0/Asmichi.ChildProcess.Test.dll'
       arguments: '-- RunConfiguration.TestSessionTimeout=${{ parameters.testTimeoutMilliseconds }}'
       testRunTitle: ${{ parameters.rid }}
