@@ -84,6 +84,9 @@ namespace Asmichi.ProcessManagement
             Assert.Equal(1, Kernel32.ResumeThread((SafeThreadHandle)sut.PrimaryThreadHandle));
             // Verify the above theory. The suspend count now is 0.
             Assert.Equal(0, Kernel32.ResumeThread((SafeThreadHandle)sut.PrimaryThreadHandle));
+
+            sut.StandardInput.Close();
+            sut.WaitForExit();
         }
 
         [Fact]

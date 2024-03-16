@@ -24,6 +24,9 @@ namespace Asmichi.ProcessManagement
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath);
             using var sut = ChildProcess.Start(si);
 
+            // Should not dispose PseudoConsole (on NotSupportedException below) too early while the child process is initializing
+            sut.WaitForExit();
+
             Assert.False(sut.HasHandle);
             Assert.Throws<NotSupportedException>(() => sut.Handle);
         }
