@@ -11,6 +11,18 @@ using Asmichi.ProcessManagement;
 
 #pragma warning disable CA1849 // Call async methods when in an async method
 
+// NOTE:
+//
+// When executing "cmd.exe", you need to set DisableArgumentQuoting and escape arguments on your own.
+// You need to escape arguments in a way specific to the command being invoked.
+// There is no standard quoting method possible for "cmd.exe".
+//
+// If arguments originate from an untrusted input, it may be a good idea to avoid executing "cmd.exe".
+// Incorrectly escaped arguments can lead to execution of an arbitrary executable because "cmd.exe /c"
+// takes an arbitrary shell command line.
+//
+// Search "BatBadBut vulnerability" for the background.
+//
 namespace Asmichi
 {
     public static class ChildProcessExamplesWindows
@@ -43,6 +55,7 @@ namespace Asmichi
                 StdOutputRedirection = OutputRedirection.OutputPipe,
                 // Works like 2>&1
                 StdErrorRedirection = OutputRedirection.OutputPipe,
+                Flags = ChildProcessFlags.DisableArgumentQuoting,
             };
 
             using var p = ChildProcess.Start(si);
@@ -67,7 +80,7 @@ namespace Asmichi
                 StdErrorRedirection = OutputRedirection.File,
                 StdOutputFile = tempFile,
                 StdErrorFile = tempFile,
-                Flags = ChildProcessFlags.UseCustomCodePage,
+                Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
                 CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
             };
 
@@ -96,7 +109,7 @@ namespace Asmichi
                 StdErrorRedirection = OutputRedirection.Handle,
                 StdOutputHandle = inPipe.ClientSafePipeHandle,
                 StdErrorHandle = inPipe.ClientSafePipeHandle,
-                Flags = ChildProcessFlags.UseCustomCodePage,
+                Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
                 CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
             };
 

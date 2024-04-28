@@ -21,6 +21,7 @@ namespace Asmichi.ProcessManagement
         /// <returns>The started process.</returns>
         /// <exception cref="ArgumentException"><paramref name="startInfo"/> has an invalid value.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="startInfo"/> is null.</exception>
+        /// <exception cref="ChildProcessStartingBlockedException">Starting the child process is blocked. See <see cref="ChildProcessStartingBlockedException"/> for details.</exception>
         /// <exception cref="FileNotFoundException">The executable not found.</exception>
         /// <exception cref="IOException">Failed to open a specified file.</exception>
         /// <exception cref="AsmichiChildProcessLibraryCrashedException">The operation failed due to critical disturbance.</exception>

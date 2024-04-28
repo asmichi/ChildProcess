@@ -262,6 +262,15 @@ namespace Asmichi.ProcessManagement
         /// <para>
         /// (Windows-specific) If <see cref="FileName"/> does not contain an extension, ".exe" is appended.
         /// </para>
+        /// <para>
+        /// (Windows-specific) <see cref="FileName"/> must not be a batch file (".bat"/".cmd").
+        /// See <see cref="ChildProcessStartingBlockedException"/> for details.
+        /// </para>
+        /// <para>
+        /// (Windows-specific) If <see cref="FileName"/> is "cmd.exe" (without the directory part),
+        /// <see cref="ChildProcessFlags.DisableArgumentQuoting"/> must be set.
+        /// See <see cref="ChildProcessStartingBlockedException"/> for details.
+        /// </para>
         /// </summary>
         public string? FileName { get; set; }
 

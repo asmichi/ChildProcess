@@ -47,6 +47,17 @@ namespace Asmichi.ProcessManagement
 
             Debug.Assert(startInfo.CreateNewConsole || ConsolePal.HasConsoleWindow());
 
+            if (resolvedPath.EndsWith(".bat", StringComparison.OrdinalIgnoreCase)
+                || resolvedPath.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ChildProcessStartingBlockedException("Execution of a batch file ('.bat'/'.cmd') was blocked.");
+            }
+            if (Path.GetFileName(resolvedPath.AsSpan()).Equals("cmd.exe", StringComparison.OrdinalIgnoreCase)
+                && !flags.HasDisableArgumentQuoting())
+            {
+                throw new ChildProcessStartingBlockedException("Execution of 'cmd.exe' without DisableArgumentQuoting was blocked. See the description of ChildProcessStartingBlockedException.");
+            }
+
             var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>(), !flags.HasDisableArgumentQuoting());
             var environmentBlock = startInfo.UseCustomEnvironmentVariables ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables.Span) : null;
 

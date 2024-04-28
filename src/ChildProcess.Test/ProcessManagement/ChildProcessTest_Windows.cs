@@ -2,7 +2,9 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Asmichi.Interop.Windows;
 using Asmichi.Utilities;
 using Xunit;
@@ -104,6 +106,78 @@ namespace Asmichi.ProcessManagement
             };
 
             Assert.Throws<PlatformNotSupportedException>(() => { ChildProcess.Start(si).Dispose(); });
+        }
+
+        [Theory]
+        [InlineData("foo.bat")]
+        [InlineData("foo.BaT")]
+        [InlineData("foo.cmd")]
+        [InlineData("foo.CmD")]
+        public void RejectsBatchFiles(string batchFileName)
+        {
+            // Testing Windows-specific behavior.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            using var temp = new TemporaryDirectory();
+
+            // Create a batch file.
+            var batchFilePath = Path.Join(temp.Location, batchFileName);
+            File.WriteAllText(batchFilePath, "exit /b 1", Encoding.ASCII);
+
+            var si = new ChildProcessStartInfo(batchFilePath)
+            {
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.NullDevice,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            Assert.Throws<ChildProcessStartingBlockedException>(() => { ChildProcess.Start(si).Dispose(); });
+        }
+
+        [Theory]
+        [InlineData("cmd.exe")]
+        [InlineData("CmD.ExE")]
+        public void CanStartCmdExeIfDisableArgumentQuoting(string cmdExeFileName)
+        {
+            // Testing Windows-specific behavior.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var si = new ChildProcessStartInfo(cmdExeFileName, "/c", "echo", "foo")
+            {
+                Flags = ChildProcessFlags.DisableArgumentQuoting,
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.OutputPipe,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            Assert.Equal("foo", ExecuteForStandardOutput(si, Encoding.ASCII).Trim());
+        }
+
+        [Theory]
+        [InlineData("cmd.exe")]
+        [InlineData("CmD.ExE")]
+        public void RejectsStartingCmdExeWithoutDisableArgumentQuoting(string cmdExeFileName)
+        {
+            // Testing Windows-specific behavior.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var si = new ChildProcessStartInfo(cmdExeFileName, "/c", "echo", "foo")
+            {
+                StdInputRedirection = InputRedirection.NullDevice,
+                StdOutputRedirection = OutputRedirection.NullDevice,
+                StdErrorRedirection = OutputRedirection.NullDevice,
+            };
+
+            Assert.Throws<ChildProcessStartingBlockedException>(() => { ChildProcess.Start(si).Dispose(); });
         }
     }
 }
