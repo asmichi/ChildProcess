@@ -92,6 +92,8 @@ var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
     StdOutputRedirection = OutputRedirection.OutputPipe,
     // Works like 2>&1
     StdErrorRedirection = OutputRedirection.OutputPipe,
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.DisableArgumentQuoting,
 };
 
 using (var p = ChildProcess.Start(si))
@@ -112,15 +114,18 @@ using (var p = ChildProcess.Start(si))
 You can redirect the output of a child into a file without ever reading the output.
 
 ```cs
+var tempFile = Path.GetTempFileName();
+
 var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
     ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
     StdOutputRedirection = OutputRedirection.File,
     StdErrorRedirection = OutputRedirection.File,
-    StdOutputFile = "env.txt",
-    StdErrorFile = "env.txt",
-    Flags = ChildProcessFlags.UseCustomCodePage,
-    CodePage = Encoding.Default.CodePage, // UTF-8
+    StdOutputFile = tempFile,
+    StdErrorFile = tempFile,
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
 };
 
 using (var p = ChildProcess.Start(si))
@@ -131,7 +136,8 @@ using (var p = ChildProcess.Start(si))
 // A=A
 // ALLUSERSPROFILE=C:\ProgramData
 // ...
-Console.WriteLine(File.ReadAllText("env.txt"));
+Console.WriteLine(File.ReadAllText(tempFile));
+File.Delete(tempFile);
 ```
 
 ## True piping
@@ -149,7 +155,8 @@ var si1 = new ChildProcessStartInfo("cmd", "/C", "set")
     StdErrorRedirection = OutputRedirection.Handle,
     StdOutputHandle = inPipe.ClientSafePipeHandle,
     StdErrorHandle = inPipe.ClientSafePipeHandle,
-    Flags = ChildProcessFlags.UseCustomCodePage,
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
     CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
 };
 

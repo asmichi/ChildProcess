@@ -92,6 +92,8 @@ var si = new ChildProcessStartInfo("cmd", "/C", "echo", "foo")
     StdOutputRedirection = OutputRedirection.OutputPipe,
     // 2>&1 のような効果
     StdErrorRedirection = OutputRedirection.OutputPipe,
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.DisableArgumentQuoting,
 };
 
 using (var p = ChildProcess.Start(si))
@@ -112,15 +114,18 @@ using (var p = ChildProcess.Start(si))
 子プロセスの出力をファイルにリダイレクトできます。その際、子プロセスの出力を読む必要はありません。
 
 ```cs
+var tempFile = Path.GetTempFileName();
+
 var si = new ChildProcessStartInfo("cmd", "/C", "set")
 {
     ExtraEnvironmentVariables = new Dictionary<string, string> { { "A", "A" } },
     StdOutputRedirection = OutputRedirection.File,
     StdErrorRedirection = OutputRedirection.File,
-    StdOutputFile = "env.txt",
-    StdErrorFile = "env.txt",
-    Flags = ChildProcessFlags.UseCustomCodePage,
-    CodePage = Encoding.Default.CodePage, // UTF-8
+    StdOutputFile = tempFile,
+    StdErrorFile = tempFile,
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
 };
 
 using (var p = ChildProcess.Start(si))
@@ -132,6 +137,7 @@ using (var p = ChildProcess.Start(si))
 // ALLUSERSPROFILE=C:\ProgramData
 // ...
 Console.WriteLine(File.ReadAllText("env.txt"));
+File.Delete(tempFile);
 ```
 
 ## 真のパイプ
@@ -149,8 +155,9 @@ var si1 = new ChildProcessStartInfo("cmd", "/C", "set")
     StdErrorRedirection = OutputRedirection.Handle,
     StdOutputHandle = inPipe.ClientSafePipeHandle,
     StdErrorHandle = inPipe.ClientSafePipeHandle,
-    Flags = ChildProcessFlags.UseCustomCodePage,
-    CodePage = Encoding.Default.CodePage, // UTF-8
+    // DisableArgumentQuoting: See ChildProcessExamplesWindows.cs for details
+    Flags = ChildProcessFlags.UseCustomCodePage | ChildProcessFlags.DisableArgumentQuoting,
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
 };
 
 var si2 = new ChildProcessStartInfo("findstr", "Windows")
@@ -161,7 +168,7 @@ var si2 = new ChildProcessStartInfo("findstr", "Windows")
     StdOutputRedirection = OutputRedirection.OutputPipe,
     StdErrorRedirection = OutputRedirection.OutputPipe,
     Flags = ChildProcessFlags.UseCustomCodePage,
-    CodePage = Encoding.Default.CodePage, // UTF-8
+    CodePage = Encoding.Default.CodePage, // UTF-8 on .NET Core
 };
 
 using var p1 = ChildProcess.Start(si1);
