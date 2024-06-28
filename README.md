@@ -45,7 +45,7 @@ RIDs:
 - `linux-arm64` (not tested)
 - `linux-musl-arm64` (not tested)
 - `linux-musl-x64` (tested on Alpine 3.13)
-- `osx-x64` (macOS 10.15 Catalina or later; tested on 11)
+- `osx-x64` (macOS 10.15 Catalina or later; tested on 12)
 - `osx-arm64` (macOS 11.0 Big Sur or later; not tested)
 
 NOTE: On glibc-based Linux, the system must have glibc 2.27 or later and libstdc++ 3.4.25 or later.

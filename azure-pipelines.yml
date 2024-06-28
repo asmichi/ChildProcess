@@ -42,7 +42,7 @@ jobs:
 - job: build_native_osx
 
   pool:
-    vmImage: 'macos-11'
+    vmImage: 'macos-12'
 
   steps:
   - task: Bash@3
@@ -140,7 +140,7 @@ jobs:
     - build_native_osx
 
   pool:
-    vmImage: 'macos-11'
+    vmImage: 'macos-12'
 
   steps:
   - template: 'build/azure-pipelines/test.yml'
