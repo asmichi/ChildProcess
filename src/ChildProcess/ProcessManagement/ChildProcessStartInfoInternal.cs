@@ -96,7 +96,7 @@ namespace Asmichi.ProcessManagement
             CreateNewConsole = !Flags.HasAttachToCurrentConsole() || !ConsolePal.HasConsoleWindow();
         }
 
-        public bool AllowSignal => !Flags.HasAttachToCurrentConsole();
-        public bool DisableWindowsErrorReportingDialog => !Flags.HasEnableWindowsErrorReportingDialog();
+        public readonly bool AllowSignal => !Flags.HasAttachToCurrentConsole();
+        public readonly bool DisableWindowsErrorReportingDialog => !Flags.HasEnableWindowsErrorReportingDialog();
     }
 }
