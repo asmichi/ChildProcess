@@ -59,6 +59,6 @@ namespace Asmichi.PlatformAbstraction.Windows
             return Kernel32.GetConsoleMode(handle, out var _);
         }
 
-        public bool HasConsoleWindow() => Kernel32.GetConsoleWindow() != IntPtr.Zero;
+        public bool HasConsoleWindow() => Kernel32.GetConsoleCP() != 0;
     }
 }

@@ -7,8 +7,8 @@ namespace Asmichi.Interop.Windows
 {
     internal static partial class Kernel32
     {
-        [DllImport(DllName)]
-        public static extern IntPtr GetConsoleWindow();
+        [DllImport(DllName, SetLastError = true)]
+        public static extern int GetConsoleCP();
 
         [DllImport(DllName, SetLastError = true)]
         public static extern bool GetConsoleMode([In] SafeHandle hConsoleHandle, [Out] out int lpMode);
