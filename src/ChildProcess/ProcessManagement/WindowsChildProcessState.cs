@@ -66,13 +66,16 @@ namespace Asmichi.ProcessManagement
                 Kill();
             }
 
+            // NOTE: Kill the child before closing the pseudo console (unless DisableKillOnDispose).
+            //       See the comment of ChildProcessFlags.DisableKillOnDispose.
+            _jobObjectHandle.Dispose();
+
             // This will terminate the process tree (unless we are on Windows 1809).
             _pseudoConsole?.Dispose();
             _isPseudoConsoleDisposed = true;
 
             _processHandle.Dispose();
             _primaryThreadHandle?.Dispose();
-            _jobObjectHandle.Dispose();
             _exitedWaitHandle.Dispose();
         }
 

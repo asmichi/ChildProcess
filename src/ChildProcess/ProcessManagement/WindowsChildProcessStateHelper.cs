@@ -75,7 +75,9 @@ namespace Asmichi.ProcessManagement
                     ChangeCodePage(pseudoConsole, startInfo.CodePage, workingDirectory);
                 }
 
-                bool killOnClose = startInfo.AllowSignal && WindowsVersion.NeedsWorkaroundForWindows1809;
+                bool killOnClose =
+                    startInfo.KillOnCloseOnWindows
+                    || (startInfo.AllowSignal && WindowsVersion.NeedsWorkaroundForWindows1809);
                 jobObjectHandle = CreateJobObject(killOnClose, startInfo.DisableWindowsErrorReportingDialog);
 
                 using var inheritableHandleStore = new InheritableHandleStore(3);

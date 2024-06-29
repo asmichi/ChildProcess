@@ -98,5 +98,6 @@ namespace Asmichi.ProcessManagement
 
         public readonly bool AllowSignal => !Flags.HasAttachToCurrentConsole();
         public readonly bool DisableWindowsErrorReportingDialog => !Flags.HasEnableWindowsErrorReportingDialog();
+        public readonly bool KillOnCloseOnWindows => !Flags.HasDisableKillOnDispose();
     }
 }

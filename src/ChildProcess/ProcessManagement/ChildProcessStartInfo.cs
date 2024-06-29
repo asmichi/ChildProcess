@@ -106,6 +106,26 @@ namespace Asmichi.ProcessManagement
         /// (Windows-specific) Create the child process with the CREATE_SUSPENDED flag.
         /// </summary>
         CreateSuspended = 0x0100,
+
+        /// <summary>
+        /// <para>
+        /// (Windows-specific) Do not kill the child process when the <see cref="IChildProcess"/> object is disposed (including the death of this process).
+        /// </para>
+        /// <para>
+        /// If this flag is not specified, the child will be forcibly killed.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This flag is useful if the child process reacts to CTRL_CLOSE_EVENT (not likely).
+        /// </para>
+        /// <para>
+        /// Not specifying this flag is useful for ensuring termination of child processes created with <see cref="CreateSuspended"/> even if this process is killed.
+        /// Also useful for working around <a href="https://github.com/asmichi/ChildProcess/issues/2">intermittent "Application Error 0xc0000142" dialogs</a>
+        /// when this process is killed before a child finishes initialization.
+        /// </para>
+        /// </remarks>
+        DisableKillOnDispose = 0x0200,
     }
 
     /// <summary>
@@ -122,6 +142,7 @@ namespace Asmichi.ProcessManagement
         public static bool HasEnableWindowsErrorReportingDialog(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableWindowsErrorReportingDialog) != 0;
         public static bool HasEnableHandle(this ChildProcessFlags flags) => (flags & ChildProcessFlags.EnableHandle) != 0;
         public static bool HasCreateSuspended(this ChildProcessFlags flags) => (flags & ChildProcessFlags.CreateSuspended) != 0;
+        public static bool HasDisableKillOnDispose(this ChildProcessFlags flags) => (flags & ChildProcessFlags.DisableKillOnDispose) != 0;
     }
 
     /// <summary>

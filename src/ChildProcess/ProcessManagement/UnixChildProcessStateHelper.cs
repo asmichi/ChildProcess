@@ -92,6 +92,11 @@ namespace Asmichi.ProcessManagement
                 throw new PlatformNotSupportedException(
                     $"{nameof(ChildProcessFlags)}.{nameof(ChildProcessFlags.CreateSuspended)} is supported only on Windows.");
             }
+            if (startInfo.Flags.HasDisableKillOnDispose())
+            {
+                throw new PlatformNotSupportedException(
+                    $"{nameof(ChildProcessFlags)}.{nameof(ChildProcessFlags.DisableKillOnDispose)} is supported only on Windows.");
+            }
         }
 
         public IChildProcessStateHolder SpawnProcess(

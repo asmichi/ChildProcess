@@ -10,7 +10,11 @@ namespace Asmichi
     {
         public static void Run()
         {
-            var si = new ChildProcessStartInfo("waitfor", "/T", "3", nameof(ChildProcessManualTestProgramWindows));
+            var si = new ChildProcessStartInfo("waitfor", "/T", "3", nameof(ChildProcessManualTestProgramWindows))
+            {
+                // Without the "kill on dispose" workaround (uncomment this), the "Application Error 0xc0000142" dialog will pop up.
+                // Flags = ChildProcessFlags.DisableKillOnDispose,
+            };
 
             // Demonstrate https://github.com/asmichi/ChildProcess/issues/2: intermittent "Application Error 0xc0000142" dialog
             // when the parent is killed (the pseudo console is closed) before a child finishes initialization.

@@ -91,8 +91,12 @@ namespace Asmichi.ProcessManagement
             sut.WaitForExit();
         }
 
-        [Fact]
-        public void RejectsCreateSuspendedOnUnsupportedPlatforms()
+        // NOTE: EnableHandle is tested by ChildProcessTest_Handle because in the future it can be supported on Linux versions with pidfd support.
+        [Theory]
+        [InlineData(ChildProcessFlags.DisableArgumentQuoting)]
+        [InlineData(ChildProcessFlags.CreateSuspended)]
+        [InlineData(ChildProcessFlags.DisableKillOnDispose)]
+        public void RejectsWindowsSpecificFlagsOnUnsupportedPlatforms(ChildProcessFlags windowsSpecificFlag)
         {
             // CreateSuspended is Windows-specific.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -102,7 +106,7 @@ namespace Asmichi.ProcessManagement
 
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath)
             {
-                Flags = ChildProcessFlags.CreateSuspended,
+                Flags = windowsSpecificFlag,
             };
 
             Assert.Throws<PlatformNotSupportedException>(() => { ChildProcess.Start(si).Dispose(); });
@@ -178,6 +182,30 @@ namespace Asmichi.ProcessManagement
             };
 
             Assert.Throws<ChildProcessStartingBlockedException>(() => { ChildProcess.Start(si).Dispose(); });
+        }
+
+        [Fact]
+        public void TestKillOnDispose()
+        {
+            // Code pages are Windows-specific.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "ExitCode", "0")
+            {
+                Flags = ChildProcessFlags.CreateSuspended | ChildProcessFlags.EnableHandle,
+            };
+
+            using var p = ChildProcess.Start(si);
+
+            // Disposing p will close the process handle, so create our own duplicate.
+            using var waitHandle = new WindowsProcessWaitHandle(p.Handle);
+
+            p.Dispose();
+
+            Assert.True(waitHandle.WaitOne(100));
         }
     }
 }
