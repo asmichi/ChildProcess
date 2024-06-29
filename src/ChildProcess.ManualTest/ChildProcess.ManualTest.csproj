@@ -1,0 +1,24 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <AssemblyName>Asmichi.ChildProcess.ManualTest</AssemblyName>
+    <CodeAnalysisRuleSet>..\PrivateAssembly.ruleset</CodeAnalysisRuleSet>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Asmichi</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(WorktreeRoot)\build\msbuild\InjectChildProcessNativeFileDeps.targets" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

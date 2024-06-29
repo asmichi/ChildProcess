@@ -332,7 +332,7 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
 
-[src/ChildProcess.Test/**.cs]
+[src/{ChildProcess.Test,ChildProcess.ManualTest}/**.cs]
 # Fine for tests
 dotnet_diagnostic.CA1861.severity = none # Prefer 'static readonly' fields over constant array arguments
 dotnet_diagnostic.CA1849.severity = none # Call async methods when in an async method

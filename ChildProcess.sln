@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildProcess.Test", "src\Ch
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestChild", "src\TestChild\TestChild.csproj", "{F4613733-FC19-47E0-98CF-FAFE4FA7543C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChildProcess.ManualTest", "src\ChildProcess.ManualTest\ChildProcess.ManualTest.csproj", "{6BC75185-F986-486C-8E6A-4D7FEA19B8A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AnyCPU = Debug|AnyCPU
@@ -33,6 +35,10 @@ Global
 		{F4613733-FC19-47E0-98CF-FAFE4FA7543C}.Debug|AnyCPU.Build.0 = Debug|Any CPU
 		{F4613733-FC19-47E0-98CF-FAFE4FA7543C}.Release|AnyCPU.ActiveCfg = Release|Any CPU
 		{F4613733-FC19-47E0-98CF-FAFE4FA7543C}.Release|AnyCPU.Build.0 = Release|Any CPU
+		{6BC75185-F986-486C-8E6A-4D7FEA19B8A3}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{6BC75185-F986-486C-8E6A-4D7FEA19B8A3}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{6BC75185-F986-486C-8E6A-4D7FEA19B8A3}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{6BC75185-F986-486C-8E6A-4D7FEA19B8A3}.Release|AnyCPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
