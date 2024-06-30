@@ -122,7 +122,7 @@ std::optional<PipeEnds> CreatePipe() noexcept
     PipeEnds pipeEnds;
     pipeEnds.ReadEnd = UniqueFd(pipes[0]);
     pipeEnds.WriteEnd = UniqueFd(pipes[1]);
-    return std::move(pipeEnds);
+    return pipeEnds;
 }
 
 std::optional<UniqueFd> CreateUnixStreamSocket() noexcept

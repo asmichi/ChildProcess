@@ -42,7 +42,7 @@ public:
 
         UniqueFd fd{std::move(receivedFds_.front())};
         receivedFds_.pop();
-        return std::move(fd);
+        return fd;
     }
 
 private:
