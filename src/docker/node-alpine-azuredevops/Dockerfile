@@ -1,8 +1,9 @@
 # Build:
-#   docker build -t asmichi/node-azuredevops:14-alpine .
+#   docker build -t asmichi/node-azuredevops:20-alpine3.20 .
 #
-# See https://docs.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops#non-glibc-based-containers
-FROM node:14-alpine
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops#non-glibc-based-containers
+# https://learn.microsoft.com/en-us/dotnet/core/install/linux-alpine
+FROM node:20-alpine3.20
 
 RUN apk add --no-cache --virtual .pipeline-deps readline linux-pam \
   && apk add --no-cache \
@@ -11,15 +12,14 @@ RUN apk add --no-cache --virtual .pipeline-deps readline linux-pam \
     sudo \
     shadow \
     # .NET Core dependencies
-    icu-libs \
-    ca-certificates \
-    krb5-libs \
+    ca-certificates-bundle \
     libgcc \
-    libintl \
-    libssl1.1 \
+    libssl3 \
     libstdc++ \
     zlib \
-  && apk del .pipeline-deps
+    && apk del .pipeline-deps
+
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT="1"
 
 LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/local/bin/node"
 

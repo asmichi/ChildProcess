@@ -44,7 +44,7 @@ RIDs:
 - `linux-arm` (未テスト)
 - `linux-arm64` (未テスト)
 - `linux-musl-arm64` (未テスト)
-- `linux-musl-x64` (Alpine 3.13 でテスト済)
+- `linux-musl-x64` (Alpine 3.20 でテスト済)
 - `osx-x64` (macOS 10.15 Catalina 以降; 12 でテスト済)
 - `osx-arm64` (macOS 11.0 Big Sur 以降; 未テスト)
 

@@ -125,7 +125,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-20.04'
 
-  container: 'asmichi/node-azuredevops:14-alpine'
+  container: 'asmichi/node-azuredevops:20-alpine3.20'
 
   steps:
   - template: 'build/azure-pipelines/test.yml'
