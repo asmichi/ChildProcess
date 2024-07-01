@@ -19,7 +19,7 @@ Import-Module "$PSScriptRoot/psm/Build.psm1"
 
 $worktreeRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-if (-not (@("Linux", "OSX") -contains $OS)) {
+if (-not (@("OSX") -contains $OS)) {
     Write-Error "Unknown OS: ${OS}"
     exit 1
 }
