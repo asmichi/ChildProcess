@@ -1,8 +1,8 @@
-# Assume x64 Ubuntu 18.04 & Clang 10 & LLD
+# Assume x64 Ubuntu 22.04 & Clang & LLD
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
-set(CMAKE_CXX_COMPILER /usr/bin/clang++-10)
+set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 set(CMAKE_CXX_COMPILER_TARGET aarch64-alpine-linux-musl)
 set(CMAKE_SYSROOT $ENV{SYSROOTS_DIR}/sysroot-alpine-aarch64-alpine-linux-musl)
 

@@ -1,16 +1,19 @@
-# Assume x64 Ubuntu 18.04 & Clang 10 & LLD
+# Assume x64 Ubuntu 22.04 & Clang & LLD & Ubuntu 18 sysroot
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
-set(CMAKE_CXX_COMPILER /usr/bin/clang++-10)
+set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
-set(CMAKE_SYSROOT /usr/aarch64-linux-gnu)
+set(CMAKE_SYSROOT $ENV{SYSROOTS_DIR}/sysroot-ubuntu18)
 include_directories(SYSTEM
-    /usr/aarch64-linux-gnu/include/c++/7
-    /usr/aarch64-linux-gnu/include/c++/7/aarch64-linux-gnu
-    /usr/aarch64-linux-gnu/include/c++/7/backward
-    /usr/aarch64-linux-gnu/include
-    /usr/lib/llvm-10/lib/clang/10.0.0/include)
+    ${CMAKE_SYSROOT}/usr/aarch64-linux-gnu/include/c++/7.5.0
+    ${CMAKE_SYSROOT}/usr/aarch64-linux-gnu/include/c++/7.5.0/aarch64-linux-gnu
+    ${CMAKE_SYSROOT}/usr/aarch64-linux-gnu/include/c++/7.5.0/backward
+    ${CMAKE_SYSROOT}/usr/aarch64-linux-gnu/include
+    /usr/lib/llvm-14/lib/clang/14.0.0/include)
+
+# Workaround for https://gitlab.kitware.com/cmake/cmake/-/issues/17966
+unset(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES)
 
 add_compile_options(-nostdinc)
 add_link_options(-fuse-ld=lld)

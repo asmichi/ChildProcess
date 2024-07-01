@@ -26,7 +26,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-20.04'
 
-  container: 'asmichi/childprocess-buildtools-ubuntu-crosssysroot:18.04.20210612.1'
+  container: 'asmichi/childprocess-buildtools-ubuntu-crosssysroot:22.04.20240702.1 '
 
   steps:
   - task: Bash@3
