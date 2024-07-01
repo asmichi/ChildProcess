@@ -12,7 +12,7 @@ namespace Asmichi.ProcessManagement
     public class ChildProcessTest_Performance
     {
         // TODO: This test is flaky. This cannot be done as part of unit tests and should be an independent benchmark done in a separate process.
-        [Fact]
+        [Fact(Skip = "Super flaky on Azure macOS image")]
         public void ChildProcessWaitForAsyncIsTrulyAsynchronous()
         {
             var si = new ChildProcessStartInfo(TestUtil.DotnetCommandName, TestUtil.TestChildPath, "Sleep", "1000")
