@@ -61,11 +61,19 @@ namespace Asmichi.ProcessManagement
             var commandLine = WindowsCommandLineUtil.MakeCommandLine(resolvedPath, arguments ?? Array.Empty<string>(), !flags.HasDisableArgumentQuoting());
             var environmentBlock = startInfo.UseCustomEnvironmentVariables ? WindowsEnvironmentBlockUtil.MakeEnvironmentBlock(environmentVariables.Span) : null;
 
-            // Objects that need cleanup
+            // Objects that need to be disposed on error
             InputWriterOnlyPseudoConsole? pseudoConsole = null;
             SafeJobObjectHandle? jobObjectHandle = null;
             SafeProcessHandle? processHandle = null;
             SafeThreadHandle? threadHandle = null;
+
+            // These handles may be externally visible (user-supplied); make sure concurrent disposal will not cause dangling handles.
+            SafeHandle? childStdIn = null;
+            SafeHandle? childStdOut = null;
+            SafeHandle? childStdErr = null;
+            bool childStdInRefAdded = false;
+            bool childStdOutRefAdded = false;
+            bool childStdErrRefAdded = false;
 
             try
             {
@@ -81,9 +89,13 @@ namespace Asmichi.ProcessManagement
                 jobObjectHandle = CreateJobObject(killOnClose, startInfo.DisableWindowsErrorReportingDialog);
 
                 using var inheritableHandleStore = new InheritableHandleStore(3);
-                var childStdIn = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
-                var childStdOut = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
-                var childStdErr = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
+                childStdIn = stdIn != null ? inheritableHandleStore.Add(stdIn) : null;
+                childStdOut = stdOut != null ? inheritableHandleStore.Add(stdOut) : null;
+                childStdErr = stdErr != null ? inheritableHandleStore.Add(stdErr) : null;
+
+                childStdIn?.DangerousAddRef(ref childStdInRefAdded);
+                childStdOut?.DangerousAddRef(ref childStdOutRefAdded);
+                childStdErr?.DangerousAddRef(ref childStdErrRefAdded);
 
                 IntPtr jobObjectHandles = jobObjectHandle.DangerousGetHandle();
 
@@ -129,6 +141,21 @@ namespace Asmichi.ProcessManagement
                 pseudoConsole?.Dispose();
                 jobObjectHandle?.Dispose();
                 throw;
+            }
+            finally
+            {
+                if (childStdInRefAdded)
+                {
+                    childStdIn?.DangerousRelease();
+                }
+                if (childStdOutRefAdded)
+                {
+                    childStdOut?.DangerousRelease();
+                }
+                if (childStdErrRefAdded)
+                {
+                    childStdErr?.DangerousRelease();
+                }
             }
         }
 

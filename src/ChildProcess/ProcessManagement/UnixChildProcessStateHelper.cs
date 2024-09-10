@@ -110,24 +110,7 @@ namespace Asmichi.ProcessManagement
             var environmentVariables = startInfo.EnvironmentVariables;
             var workingDirectory = startInfo.WorkingDirectory;
 
-            Span<int> fds = stackalloc int[3];
-            int handleCount = 0;
             uint flags = 0;
-            if (stdIn != null)
-            {
-                fds[handleCount++] = stdIn.DangerousGetHandle().ToInt32();
-                flags |= RequestFlagsRedirectStdin;
-            }
-            if (stdOut != null)
-            {
-                fds[handleCount++] = stdOut.DangerousGetHandle().ToInt32();
-                flags |= RequestFlagsRedirectStdout;
-            }
-            if (stdErr != null)
-            {
-                fds[handleCount++] = stdErr.DangerousGetHandle().ToInt32();
-                flags |= RequestFlagsRedirectStderr;
-            }
 
             if (startInfo.CreateNewConsole)
             {
@@ -145,10 +128,35 @@ namespace Asmichi.ProcessManagement
                 flags |= RequestFlagsEnableAutoTermination;
             }
 
-            using var bw = new MyBinaryWriter(InitialBufferCapacity);
+            // These handles may be externally visible (user-supplied); make sure concurrent disposal will not cause dangling handles.
+            bool stdInRefAdded = false;
+            bool stdOutRefAdded = false;
+            bool stdErrRefAdded = false;
             var stateHolder = UnixChildProcessState.Create(this, startInfo.AllowSignal);
             try
             {
+                Span<int> fds = stackalloc int[3];
+                int handleCount = 0;
+                if (stdIn != null)
+                {
+                    stdIn.DangerousAddRef(ref stdInRefAdded);
+                    fds[handleCount++] = stdIn.DangerousGetHandle().ToInt32();
+                    flags |= RequestFlagsRedirectStdin;
+                }
+                if (stdOut != null)
+                {
+                    stdOut.DangerousAddRef(ref stdOutRefAdded);
+                    fds[handleCount++] = stdOut.DangerousGetHandle().ToInt32();
+                    flags |= RequestFlagsRedirectStdout;
+                }
+                if (stdErr != null)
+                {
+                    stdErr.DangerousAddRef(ref stdErrRefAdded);
+                    fds[handleCount++] = stdErr.DangerousGetHandle().ToInt32();
+                    flags |= RequestFlagsRedirectStderr;
+                }
+
+                using var bw = new MyBinaryWriter(InitialBufferCapacity);
                 bw.Write(stateHolder.State.Token);
                 bw.Write(flags);
                 bw.Write(workingDirectory);
@@ -215,11 +223,7 @@ namespace Asmichi.ProcessManagement
                 try
                 {
                     subchannel.SendExactBytesAndFds(header, fds.Slice(0, handleCount));
-
                     subchannel.SendExactBytes(bw.GetBuffer());
-                    GC.KeepAlive(stdIn);
-                    GC.KeepAlive(stdOut);
-                    GC.KeepAlive(stdErr);
 
                     var (error, processId) = subchannel.ReceiveCommonResponse();
                     if (error > 0)
@@ -245,6 +249,21 @@ namespace Asmichi.ProcessManagement
             {
                 stateHolder.Dispose();
                 throw;
+            }
+            finally
+            {
+                if (stdInRefAdded)
+                {
+                    stdIn.DangerousRelease();
+                }
+                if (stdOutRefAdded)
+                {
+                    stdOut.DangerousRelease();
+                }
+                if (stdErrRefAdded)
+                {
+                    stdErr.DangerousRelease();
+                }
             }
         }
 

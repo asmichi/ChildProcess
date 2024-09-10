@@ -42,8 +42,6 @@ namespace Asmichi.Interop.Windows
 
         /// <summary>
         /// Returns inheritable handles stored.
-        /// Make sure to keep a reference to this <see cref="InheritableHandleStore"/> while the handles are being used.
-        /// The handles will be invalid when InheritableHandleStore is GCed.
         /// </summary>
         /// <param name="buffer">Buffer to receive inheritable handles.</param>
         public void DangerousGetHandles(Span<IntPtr> buffer)
@@ -60,6 +58,10 @@ namespace Asmichi.Interop.Windows
         /// Add a handle to this.
         /// If <paramref name="handle"/> is not inheritable, returns an inheritable duplicate. Otherwise returns <paramref name="handle"/>.
         /// </summary>
+        /// <remarks>
+        /// Make sure to perform <see cref="SafeHandle.DangerousAddRef"/> and <see cref="SafeHandle.DangerousRelease"/>
+        /// if <paramref name="handle"/> can be externally visible and disposed concurrently.
+        /// </remarks>
         /// <param name="handle">A handle.</param>
         /// <returns>An inheritable handle that points to the same object as <paramref name="handle"/>.</returns>
         public SafeHandle Add(SafeHandle handle)
