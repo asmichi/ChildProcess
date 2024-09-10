@@ -219,7 +219,7 @@ namespace Asmichi.ProcessManagement
                 OutputRedirection.File => OpenFile(fileName!, FileMode.Create, FileAccess.Write, FileShare.Read),
                 OutputRedirection.AppendToFile => OpenFile(fileName!, FileMode.Append, FileAccess.Write, FileShare.Read),
                 OutputRedirection.Handle => handle!,
-                OutputRedirection.NullDevice => FilePal.OpenNullDevice(FileAccess.Write),
+                OutputRedirection.NullDevice => OpenNullDevice(FileAccess.Write),
                 _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(OutputRedirection) + "."),
             };
         }
