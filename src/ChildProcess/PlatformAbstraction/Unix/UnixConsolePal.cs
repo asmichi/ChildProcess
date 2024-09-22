@@ -11,12 +11,12 @@ namespace Asmichi.PlatformAbstraction.Unix
         private const int StdOutFileNo = 1;
         private const int StdErrFileNo = 2;
 
-        public SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) =>
-            DuplicateStdFileForChild(StdInFileNo, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Read);
-        public SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) =>
-            DuplicateStdFileForChild(StdOutFileNo, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
-        public SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) =>
-            DuplicateStdFileForChild(StdErrFileNo, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
+        public SafeFileHandle? CreateStdInputHandleForChild(bool createNewConsole) =>
+            DuplicateStdFileForChild(StdInFileNo, createNewConsole);
+        public SafeFileHandle? CreateStdOutputHandleForChild(bool createNewConsole) =>
+            DuplicateStdFileForChild(StdOutFileNo, createNewConsole);
+        public SafeFileHandle? CreateStdErrorHandleForChild(bool createNewConsole) =>
+            DuplicateStdFileForChild(StdErrFileNo, createNewConsole);
 
         private static SafeFileHandle? DuplicateStdFileForChild(int stdFd, bool createNewConsole)
         {

@@ -193,7 +193,7 @@ namespace Asmichi.ProcessManagement
         {
             return redirection switch
             {
-                InputRedirection.ParentInput => ConsolePal.GetStdInputHandleForChild(createNewConsole),
+                InputRedirection.ParentInput => CreateStdInputHandleForChild(createNewConsole) ?? OpenNullDevice(FileAccess.Read),
                 InputRedirection.InputPipe => inputPipe!,
                 InputRedirection.File => OpenFile(fileName!, FileMode.Open, FileAccess.Read, FileShare.Read),
                 InputRedirection.Handle => handle!,
@@ -212,8 +212,8 @@ namespace Asmichi.ProcessManagement
         {
             return redirection switch
             {
-                OutputRedirection.ParentOutput => ConsolePal.GetStdOutputHandleForChild(createNewConsole),
-                OutputRedirection.ParentError => ConsolePal.GetStdErrorHandleForChild(createNewConsole),
+                OutputRedirection.ParentOutput => CreateStdOutputHandleForChild(createNewConsole) ?? OpenNullDevice(FileAccess.Write),
+                OutputRedirection.ParentError => CreateStdErrorHandleForChild(createNewConsole) ?? OpenNullDevice(FileAccess.Write),
                 OutputRedirection.OutputPipe => outputPipe!,
                 OutputRedirection.ErrorPipe => errorPipe!,
                 OutputRedirection.File => OpenFile(fileName!, FileMode.Create, FileAccess.Write, FileShare.Read),
@@ -222,6 +222,39 @@ namespace Asmichi.ProcessManagement
                 OutputRedirection.NullDevice => OpenNullDevice(FileAccess.Write),
                 _ => throw new ArgumentOutOfRangeException(nameof(redirection), "Not a valid value for " + nameof(OutputRedirection) + "."),
             };
+        }
+
+        private SafeFileHandle? CreateStdInputHandleForChild(bool createNewConsole)
+        {
+            var handle = ConsolePal.CreateStdInputHandleForChild(createNewConsole);
+            if (handle is null)
+            {
+                return null;
+            }
+            AddObjectsToDispose(handle);
+            return handle;
+        }
+
+        private SafeFileHandle? CreateStdOutputHandleForChild(bool createNewConsole)
+        {
+            var handle = ConsolePal.CreateStdOutputHandleForChild(createNewConsole);
+            if (handle is null)
+            {
+                return null;
+            }
+            AddObjectsToDispose(handle);
+            return handle;
+        }
+
+        private SafeFileHandle? CreateStdErrorHandleForChild(bool createNewConsole)
+        {
+            var handle = ConsolePal.CreateStdErrorHandleForChild(createNewConsole);
+            if (handle is null)
+            {
+                return null;
+            }
+            AddObjectsToDispose(handle);
+            return handle;
         }
 
         private SafeFileHandle OpenFile(

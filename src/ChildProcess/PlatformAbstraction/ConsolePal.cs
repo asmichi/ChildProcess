@@ -7,9 +7,9 @@ namespace Asmichi.PlatformAbstraction
 {
     internal interface IConsolePal
     {
-        SafeFileHandle GetStdInputHandleForChild(bool createNewConsole);
-        SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole);
-        SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole);
+        SafeFileHandle? CreateStdInputHandleForChild(bool createNewConsole);
+        SafeFileHandle? CreateStdOutputHandleForChild(bool createNewConsole);
+        SafeFileHandle? CreateStdErrorHandleForChild(bool createNewConsole);
         bool HasConsoleWindow();
     }
 
@@ -28,9 +28,15 @@ namespace Asmichi.PlatformAbstraction
             };
         }
 
-        public static SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) => Impl.GetStdInputHandleForChild(createNewConsole);
-        public static SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) => Impl.GetStdOutputHandleForChild(createNewConsole);
-        public static SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) => Impl.GetStdErrorHandleForChild(createNewConsole);
+        /// <summary>
+        /// Creates a duplicate handle to the stdin of the current process that can be inherited by a child process.
+        /// </summary>
+        /// <returns>
+        /// The created handle. <see langword="null"/> if such an inheritable handle cannot be created.
+        /// </returns>
+        public static SafeFileHandle? CreateStdInputHandleForChild(bool createNewConsole) => Impl.CreateStdInputHandleForChild(createNewConsole);
+        public static SafeFileHandle? CreateStdOutputHandleForChild(bool createNewConsole) => Impl.CreateStdOutputHandleForChild(createNewConsole);
+        public static SafeFileHandle? CreateStdErrorHandleForChild(bool createNewConsole) => Impl.CreateStdErrorHandleForChild(createNewConsole);
         public static bool HasConsoleWindow() => Impl.HasConsoleWindow();
     }
 }

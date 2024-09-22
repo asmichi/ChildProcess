@@ -8,12 +8,12 @@ namespace Asmichi.PlatformAbstraction.Windows
 {
     internal sealed class WindowsConsolePal : IConsolePal
     {
-        public SafeFileHandle GetStdInputHandleForChild(bool createNewConsole) =>
-            GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Read);
-        public SafeFileHandle GetStdOutputHandleForChild(bool createNewConsole) =>
-            GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
-        public SafeFileHandle GetStdErrorHandleForChild(bool createNewConsole) =>
-            GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE, createNewConsole) ?? FilePal.OpenNullDevice(System.IO.FileAccess.Write);
+        public SafeFileHandle? CreateStdInputHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_INPUT_HANDLE, createNewConsole);
+        public SafeFileHandle? CreateStdOutputHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_OUTPUT_HANDLE, createNewConsole);
+        public SafeFileHandle? CreateStdErrorHandleForChild(bool createNewConsole) =>
+            GetStdHandleForChild(Kernel32.STD_ERROR_HANDLE, createNewConsole);
 
         /// <summary>
         /// Returns the std* handle of the current process that can be inherited by a child process.
