@@ -30,9 +30,21 @@ namespace Asmichi.Interop.Windows
         public static InputWriterOnlyPseudoConsole Create()
         {
             var (inputReader, inputWriter) = FilePal.CreatePipePair();
-            var outputWriter = FilePal.OpenNullDevice(FileAccess.Write);
-            var hPC = SafePseudoConsoleHandle.Create(inputReader, outputWriter);
-            return new InputWriterOnlyPseudoConsole(hPC, inputWriter);
+            try
+            {
+                using var outputWriter = FilePal.OpenNullDevice(FileAccess.Write);
+                var hPC = SafePseudoConsoleHandle.Create(inputReader, outputWriter);
+                return new InputWriterOnlyPseudoConsole(hPC, inputWriter);
+            }
+            catch
+            {
+                inputWriter.Dispose();
+                throw;
+            }
+            finally
+            {
+                inputReader.Dispose();
+            }
         }
     }
 }
