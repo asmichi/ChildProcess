@@ -52,6 +52,8 @@ NOTE: glibc ベースの Linux では、glibc 2.27 以降と libstdc++ 3.4.25 �
 
 # Known Issues
 
+- Windows 11 24H2 より前の Windows において、 `ChildProcess.Start` 実行は、 `conhost.exe` へのプロセスハンドルを 1 つリークします。(`ChildProcessFlags.AttachToCurrentConsole` により子プロセスを現在のコンソールにアタッチできた場合を除く。).
+    - [Kernel32 の不具合](https://github.com/microsoft/terminal/issues/17903) に起因します。
 - Windows 10 1809 (Windows Server 2019 を含む) では、 `SignalTermination` は単にプロセスツリーを強制終了します (`Kill` と同じ操作です).
     - [`ClosePseudoConsole`](https://docs.microsoft.com/en-us/windows/console/closepseudoconsole) が pseudoconsole にアタッチされたプログラムを終了しないバグがあるためです。
 - 11.0 より前の macOS では、シグナルによって終了したプロセスの `ExitCode` は常に `-1` になります。

@@ -52,6 +52,8 @@ NOTE: On glibc-based Linux, the system must have glibc 2.27 or later and libstdc
 
 # Known Issues
 
+- On Windows prior to Windows 11 24H2, each `ChildProcess.Start` execution leaks one process handle to `conhost.exe` (except when the child process is successfully attached to the current console using `ChildProcessFlags.AttachToCurrentConsole`).
+    - This is due to a [Kernel32 issue](https://github.com/microsoft/terminal/issues/17903).
 - On Windows 10 1809 (including Windows Server 2019), `SignalTermination` just forcibly kills the process tree (the same operation as `Kill`).
     - This is due to a Windows pseudoconsole bug where [`ClosePseudoConsole`](https://docs.microsoft.com/en-us/windows/console/closepseudoconsole) does not terminate applications attached to the pseudoconsole.
 - On macOS prior to 11.0, `ExitCode` for processes killed by a signal will always be `-1`.
