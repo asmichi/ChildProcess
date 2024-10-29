@@ -156,7 +156,7 @@ namespace Asmichi.ProcessManagement
         /// <summary>
         /// <para>Sends the interrupt signal to the process group. Succeeds if the process has already exited.</para>
         /// <para>(Windows-specific) Sends Ctrl+C to the pseudo console.</para>
-        /// <para>(Non-Windows-specific) Sends SIGKILL to the process group.</para>
+        /// <para>(Non-Windows-specific) Sends SIGINT to the process group.</para>
         /// </summary>
         /// <exception cref="InvalidOperationException">This instance does not support sending signals (<see cref="CanSignal"/> is <see langword="false"/>).</exception>
         void SignalInterrupt();
